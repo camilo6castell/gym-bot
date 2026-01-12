@@ -1,0 +1,16 @@
+timezone: America/Bogota
+
+dias:
+  miercoles:
+    - nombre: Pilates
+      hora: "07:00 - 08:00"
+    - nombre: Rumba
+      hora: "06:00 - 07:00"
+
+  jueves:
+    - nombre: Rumba Viejoteca
+      hora: "09:00 - 10:00"
+
+  viernes:
+    - nombre: Rumba
+      hora: "06:00 - 07:00"
