@@ -28,3 +28,6 @@ Thumbs.db
 
 # Estado del navegador para Playwright
 bot/state/
+
+# Logs
+logs/bot.log
