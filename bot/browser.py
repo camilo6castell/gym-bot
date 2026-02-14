@@ -1,10 +1,13 @@
+import os
 from playwright.sync_api import sync_playwright
 import random
 import time
 from loguru import logger
 
+HOME = os.path.expanduser("~")
+REAL_PROFILE_PATH = os.path.join(HOME, ".config", "chromium-bot")
+
 CHROMIUM_PATH = "/usr/bin/chromium"
-REAL_PROFILE_PATH = "/home/live/.config/chromium"
 
 # ----------------------------
 # HUMAN BEHAVIOR
@@ -98,39 +101,26 @@ def launch_browser(headless=False):
     context = playwright.chromium.launch_persistent_context(
         user_data_dir=REAL_PROFILE_PATH,
         executable_path=CHROMIUM_PATH,
-        headless=False,  # 🚨 nunca headless
+        headless=headless,
         args=[
             "--start-maximized",
-            "--disable-blink-features=AutomationControlled",
+            "--disable-features=PasswordManagerOnboarding",
+            "--disable-save-password-bubble",
         ],
-        ignore_default_args=["--enable-automation", "--no-sandbox",],
+        ignore_default_args=["--enable-automation"],
         no_viewport=True,
+        permissions=["geolocation"],
+        geolocation={"latitude": 4.7110, "longitude": -74.0721},
     )
 
-    # 🔥 Stealth patch
+    # stealth básico limpio
     context.add_init_script("""
         Object.defineProperty(navigator, 'webdriver', {
             get: () => undefined
         });
-
-        window.chrome = {
-            runtime: {}
-        };
-
-        Object.defineProperty(navigator, 'plugins', {
-            get: () => [1, 2, 3, 4, 5]
-        });
-
-        Object.defineProperty(navigator, 'languages', {
-            get: () => ['es-ES', 'es']
-        });
     """)
 
     page = context.pages[0] if context.pages else context.new_page()
-
     page.set_default_timeout(30000)
-    page.wait_for_timeout(1000)
-
-    logger.success("🚀 Chromium lanzado usando perfil real")
 
     return playwright, None, context, page

@@ -1,7 +1,12 @@
-from typing import Optional, Dict, Any, List
-import yaml
-from datetime import datetime, timedelta
 import pytz
+import yaml
+from datetime import datetime
+from pathlib import Path
+
+
+# 📁 Ruta real al YAML
+BASE_DIR = Path(__file__).resolve().parent.parent
+SCHEDULE_FILE = BASE_DIR / "config" / "classes.yaml"
 
 
 DAYS_MAP = {
@@ -17,89 +22,47 @@ DAYS_MAP = {
 }
 
 
-def load_config(config_path):
-    with open(config_path, "r", encoding="utf-8") as f:
+def load_config():
+    with open(SCHEDULE_FILE, "r") as f:
         return yaml.safe_load(f)
 
 
-def build_activation_schedule(config) -> List[Dict[str, Any]]:
-    """
-    Construye lista completa de activaciones
-    respetando orden del YAML.
-    """
+def should_run_now():
+    config = load_config()
 
     tz = pytz.timezone(config["timezone"])
     now = datetime.now(tz)
 
-    activaciones = []
+    # 🔥 Siempre 2 días atrás
+    target_weekday = (now.weekday() - 2) % 7
+
+    clases_a_ejecutar = []
 
     for day_name, clases in config["dias"].items():
-        target_weekday = DAYS_MAP[day_name.lower()]
-
-        # Agrupar por hora manteniendo orden YAML
-        clases_por_hora = {}
+        if DAYS_MAP[day_name.lower()] != target_weekday:
+            continue
 
         for clase in clases:
             start_hour = clase["hora"].split(" - ")[0]
-            if start_hour not in clases_por_hora:
-                clases_por_hora[start_hour] = []
-            clases_por_hora[start_hour].append(clase)
+            hour, minute = map(int, start_hour.split(":"))
 
-        for hora_str, lista_clases in clases_por_hora.items():
-            hour, minute = map(int, hora_str.split(":"))
+            # activación = hora clase + 1 minuto
+            activation_hour = hour
 
-            days_ahead = (target_weekday - now.weekday()) % 7
-            target_date = now.date() + timedelta(days=days_ahead)
+            # En el caso de que debe ser en hora exacta
+            activation_minute = minute
 
-            class_dt = tz.localize(
-                datetime(
-                    target_date.year,
-                    target_date.month,
-                    target_date.day,
-                    hour,
-                    minute,
-                )
-            )
+            # En el caso que deba ser 1 minuto después
+            # activation_minute = minute + 1
 
-            # 🔥 CAMBIO CLAVE: +2 días en vez de -2
-            base_activation = class_dt + timedelta(days=2, minutes=1)
+            # if activation_minute >= 60:
+            #     activation_hour += 1
+            #     activation_minute -= 60
 
-            for index, clase in enumerate(lista_clases):
-                activation_dt = base_activation + timedelta(minutes=index)
-
-                activaciones.append({
-                    "activation": activation_dt,
-                    "clase": {
-                        **clase,
-                        "dia": day_name
-                    },
+            if now.hour == activation_hour and now.minute == activation_minute:
+                clases_a_ejecutar.append({
+                    **clase,
+                    "dia": day_name
                 })
 
-    return activaciones
-
-
-def should_run_now(
-    config_path="config/classes.yaml",
-    force=False
-) -> Optional[Dict[str, Any]]:
-
-    config = load_config(config_path)
-    tz = pytz.timezone(config["timezone"])
-    now = datetime.now(tz)
-
-    activaciones = build_activation_schedule(config)
-    activaciones.sort(key=lambda x: x["activation"])
-
-    if force:
-        for item in activaciones:
-            if item["activation"] >= now:
-                return item["clase"]
-        return None
-
-    for item in activaciones:
-        activation_dt = item["activation"]
-
-        if 0 <= (now - activation_dt).total_seconds() < 60:
-            return item["clase"]
-
-    return None
+    return clases_a_ejecutar

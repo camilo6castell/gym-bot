@@ -14,7 +14,6 @@ from bot.config import (
     BOT_FORCE_RUN_DAY,
 )
 
-
 def main():
     if BOT_FORCE_RUN:
         logger.warning("⚠️ BOT_FORCE_RUN activo – usando clase forzada")
@@ -24,20 +23,16 @@ def main():
                 "BOT_FORCE_RUN activo pero faltan BOT_FORCE_RUN_CLASS o BOT_FORCE_RUN_HOUR"
             )
 
-        clase = {
+        clases = [{
             "nombre": BOT_FORCE_RUN_CLASS,
             "hora": BOT_FORCE_RUN_HOUR,
             "dia": BOT_FORCE_RUN_DAY,
-        }
+        }]
     else:
-        clase = should_run_now()
-        if not clase:
+        clases = should_run_now()
+        if not clases:
             logger.info("⏰ No hay clases programadas para este momento")
             return
-
-        logger.info(
-            f"🎯 Clase objetivo: {clase['nombre']} | {clase['hora']} | {clase.get('dia','*')}"
-        )
 
     playwright, browser, context, page = launch_browser(headless=BOT_HEADLESS)
 
@@ -45,16 +40,28 @@ def main():
         login(page)
         logger.success("✅ Login exitoso")
 
-        run_post_login_flow(page, clase)
+        for index, clase in enumerate(clases):
+            logger.info(
+                f"🎯 Intentando clase {index+1}/{len(clases)}: "
+                f"{clase['nombre']} | {clase['hora']} | {clase.get('dia','*')}"
+            )
 
-        if not handle_page_load(page):
-            logger.error("Problema detectado durante la carga")
-            return
+            try:
+                run_post_login_flow(page, clase)
+                logger.success(f"✅ Reserva completada: {clase['nombre']}")
+
+            except Exception as e:
+                logger.error(f"❌ Error reservando {clase['nombre']}: {e}")
+
+            # Esperar 60 segundos entre clases
+            if index < len(clases) - 1:
+                logger.info("⏳ Esperando 60 segundos para siguiente clase...")
+                page.wait_for_timeout(60000)
 
         logger.success("🎉 Flujo completado")
 
     except Exception as e:
-        logger.error(f"❌ Error durante la ejecución: {e}")
+        logger.error(f"❌ Error general durante la ejecución: {e}")
         page.screenshot(path=f"error_{int(time.time())}.png")
 
     finally:
