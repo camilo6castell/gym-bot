@@ -1,125 +1,108 @@
 import os
-import random
-import time
-from playwright.sync_api import Page
+from playwright.sync_api import Page, TimeoutError
 from loguru import logger
 from dotenv import load_dotenv
-from bot.browser import save_session
 
-# Importar las funciones de comportamiento humano
-from .browser import (
-    human_delay,
-    human_click,
-    human_type,
-    human_mouse_move,
-    random_scroll,
-)
+from bot.browser import human_delay, human_type, human_click
 
 load_dotenv()
 
 LOGIN_URL = (
-    "https://seguridad.compensar.com/views/index.html"
+    "https://seguridad.compensar.com/sign-in"
     "?serviceProviderName=HER-SP&protocol=SAML"
 )
 
 
+# ---------------------------------------------------
+# UTILIDADES
+# ---------------------------------------------------
+
+def wait_network_idle(page: Page, timeout=15000):
+    try:
+        page.wait_for_load_state("networkidle", timeout=timeout)
+    except:
+        pass
+
+
+def wait_if_captcha(page: Page):
+    try:
+        page.wait_for_selector("iframe[title*='recaptcha']", timeout=3000)
+        logger.warning("⚠️ CAPTCHA detectado en pantalla.")
+    except TimeoutError:
+        pass
+
+
+# ---------------------------------------------------
+# LOGIN PRINCIPAL
+# ---------------------------------------------------
+
 def login(page: Page):
-    doc_type = os.getenv("COMPENSAR_DOC_TYPE", "")
-    doc_num = os.getenv("COMPENSAR_DOC_NUM", "")
-    password = os.getenv("COMPENSAR_PASSWORD", "")
+
+    doc_type = os.getenv("COMPENSAR_DOC_TYPE")
+    doc_num = os.getenv("COMPENSAR_DOC_NUM")
+    password = os.getenv("COMPENSAR_PASSWORD")
 
     if not all([doc_type, doc_num, password]):
         raise RuntimeError("❌ Faltan variables de entorno del login")
 
-    logger.info("Abriendo página de login")
-
-    # Navegar con wait_until más específico
+    logger.info("🌐 Abriendo página de login")
     page.goto(LOGIN_URL, wait_until="domcontentloaded")
-    human_delay(1, 2)
+    human_delay(1.5, 2.5)
 
-    # Hacer scroll aleatorio inicial
-    random_scroll(page)
+    wait_if_captcha(page)
 
+    # Tipo documento
     logger.info("Seleccionando tipo de documento")
-    # Primero mover mouse sobre el select
-    human_mouse_move(page, "select")
-    human_delay(0.5, 1)
+    page.wait_for_selector("#tipodoc", timeout=20000)
+    human_click(page, "#tipodoc")
+    human_delay(0.6, 1.2)
+    page.select_option("#tipodoc", value=doc_type)
+    human_delay(0.8, 1.5)
 
-    # Click humano en el select
-    human_click(page, "select")
-    human_delay(0.3, 0.7)
+    page.wait_for_selector("#numdoc:not([disabled])", timeout=10000)
 
-    # Seleccionar opción
-    page.select_option("select", value=doc_type)
-    human_delay(0.5, 1)
-
+    # Número documento
     logger.info("Ingresando número de documento")
-    # Escribir como humano
-    human_type(page, "#docnum_p", doc_num, min_delay=0.07, max_delay=0.18)
+    human_type(page, "#numdoc", doc_num)
 
-    # Pequeño scroll aleatorio entre campos
-    if random.random() > 0.5:
-        random_scroll(page)
+    human_delay(0.6, 1.2)
 
+    # Contraseña
     logger.info("Ingresando contraseña")
-    human_type(page, "#password_p", password, min_delay=0.08, max_delay=0.2)
-    human_delay(0.3, 0.6)
+    human_type(page, "#clavepwd", password)
 
-    # Quitar foco del input (como humano)
-    page.keyboard.press("Tab")
-    human_delay(0.5, 1)
+    human_delay(0.8, 1.5)
 
-    # Ocasionalmente presionar Shift+Tab para volver (como si se corrigiera)
-    if random.random() < 0.2:
-        page.keyboard.press("Shift+Tab")
-        human_delay(0.2, 0.4)
-        page.keyboard.press("Tab")
-        human_delay(0.2, 0.4)
+    # Scroll leve antes de enviar (comportamiento natural)
+    page.mouse.wheel(0, random_scroll := 200)
+    human_delay(0.4, 0.8)
 
-    logger.info("Click en Ingresar")
-    # Esperar a que el botón esté habilitado
-    page.wait_for_selector("#btnEnterPersona:not(.disabled)", timeout=30000)
+    # Submit
+    logger.info("Enviando formulario")
+    page.wait_for_selector("button[type='submit']:not([disabled])", timeout=15000)
+    human_click(page, "button[type='submit']")
 
-    # Mover mouse sobre el botón
-    human_mouse_move(page, "#btnEnterPersona")
-    human_delay(0.2, 0.5)
+    wait_network_idle(page)
+    wait_if_captcha(page)
 
-    # Click humano en el botón
-    human_click(page, "#btnEnterPersona")
-    human_delay(1, 2)
-
-    # Verificar si aparece modal de confirmación
+    # Modal opcional
     try:
-        logger.info("Verificando modal de confirmación")
-        page.wait_for_selector("button:has-text('Entiendo')", timeout=10000)
-        human_delay(0.5, 1)
+        page.wait_for_selector("button:has-text('Entiendo')", timeout=6000)
         human_click(page, "button:has-text('Entiendo')")
         logger.info("Modal aceptado")
-    except:
-        logger.info("No apareció modal de confirmación")
+    except TimeoutError:
+        pass
 
-    logger.info("Esperando redirección al sistema interno")
+    # Redirección
+    logger.info("Esperando redirección final...")
 
-    # Esperar con timeout extendido
     try:
         page.wait_for_url(
-            "https://sistemaplanbienestar.deportescompensar.com/**",
+            "**deportescompensar.com/**",
             timeout=45000,
             wait_until="networkidle",
         )
-    except:
-        # Si timeout, verificar si ya estamos en otra página útil
-        current_url = page.url
-        if "deportescompensar" in current_url:
-            logger.info(f"Redirección parcial a: {current_url}")
-        else:
-            raise Exception("No se completó la redirección esperada")
+    except TimeoutError:
+        raise Exception("❌ No se completó la redirección esperada")
 
-    human_delay(2, 3)
-
-    # Scroll final para simular exploración
-    for _ in range(random.randint(2, 4)):
-        random_scroll(page)
-
-    logger.success(f"Login completado. URL actual: {page.url}")
-    save_session(page.context)
+    logger.success(f"✅ Login completado: {page.url}")

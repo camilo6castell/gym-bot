@@ -1,16 +1,31 @@
 timezone: America/Bogota
 
 dias:
-  miercoles:
+  lunes:
+    - nombre: Tono Mixto
+      hora: "05:00 - 06:00"
+    - nombre: Pilates
+      hora: "06:00 - 07:00"
+    - nombre: Estiramientos
+      hora: "07:00 - 08:00"
+
+  miércoles:
+    - nombre: Pilates
+      hora: "05:00 - 06:00"
+    - nombre: Yoga
+      hora: "06:00 - 07:00"
+    - nombre: Entrenamiento Funcional
+      hora: "06:00 - 07:00"
     - nombre: Pilates
       hora: "07:00 - 08:00"
-    - nombre: Rumba
-      hora: "06:00 - 07:00"
-
+  
   jueves:
-    - nombre: Rumba Viejoteca
-      hora: "09:00 - 10:00"
+    - nombre: Estiramientos
+      hora: "07:00 - 08:00"
 
-  viernes:
-    - nombre: Rumba
+  sábado:
+    - nombre: Pilates
       hora: "06:00 - 07:00"
+    - nombre: Bases Inestables
+      hora: "07:00 - 08:00"
+

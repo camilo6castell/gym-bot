@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import yaml
 from datetime import datetime, timedelta
 import pytz
@@ -22,22 +22,31 @@ def load_config(config_path):
         return yaml.safe_load(f)
 
 
-def get_next_class_for_testing(config):
+def build_activation_schedule(config) -> List[Dict[str, Any]]:
     """
-    Devuelve la primera clase futura disponible,
-    sin importar horario de activación.
+    Construye lista completa de activaciones
+    respetando orden del YAML.
     """
+
     tz = pytz.timezone(config["timezone"])
     now = datetime.now(tz)
 
-    upcoming = []
+    activaciones = []
 
     for day_name, clases in config["dias"].items():
         target_weekday = DAYS_MAP[day_name.lower()]
 
+        # Agrupar por hora manteniendo orden YAML
+        clases_por_hora = {}
+
         for clase in clases:
             start_hour = clase["hora"].split(" - ")[0]
-            hour, minute = map(int, start_hour.split(":"))
+            if start_hour not in clases_por_hora:
+                clases_por_hora[start_hour] = []
+            clases_por_hora[start_hour].append(clase)
+
+        for hora_str, lista_clases in clases_por_hora.items():
+            hour, minute = map(int, hora_str.split(":"))
 
             days_ahead = (target_weekday - now.weekday()) % 7
             target_date = now.date() + timedelta(days=days_ahead)
@@ -52,52 +61,45 @@ def get_next_class_for_testing(config):
                 )
             )
 
-            if class_dt >= now:
-                upcoming.append((class_dt, clase))
+            # 🔥 CAMBIO CLAVE: +2 días en vez de -2
+            base_activation = class_dt + timedelta(days=2, minutes=1)
 
-    if not upcoming:
-        return None
+            for index, clase in enumerate(lista_clases):
+                activation_dt = base_activation + timedelta(minutes=index)
 
-    # devolver la más cercana
-    upcoming.sort(key=lambda x: x[0])
-    return upcoming[0][1]
+                activaciones.append({
+                    "activation": activation_dt,
+                    "clase": {
+                        **clase,
+                        "dia": day_name
+                    },
+                })
+
+    return activaciones
 
 
 def should_run_now(
-    config_path="config/classes.yaml", force=False
+    config_path="config/classes.yaml",
+    force=False
 ) -> Optional[Dict[str, Any]]:
+
     config = load_config(config_path)
     tz = pytz.timezone(config["timezone"])
     now = datetime.now(tz)
 
+    activaciones = build_activation_schedule(config)
+    activaciones.sort(key=lambda x: x["activation"])
+
     if force:
-        return get_next_class_for_testing(config)
+        for item in activaciones:
+            if item["activation"] >= now:
+                return item["clase"]
+        return None
 
-    for day_name, clases in config["dias"].items():
-        target_weekday = DAYS_MAP[day_name.lower()]
+    for item in activaciones:
+        activation_dt = item["activation"]
 
-        for clase in clases:
-            start_hour = clase["hora"].split(" - ")[0]
-            hour, minute = map(int, start_hour.split(":"))
-
-            days_ahead = (target_weekday - now.weekday()) % 7
-            target_date = now.date() + timedelta(days=days_ahead)
-
-            activation_dt = (
-                tz.localize(
-                    datetime(
-                        target_date.year,
-                        target_date.month,
-                        target_date.day,
-                        hour,
-                        minute,
-                    )
-                )
-                - timedelta(days=2)
-                + timedelta(minutes=1)
-            )
-
-            if abs((now - activation_dt).total_seconds()) < 60:
-                return clase
+        if 0 <= (now - activation_dt).total_seconds() < 60:
+            return item["clase"]
 
     return None

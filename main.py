@@ -5,7 +5,6 @@ from bot.logout import logout
 from bot.utils import handle_page_load
 from bot.post_login_flow import run_post_login_flow
 from bot.scheduler import should_run_now
-from bot.browser import save_session
 import time
 from bot.config import (
     BOT_FORCE_RUN,
@@ -28,13 +27,14 @@ def main():
         clase = {
             "nombre": BOT_FORCE_RUN_CLASS,
             "hora": BOT_FORCE_RUN_HOUR,
-            "dia": BOT_FORCE_RUN_DAY,  # puede ser None
+            "dia": BOT_FORCE_RUN_DAY,
         }
     else:
         clase = should_run_now()
         if not clase:
             logger.info("⏰ No hay clases programadas para este momento")
             return
+
         logger.info(
             f"🎯 Clase objetivo: {clase['nombre']} | {clase['hora']} | {clase.get('dia','*')}"
         )
@@ -65,7 +65,6 @@ def main():
 
         try:
             context.close()
-            browser.close()
             playwright.stop()
         except:
             pass
