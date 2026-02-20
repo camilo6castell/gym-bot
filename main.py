@@ -1,3 +1,4 @@
+import sys
 from loguru import logger
 from bot.browser import launch_browser
 from bot.login import login
@@ -13,6 +14,17 @@ from bot.config import (
     BOT_FORCE_RUN_HOUR,
     BOT_FORCE_RUN_DAY,
 )
+
+# Logger config
+
+logger.remove()
+
+logger.add(
+    sys.stdout,
+    format="{message}",
+    level="INFO"
+)
+
 
 def main():
     if BOT_FORCE_RUN:
@@ -31,7 +43,7 @@ def main():
     else:
         clases = should_run_now()
         if not clases:
-            logger.info("⏰ No hay clases programadas para este momento")
+            # logger.info("⏰ No hay clases programadas para este momento")
             return
 
     playwright, browser, context, page = launch_browser(headless=BOT_HEADLESS)
