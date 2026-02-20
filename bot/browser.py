@@ -5,13 +5,15 @@ import time
 from loguru import logger
 
 HOME = os.path.expanduser("~")
-REAL_PROFILE_PATH = os.path.join(HOME, ".config", "chromium-bot")
+# REAL_PROFILE_PATH = os.path.join(HOME, ".config", "chromium-bot")
+REAL_PROFILE_PATH = os.path.join(HOME, ".config", "chromium")
 
 CHROMIUM_PATH = "/usr/bin/chromium"
 
 # ----------------------------
 # HUMAN BEHAVIOR
 # ----------------------------
+
 
 def human_delay(min_sec=0.4, max_sec=1.2):
     time.sleep(random.uniform(min_sec, max_sec))
@@ -95,6 +97,7 @@ def human_type(page, selector, text, min_delay=0.06, max_delay=0.18):
 # BROWSER (USANDO TU PERFIL REAL)
 # ----------------------------
 
+
 def launch_browser(headless=False):
     playwright = sync_playwright().start()
 
@@ -114,11 +117,13 @@ def launch_browser(headless=False):
     )
 
     # stealth básico limpio
-    context.add_init_script("""
+    context.add_init_script(
+        """
         Object.defineProperty(navigator, 'webdriver', {
             get: () => undefined
         });
-    """)
+    """
+    )
 
     page = context.pages[0] if context.pages else context.new_page()
     page.set_default_timeout(30000)
