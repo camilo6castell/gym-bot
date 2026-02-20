@@ -84,22 +84,6 @@ def ensure_in_plan_bienestar(page: Page):
 # MEMBRESÍA
 # ---------------------------------------------------
 
-# def open_plan_and_use_membership(page: Page):
-
-#     handle_presso_login(page)
-
-#     page.wait_for_selector(
-#         'button#botonPlan-0:has-text("Usar Membresía")',
-#         timeout=20000
-#     )
-
-#     page.click("button#botonPlan-0")
-#     wait_network_idle(page)
-
-#     logger.success("Membresía seleccionada")
-
-from playwright.sync_api import TimeoutError
-
 
 def open_plan_and_use_membership(page: Page):
 
