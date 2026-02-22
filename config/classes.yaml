@@ -23,12 +23,21 @@ dias:
   
   jueves:
     - nombre: Estiramiento
+      hora: "07:00 - 08:00"
+
+  viernes:
+    - nombre: test1
+      hora: "00:08 - 08:00"
+    - nombre: test2
+      hora: "00:12 - 08:00"
 
   sábado:
     - nombre: Pilates
       hora: "06:00 - 07:00"
     - nombre: Bases Inestables
       hora: "07:00 - 08:00"
+    
+
 
   # domingo:
   #   - nombre: Test
