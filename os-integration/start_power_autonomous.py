@@ -1,9 +1,7 @@
 import os
 import yaml
-import time
 import pytz
 import datetime
-import subprocess
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -14,7 +12,6 @@ SCHEDULE_FILE = BASE_DIR / "config" / "classes.yaml"
 WAKEALARM = "/sys/class/rtc/rtc0/wakealarm"
 
 WAKE_BEFORE = int(os.getenv("WAKE_MINUTES_BEFORE", 3))
-SLEEP_AFTER = int(os.getenv("SLEEP_MINUTES_AFTER", 3))
 
 DAY_MAP = {
     "lunes": 0,
@@ -86,47 +83,29 @@ def set_wake_alarm(dt):
 
 
 def suspend():
+    import subprocess
     subprocess.run(["systemctl", "suspend"], check=True)
 
 
 def main():
     schedule = load_schedule()
-
     if not schedule or "dias" not in schedule:
-        print("No schedule configured")
+        print("No schedule configured.")
         return
 
     next_reservation = find_next_reservation(schedule)
     if not next_reservation:
-        print("No upcoming reservations")
+        print("No upcoming reservations.")
         return
 
     wake_time = next_reservation - datetime.timedelta(minutes=WAKE_BEFORE)
-    sleep_time = next_reservation + datetime.timedelta(minutes=SLEEP_AFTER)
-    now = get_now(schedule)
 
-    print("Now:", now)
-    print("Wake at:", wake_time)
-    print("Sleep after:", sleep_time)
+    print("Next reservation:", next_reservation)
+    print("Scheduling wake at:", wake_time)
 
-    # SOLO actuamos si estamos dentro de ventana
-    if wake_time <= now <= sleep_time:
-        remaining = (sleep_time - now).total_seconds()
-        print("Inside active window. Staying awake for", remaining, "seconds")
-
-        time.sleep(max(0, remaining))
-
-        print("Window finished. Scheduling next cycle.")
-
-        next_reservation = find_next_reservation(schedule)
-        next_wake = next_reservation - datetime.timedelta(minutes=WAKE_BEFORE)
-
-        set_wake_alarm(next_wake)
-        print("Suspending for next reservation at:", next_wake)
-        suspend()
-        return
-
-    print("Outside active window. No suspension triggered.")
+    set_wake_alarm(wake_time)
+    print("Suspending...")
+    suspend()
 
 
 if __name__ == "__main__":

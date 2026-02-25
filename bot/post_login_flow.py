@@ -89,19 +89,24 @@ def open_plan_and_use_membership(page: Page):
 
     handle_presso_login(page)
 
-    logger.info("🔎 Buscando botones 'Usar Membresía'...")
+    logger.info("🔎 Buscando botones 'Usar Membresía' o 'Usar tiquetera'...")
 
     try:
-        # Esperar a que al menos aparezca algún botón con ese texto
-        page.wait_for_selector('button:has-text("Usar Membresía")', timeout=20000)
+        # Esperar a que aparezca cualquiera de los dos textos
+        page.wait_for_selector(
+            'button:has-text("Usar Membresía"), button:has-text("Usar tiquetera")',
+            timeout=20000
+        )
 
-        # Usar locator (más estable que page.click directo)
-        buttons = page.locator('button:has-text("Usar Membresía")')
+        # Locator que contempla ambas opciones
+        buttons = page.locator(
+            'button:has-text("Usar Membresía"), button:has-text("Usar tiquetera")'
+        )
 
         count = buttons.count()
 
         if count == 0:
-            raise Exception("No se encontraron botones de membresía.")
+            raise Exception("No se encontraron botones de membresía ni tiquetera.")
 
         logger.info(f"🧩 {count} botón(es) encontrados. Evaluando...")
 
@@ -110,20 +115,21 @@ def open_plan_and_use_membership(page: Page):
             btn = buttons.nth(i)
 
             if btn.is_visible() and btn.is_enabled():
-                logger.info(f"✅ Usando botón índice {i}")
+                text = btn.inner_text()
+                logger.info(f"✅ Usando botón índice {i} → '{text}'")
                 btn.click()
                 wait_network_idle(page)
-                logger.success("🎟️ Membresía seleccionada correctamente")
+                logger.success("🎟️ Método de acceso seleccionado correctamente")
                 return
 
         raise Exception("Se encontraron botones pero ninguno estaba habilitado.")
 
     except TimeoutError:
-        logger.error("⏰ Timeout esperando botones 'Usar Membresía'")
+        logger.error("⏰ Timeout esperando botones de membresía/tiquetera")
         raise
 
     except Exception as e:
-        logger.error(f"❌ Error seleccionando membresía: {e}")
+        logger.error(f"❌ Error seleccionando método de acceso: {e}")
         raise
 
 
