@@ -16,7 +16,7 @@ build/
 *.egg-info/
 
 # Variables de entorno (¡Muy importante para seguridad!)
-.env
+#.env
 
 # Archivos específicos del sistema operativo
 .DS_Store
