@@ -1,3 +1,6 @@
+# var-environment
+#.env
+
 # Entornos virtuales (Tu solicitud específica)
 venv/
 .venv/

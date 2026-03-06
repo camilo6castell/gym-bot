@@ -110,7 +110,7 @@ def launch_browser(headless=False):
             "--disable-features=PasswordManagerOnboarding",
             "--disable-save-password-bubble",
         ],
-        ignore_default_args=["--enable-automation"],
+        # ignore_default_args=["--enable-automation"],
         no_viewport=True,
         permissions=["geolocation"],
         geolocation={"latitude": 4.7110, "longitude": -74.0721},

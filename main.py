@@ -1,4 +1,5 @@
 import sys
+import time
 from loguru import logger
 from bot.browser import launch_browser
 from bot.login import login
@@ -6,7 +7,7 @@ from bot.logout import logout
 from bot.utils import handle_page_load
 from bot.post_login_flow import run_post_login_flow
 from bot.scheduler import should_run_now
-import time
+from notifications.telegram import notify
 from bot.config import (
     BOT_FORCE_RUN,
     BOT_HEADLESS,
@@ -63,6 +64,7 @@ def main():
                 logger.success(f"✅ Reserva completada: {clase['nombre']}")
 
             except Exception as e:
+                notify(f"❌ Error reservando {clase['nombre']}: {e}")
                 logger.error(f"❌ Error reservando {clase['nombre']}: {e}")
 
             # Esperar 60 segundos entre clases
@@ -73,6 +75,7 @@ def main():
         logger.success("🎉 Flujo completado")
 
     except Exception as e:
+        notify(f"❌ Error general durante la ejecución: {e}")
         logger.error(f"❌ Error general durante la ejecución: {e}")
         page.screenshot(path=f"error_{int(time.time())}.png")
 
