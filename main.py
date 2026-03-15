@@ -15,6 +15,7 @@ from bot.config import (
     BOT_FORCE_RUN_HOUR,
     BOT_FORCE_RUN_DAY,
 )
+from utils.pause_control import wait_for_user_action
 
 # Logger config
 
@@ -93,4 +94,5 @@ def main():
 
 
 if __name__ == "__main__":
+    wait_for_user_action()
     main()
