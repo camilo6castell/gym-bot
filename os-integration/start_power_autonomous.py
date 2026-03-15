@@ -84,7 +84,7 @@ def set_wake_alarm(dt):
 
 def suspend():
     import subprocess
-    subprocess.run(["systemctl", "suspend"], check=True)
+    subprocess.run(["sudo","systemctl", "suspend"], check=True)
 
 
 def main():
