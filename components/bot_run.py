@@ -27,7 +27,7 @@ def is_regular_run(
     ADDITIONAL_MINUTE_FOR_EXECUTION,
 ):
     schedule = load_schedule()
-    if not schedule or "dias" not in schedule:
+    if not schedule or "days" not in schedule:
         return []
 
     # 🕒 Zona horaria segura

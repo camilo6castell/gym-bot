@@ -3,7 +3,7 @@ from pathlib import Path
 
 # 📁 Ruta real al YAML
 BASE_DIR = Path(__file__).resolve().parent.parent
-SCHEDULE_FILE = BASE_DIR / "config" / "classes.yaml"
+SCHEDULE_FILE = BASE_DIR / "core" / "classes.yaml"
 
 
 def load_schedule():

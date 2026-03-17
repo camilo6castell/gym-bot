@@ -35,7 +35,7 @@ def main():
         return
 
     # 2. Obtener clases — la lógica force/regular ya está en get_classes
-    classes = get_classes(
+    tentative_classes = get_classes(
         env.BOT_FORCE_RUN,
         env.BOT_FORCE_RUN_CLASS,
         env.BOT_FORCE_RUN_HOUR,
@@ -43,9 +43,11 @@ def main():
         env.ADDITIONAL_MINUTE_FOR_EXECUTION,
     )
 
-    if not classes:
+    if not tentative_classes:
         logger.info("📭 No hay clases para ejecutar en este momento.")
         return
+
+    print(f"Clases a ejecutar: {tentative_classes}")
 
     playwright, browser, context, page = launch_browser(headless=env.BOT_HEADLESS)
 
@@ -82,9 +84,9 @@ def main():
 
         logger.success(f"✅ Login completado: {page.url}")
 
-        for index, gym_class in enumerate(classes):
+        for index, gym_class in enumerate(tentative_classes):
             logger.info(
-                f"🎯 Intentando clase {index+1}/{len(classes)}: "
+                f"🎯 Intentando clase {index+1}/{len(tentative_classes)}: "
                 f"{gym_class['name']} | {gym_class['hour']} | {gym_class['day']}"
             )
 
@@ -122,31 +124,27 @@ def main():
                     f"Seleccionando clase '{gym_class['name']}' en horario '{gym_class['hour']}'",
                 )
 
-                gym_class_confirmation(page)
-
-                logger.success("🎉 Reserva completada")
-
-                page.wait_for_timeout(1500)
-
-                logger.success(f"✅ Reserva completada: {gym_class['name']}")
-
             except Exception as e:
                 send_error_broadcast(
                     page, f"❌ Error reservando {gym_class['name']}: {e}"
                 )
 
             # Esperar 60 segundos entre clases
-            if index < len(classes) - 1:
+            if index < len(tentative_classes) - 1:
                 logger.info("⏳ Esperando 60 segundos para siguiente clase...")
                 page.wait_for_timeout(60000)
 
-        logger.success("🎉 Flujo completado")
+        logger.success("🏁 Flujo completado")
 
     except Exception as e:
         send_error_broadcast(page, f"❌ Error general durante la ejecución: {e}")
     finally:
         try:
-            logout(page)
+            with_recovery(
+                lambda: logout(page),
+                page,
+                "Intentando cerrar sesión",
+            )
         except Exception as logout_error:
             logger.warning(f"Error en logout: {logout_error}")
 

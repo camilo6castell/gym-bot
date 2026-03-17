@@ -1,5 +1,5 @@
 from playwright.sync_api import Page
-from loguru import logger
+from utils.logger import logger
 
 
 def logout(page: Page):

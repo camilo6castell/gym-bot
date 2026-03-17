@@ -12,7 +12,5 @@ def gym_class_confirmation(page: Page):
         human_delay()
         page.click("#btnConfirmarReserva")
 
-        logger.success("Reserva confirmada")
-
     except TimeoutError:
         raise RuntimeError("No apareció el botón Confirmar Reserva")
