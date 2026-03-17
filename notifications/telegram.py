@@ -1,19 +1,22 @@
-import os
 import requests
-from dotenv import load_dotenv
+from utils.logger import logger
+from core.env import TOKEN, CHAT_ID
 
-load_dotenv()
-base = f"https://api.telegram.org/bot{os.getenv('TOKEN')}"
 
 def notify(msg):
-    print("mensaje a notificar", msg)
-    url = f"{base}/sendMessage"
-    requests.post(url, json={
-        "chat_id": os.getenv('CHAT_ID'),
-        "text": msg
-    })
+    try:
+        url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+        requests.post(url, json={"chat_id": CHAT_ID, "text": msg}, timeout=10)
+    except Exception as e:
+        logger.warning(f"notify falló: {e}")
+
 
 def getUpdates():
-    url = f"{base}/getUpdates"
-    return requests.get(url).json()
-
+    try:
+        url = f"https://api.telegram.org/bot{TOKEN}/getUpdates"
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        logger.warning(f"getUpdates falló: {e}")
+        return {"result": []}  # retorna vacío, no rompe el loop

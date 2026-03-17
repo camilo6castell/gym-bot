@@ -1,85 +1,149 @@
-import sys
-import time
-from loguru import logger
+from bot.day_selector_handler import select_by_day, select_latest_date
+from bot.gym_class_confirmation_handler import gym_class_confirmation
 from bot.browser import launch_browser
 from bot.login import login
 from bot.logout import logout
-from bot.utils import handle_page_load
-from bot.post_login_flow import run_post_login_flow
-from bot.scheduler import should_run_now
-from notifications.telegram import notify
-from bot.config import (
-    BOT_FORCE_RUN,
-    BOT_HEADLESS,
-    BOT_FORCE_RUN_CLASS,
-    BOT_FORCE_RUN_HOUR,
-    BOT_FORCE_RUN_DAY,
-)
-from utils.pause_control import wait_for_user_action
+from bot.gym_class_selector_handler import gym_class_selector
 
-# Logger config
+from components.bot_run import get_classes
+from components.membership import open_plan_and_use_membership
 
-logger.remove()
+from core import env
 
-logger.add(
-    sys.stdout,
-    format="{message}",
-    level="INFO"
+from utils.error_broadcast import send_error_broadcast
+from utils.logger import logger
+from utils.recovery import with_recovery
+from utils.page_utils import (
+    confirm_url,
+    force_url,
+    monitor_new_page,
 )
 
 
 def main():
-    if BOT_FORCE_RUN:
-        logger.warning("⚠️ BOT_FORCE_RUN activo – usando clase forzada")
 
-        if not BOT_FORCE_RUN_CLASS or not BOT_FORCE_RUN_HOUR:
-            raise ValueError(
-                "BOT_FORCE_RUN activo pero faltan BOT_FORCE_RUN_CLASS o BOT_FORCE_RUN_HOUR"
-            )
+    # 1. Validar credenciales — estas SÍ deben existir siempre
+    if not all(
+        [
+            env.COMPENSAR_DOC_TYPE,
+            env.COMPENSAR_DOC_NUM,
+            env.COMPENSAR_PASSWORD,
+            env.LOGIN_URL,
+        ]
+    ):
+        logger.error("❌ Faltan credenciales de acceso en .env")
+        return
 
-        clases = [{
-            "nombre": BOT_FORCE_RUN_CLASS,
-            "hora": BOT_FORCE_RUN_HOUR,
-            "dia": BOT_FORCE_RUN_DAY,
-        }]
-    else:
-        clases = should_run_now()
-        if not clases:
-            # logger.info("⏰ No hay clases programadas para este momento")
-            return
+    # 2. Obtener clases — la lógica force/regular ya está en get_classes
+    classes = get_classes(
+        env.BOT_FORCE_RUN,
+        env.BOT_FORCE_RUN_CLASS,
+        env.BOT_FORCE_RUN_HOUR,
+        env.BOT_FORCE_RUN_DAY,
+        env.ADDITIONAL_MINUTE_FOR_EXECUTION,
+    )
 
-    playwright, browser, context, page = launch_browser(headless=BOT_HEADLESS)
+    if not classes:
+        logger.info("📭 No hay clases para ejecutar en este momento.")
+        return
+
+    playwright, browser, context, page = launch_browser(headless=env.BOT_HEADLESS)
 
     try:
-        login(page)
-        logger.success("✅ Login exitoso")
 
-        for index, clase in enumerate(clases):
+        with_recovery(
+            lambda: login(
+                env.COMPENSAR_DOC_TYPE,
+                env.COMPENSAR_DOC_NUM,
+                env.COMPENSAR_PASSWORD,
+                env.LOGIN_URL,
+                page,
+            ),
+            page,
+            "Proceso de login",
+        )
+
+        with_recovery(
+            lambda: monitor_new_page(page, "button:has-text('Entiendo')"),
+            page,
+            "Monitoreo de nueva página post-login",
+        )
+
+        with_recovery(
+            lambda: force_url(
+                page,
+                "https://sistemaplanbienestar.deportescompensar.com/entrenamiento/reserva/practica/libre",
+                "#presso-login",
+                "**deportescompensar.com/**",
+            ),
+            page,
+            "Forzando URL para entrar al plan bienestar",
+        )
+
+        logger.success(f"✅ Login completado: {page.url}")
+
+        for index, gym_class in enumerate(classes):
             logger.info(
-                f"🎯 Intentando clase {index+1}/{len(clases)}: "
-                f"{clase['nombre']} | {clase['hora']} | {clase.get('dia','*')}"
+                f"🎯 Intentando clase {index+1}/{len(classes)}: "
+                f"{gym_class['name']} | {gym_class['hour']} | {gym_class['day']}"
+            )
+
+            confirm_url(
+                page,
+                "https://sistemaplanbienestar.deportescompensar.com/entrenamiento/reserva/practica/libre",
             )
 
             try:
-                run_post_login_flow(page, clase)
-                logger.success(f"✅ Reserva completada: {clase['nombre']}")
+
+                with_recovery(
+                    lambda: open_plan_and_use_membership(page),
+                    page,
+                    f"Usando memebresía para clase '{gym_class['name']}'",
+                )
+
+                if env.BOT_FORCE_RUN:
+                    with_recovery(
+                        lambda: select_by_day(page, gym_class["day"]),
+                        page,
+                        f"Seleccionando día {env.BOT_FORCE_RUN_DAY}' forzado",
+                    )
+                else:
+                    with_recovery(
+                        lambda: select_latest_date(page),
+                        page,
+                        f"Seleccionando día {gym_class['day']}",
+                    )
+
+                with_recovery(
+                    lambda: gym_class_selector(
+                        page, gym_class["name"], gym_class["hour"]
+                    ),
+                    page,
+                    f"Seleccionando clase '{gym_class['name']}' en horario '{gym_class['hour']}'",
+                )
+
+                gym_class_confirmation(page)
+
+                logger.success("🎉 Reserva completada")
+
+                page.wait_for_timeout(1500)
+
+                logger.success(f"✅ Reserva completada: {gym_class['name']}")
 
             except Exception as e:
-                notify(f"❌ Error reservando {clase['nombre']}: {e}")
-                logger.error(f"❌ Error reservando {clase['nombre']}: {e}")
+                send_error_broadcast(
+                    page, f"❌ Error reservando {gym_class['name']}: {e}"
+                )
 
             # Esperar 60 segundos entre clases
-            if index < len(clases) - 1:
+            if index < len(classes) - 1:
                 logger.info("⏳ Esperando 60 segundos para siguiente clase...")
                 page.wait_for_timeout(60000)
 
         logger.success("🎉 Flujo completado")
 
     except Exception as e:
-        notify(f"❌ Error general durante la ejecución: {e}")
-        logger.error(f"❌ Error general durante la ejecución: {e}")
-        page.screenshot(path=f"error_{int(time.time())}.png")
-
+        send_error_broadcast(page, f"❌ Error general durante la ejecución: {e}")
     finally:
         try:
             logout(page)
@@ -94,5 +158,4 @@ def main():
 
 
 if __name__ == "__main__":
-    wait_for_user_action()
     main()

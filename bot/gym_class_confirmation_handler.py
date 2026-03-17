@@ -1,9 +1,9 @@
 from playwright.sync_api import Page, TimeoutError
-from loguru import logger
-from bot.browser import human_delay
+from utils.logger import logger
+from utils.human_behavior import human_delay
 
 
-def confirmar_reserva(page: Page):
+def gym_class_confirmation(page: Page):
     logger.info("Esperando modal de confirmación...")
 
     try:
