@@ -1,7 +1,10 @@
 import yaml
 import os
 from pathlib import Path
-from core.env import SCHEDULE_FILE
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+SCHEDULE_FILE = BASE_DIR / "core" / "classes.yaml"
 
 
 def env_bool(name: str, default=False) -> bool:

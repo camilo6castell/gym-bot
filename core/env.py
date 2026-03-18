@@ -5,10 +5,6 @@ from core.env_utils import env_bool, load_schedule
 
 load_dotenv()
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-SCHEDULE_FILE = BASE_DIR / "config" / "classes.yaml"
-
 SCHEDULE = load_schedule()
 
 BOT_HEADLESS = env_bool("BOT_HEADLESS", True)
