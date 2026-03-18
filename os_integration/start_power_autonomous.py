@@ -1,10 +1,15 @@
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import datetime
-from core.env import WAKE_MINUTES_BEFORE
 from os_integration.os_integration_utils import (
     find_next_reservation,
     set_wake_alarm,
     suspend,
 )
+from core.env import WAKE_MINUTES_BEFORE
 
 
 def main():

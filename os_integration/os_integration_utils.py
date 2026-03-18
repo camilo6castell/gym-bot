@@ -1,14 +1,17 @@
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import pytz
 import datetime
 import subprocess
 
+from utils.days_handler import days_mapper
 from core.env import (
-    WAKEALARM_PATH,
     SCHEDULE,
     WAKEALARM_PATH,
 )
-
-from utils.days_handler import days_mapper
 
 
 def get_now():
