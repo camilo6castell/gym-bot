@@ -45,6 +45,6 @@ days:
       hour: "07:00 - 08:00"
       
   #MARTES
-  sunday:
-    - name: Test
-      hour: "15:53 - 23:00"
+  # sunday:
+  #   - name: Test
+  #     hour: "15:53 - 23:00"

@@ -5,7 +5,7 @@ from utils.human_behavior import human_delay
 
 
 def select_latest_date(page: Page):
-    logger.info("Seleccionando última fecha disponible...")
+    logger.info("🕒 Seleccionando última fecha disponible...")
 
     page.wait_for_selector("button.botonfecha", timeout=15000)
     botones = page.query_selector_all("button.botonfecha")
@@ -14,16 +14,11 @@ def select_latest_date(page: Page):
     human_delay()
     ultimo.click()
 
-    logger.success("Última fecha seleccionada")
+    logger.success("🕒 Última fecha seleccionada")
 
 
 def select_by_day(page: Page, dia_objetivo: str):
-    """
-    Selecciona fecha cuyo texto contenga el día indicado.
-    Ej: 'miércoles 12 junio'
-    """
-
-    logger.info(f"Buscando fecha correspondiente a '{dia_objetivo}'")
+    logger.info(f"🕒 Buscando fecha correspondiente a '{dia_objetivo}'")
 
     dia_objetivo = str_normalizer(dia_objetivo)
 
@@ -36,12 +31,7 @@ def select_by_day(page: Page, dia_objetivo: str):
         if dia_objetivo in texto:
             human_delay()
             boton.click()
-            logger.success(f"Fecha seleccionada: {texto}")
+            logger.success(f"🕒 Fecha seleccionada: {texto}")
             return
 
-    logger.warning(f"No se encontró fecha para el día {dia_objetivo}")
-
-
-# ---------------------------------------------------
-# CLASE
-# ---------------------------------------------------
+    logger.warning(f"⛔ No se encontró fecha para el día {dia_objetivo}")

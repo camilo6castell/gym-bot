@@ -4,7 +4,7 @@ from utils.human_behavior import human_delay
 
 
 def gym_class_confirmation(page: Page):
-    logger.info("Esperando modal de confirmación...")
+    logger.info("🕤 Esperando modal de confirmación...")
 
     try:
         page.wait_for_selector("#btnConfirmarReserva", timeout=15000)
@@ -13,4 +13,4 @@ def gym_class_confirmation(page: Page):
         page.click("#btnConfirmarReserva")
 
     except TimeoutError:
-        raise RuntimeError("No apareció el botón Confirmar Reserva")
+        raise RuntimeError("❌ No apareció el botón Confirmar Reserva")

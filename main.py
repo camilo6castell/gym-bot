@@ -47,9 +47,7 @@ def main():
         logger.info("📭 No hay clases para ejecutar en este momento.")
         return
 
-    print(f"Clases a ejecutar: {tentative_classes}")
-
-    playwright, browser, context, page = launch_browser(headless=env.BOT_HEADLESS)
+    playwright, context, page = launch_browser(headless=env.BOT_HEADLESS)
 
     try:
 
@@ -65,11 +63,16 @@ def main():
             "Proceso de login",
         )
 
+        # Sometimes, after login, there's an unexpected "Entiendo" button (cookie/privacy related).
+        # If it appears, we click it and continue. This is handled in monitor_new_page.
+
         with_recovery(
             lambda: monitor_new_page(page, "button:has-text('Entiendo')"),
             page,
             "Monitoreo de nueva página post-login",
         )
+
+        #
 
         with_recovery(
             lambda: force_url(
@@ -146,7 +149,7 @@ def main():
                 "Intentando cerrar sesión",
             )
         except Exception as logout_error:
-            logger.warning(f"Error en logout: {logout_error}")
+            logger.warning(f"❌Error en logout: {logout_error}")
 
         try:
             context.close()

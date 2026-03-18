@@ -4,7 +4,7 @@ from utils.logger import logger
 
 def logout(page: Page):
     try:
-        logger.info("Intentando cerrar sesión")
+        logger.info("🚪 Intentando cerrar sesión")
 
         # Esperar que el menú de usuario exista
         page.wait_for_selector("i.dropdown-icon", timeout=5000)

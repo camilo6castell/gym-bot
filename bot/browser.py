@@ -23,8 +23,11 @@ def launch_browser(headless=False):
             "--start-maximized",
             "--disable-features=PasswordManagerOnboarding",
             "--disable-save-password-bubble",
+            "--disable-blink-features=AutomationControlled",  # ← importante
+            "--no-first-run",
+            "--no-default-browser-check",
         ],
-        # ignore_default_args=["--enable-automation"],
+        ignore_default_args=["--enable-automation"],
         no_viewport=True,
         permissions=["geolocation"],
         geolocation={"latitude": 4.7110, "longitude": -74.0721},
@@ -36,10 +39,19 @@ def launch_browser(headless=False):
         Object.defineProperty(navigator, 'webdriver', {
             get: () => undefined
         });
+        Object.defineProperty(navigator, 'plugins', {
+            get: () => [1, 2, 3, 4, 5]  // plugins reales tienen contenido
+        });
+        Object.defineProperty(navigator, 'languages', {
+            get: () => ['es-CO', 'es', 'en']  // coherente con tu geolocation
+        });
+        window.chrome = {
+            runtime: {}  // chromium sin esto parece headless
+        };
     """
     )
 
     page = context.pages[0] if context.pages else context.new_page()
     page.set_default_timeout(30000)
 
-    return playwright, None, context, page
+    return playwright, context, page

@@ -11,7 +11,7 @@ def is_force_run(BOT_FORCE_RUN_CLASS, BOT_FORCE_RUN_HOUR, BOT_FORCE_RUN_DAY):
 
     if not BOT_FORCE_RUN_CLASS or not BOT_FORCE_RUN_HOUR or not BOT_FORCE_RUN_DAY:
         raise ValueError(
-            "Error BOT_FORCE_RUN activo pero faltan datos de clase forzada."
+            "❌ Error BOT_FORCE_RUN activo pero faltan datos de clase forzada."
         )
 
     return [

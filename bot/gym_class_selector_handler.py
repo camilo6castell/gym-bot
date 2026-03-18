@@ -6,7 +6,8 @@ from utils.recovery import with_recovery
 
 
 def gym_class_selector(page: Page, nombre_clase: str, horario: str):
-    logger.info(f"Buscando clase '{nombre_clase}' en horario '{horario}'")
+
+    logger.info(f"🔎 Buscando clase '{nombre_clase}' en horario '{horario}'")
 
     page.wait_for_selector("#contenedor-horarios", timeout=15000)
 
@@ -18,7 +19,7 @@ def gym_class_selector(page: Page, nombre_clase: str, horario: str):
         if nombre_clase.lower() in texto.lower() and horario in texto:
             human_delay()
             boton.click()
-            logger.success("Clase seleccionada correctamente")
+            logger.success("✔️ Clase seleccionada correctamente")
             with_recovery(
                 lambda: gym_class_confirmation(page),
                 page,
@@ -27,4 +28,4 @@ def gym_class_selector(page: Page, nombre_clase: str, horario: str):
             logger.success(f"🎉 ¡Reserva de {nombre_clase} completada!")
             return
 
-    logger.warning("Clase objetivo no encontrada o no disponible")
+    logger.warning("⛔Clase objetivo no encontrada o no disponible")
