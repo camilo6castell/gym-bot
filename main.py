@@ -44,7 +44,7 @@ def main():
     )
 
     if not tentative_classes:
-        logger.info("📭 No hay clases para ejecutar en este momento.")
+        # logger.info("📭 No hay clases para ejecutar en este momento.")
         return
 
     playwright, context, page = launch_browser(headless=env.BOT_HEADLESS)

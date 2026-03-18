@@ -2,8 +2,8 @@ import pytz
 from datetime import datetime
 from utils.days_handler import days_mapper
 from utils.logger import logger
-from core.schedule import load_schedule
 from components.add_a_minute_for_x import should_add_a_minute_for_x
+from core.env import SCHEDULE
 
 
 def is_force_run(BOT_FORCE_RUN_CLASS, BOT_FORCE_RUN_HOUR, BOT_FORCE_RUN_DAY):
@@ -26,12 +26,11 @@ def is_force_run(BOT_FORCE_RUN_CLASS, BOT_FORCE_RUN_HOUR, BOT_FORCE_RUN_DAY):
 def is_regular_run(
     ADDITIONAL_MINUTE_FOR_EXECUTION,
 ):
-    schedule = load_schedule()
-    if not schedule or "days" not in schedule:
+    if not SCHEDULE or "days" not in SCHEDULE:
         return []
 
     # 🕒 Zona horaria segura
-    timezone_str = schedule.get("timezone", "UTC")
+    timezone_str = SCHEDULE.get("timezone", "UTC")
     tz = pytz.timezone(timezone_str)
     now = datetime.now(tz)
 
@@ -40,7 +39,7 @@ def is_regular_run(
 
     gym_classes = []
 
-    for day_name, day_classes in schedule.get("days", {}).items():
+    for day_name, day_classes in SCHEDULE.get("days", {}).items():
 
         if days_mapper(day_name) != target_weekday:
             continue

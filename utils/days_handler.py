@@ -1,6 +1,6 @@
-def days_mapper(day: str):
-    if day and day.lower() in DAYS_MAP:
-        return DAYS_MAP.get(day.lower())
+def days_mapper(day: str) -> int:
+    if day.lower() in DAYS_MAP:
+        return DAYS_MAP[day.lower()]
     else:
         raise RuntimeError(f"Día inválido: {day}")
 

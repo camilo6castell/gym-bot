@@ -1,16 +1,15 @@
-from encodings import undefined
 import os
+from pathlib import Path
 from dotenv import load_dotenv
+from core.env_utils import env_bool, load_schedule
 
 load_dotenv()
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-def env_bool(name: str, default=False) -> bool:
-    value = os.getenv(name)
-    if value is None:
-        return default
-    return value.lower() in ("1", "true", "yes", "on")
+SCHEDULE_FILE = BASE_DIR / "config" / "classes.yaml"
 
+SCHEDULE = load_schedule()
 
 BOT_HEADLESS = env_bool("BOT_HEADLESS", True)
 # BOT_ENV = os.getenv("BOT_ENV", "prod")
@@ -30,3 +29,7 @@ ADDITIONAL_MINUTE_FOR_EXECUTION = env_bool("ADDITIONAL_MINUTE_FOR_EXECUTION", Fa
 
 TOKEN = os.getenv("TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
+
+WAKEALARM_PATH = str(os.getenv("WAKEALARM_PATH"))
+WAKE_MINUTES_BEFORE = int(os.getenv("WAKE_MINUTES_BEFORE", 3))
+SLEEP_MINUTES_AFTER = int(os.getenv("SLEEP_MINUTES_AFTER", 3))
