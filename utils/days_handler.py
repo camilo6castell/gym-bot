@@ -1,7 +1,3 @@
-from curses.ascii import SP
-from re import S
-
-
 def days_mapper(day: str) -> int:
     if day.lower() in DAYS_MAP:
         return DAYS_MAP[day.lower()]

@@ -1,4 +1,4 @@
-from playwright.sync_api import Page, TimeoutError
+from playwright.sync_api import Page
 from utils.logger import logger
 from utils.page_utils import raise_if_captcha, wait_for_redirect
 from utils.human_behavior import human_delay, human_type, human_click
@@ -47,4 +47,4 @@ def login(
     human_click(page, "button[type='submit']")
     raise_if_captcha(page)
 
-    wait_for_redirect(page, "https://seguridad.compensar.com/**", timeout=20000)
+    wait_for_redirect(page, "https://seguridad.compensar.com/**", timeout=10000)

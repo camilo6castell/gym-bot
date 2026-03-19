@@ -4,13 +4,14 @@ from utils.logger import logger
 from utils.human_behavior import human_delay
 from utils.recovery import with_recovery
 from utils.element_utils import str_normalizer
+from utils.page_utils import wait_idle_and_search_selector
 
 
 def gym_class_selector(page: Page, gym_class_name: str, gym_class_hour: str):
 
     logger.info(f"🔎 Buscando clase '{gym_class_name}' en horario '{gym_class_hour}'")
 
-    page.wait_for_selector("#contenedor-horarios", timeout=15000)
+    wait_idle_and_search_selector(page, "#contenedor-horarios", timeout=15000)
 
     botones = page.query_selector_all("button.btn-theme-inverse:not([disabled])")
 
