@@ -62,6 +62,7 @@ def main():
             ),
             page,
             "Proceso de login",
+            "https://seguridad.compensar.com/**",
         )
 
         # Sometimes, after login, there's an unexpected "Entiendo" button (cookie/privacy related).
