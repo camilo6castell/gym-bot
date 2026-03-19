@@ -26,6 +26,7 @@ def check_unexpected_element(page: Page, selector: str, timeout: int = 3000):
         human_click(page, selector)
         logger.info(f"⚠️ Element '{selector}' acepted and clicked.")
     except TimeoutError:
+        logger.info(f"⚠️ Timeout for element '{selector}' to appear.")
         pass
 
 

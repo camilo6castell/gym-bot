@@ -2,35 +2,38 @@ from playwright.sync_api import Page
 from utils.logger import logger
 from utils.element_utils import str_normalizer
 from utils.human_behavior import human_delay
-from utils.days_handler import spanish_day_mapper
+from utils.page_utils import wait_idle_and_search_selector
 
 
-def select_latest_date(page: Page):
+def collecting_avaible_date_buttons(page: Page):
+    wait_idle_and_search_selector(page, "button.botonfecha", timeout=15000)
+    return page.query_selector_all("button.botonfecha")
+
+
+def select_latest_date(page: Page) -> bool:
+
     logger.info("🕒 Seleccionando última fecha disponible...")
 
-    page.wait_for_selector("button.botonfecha", timeout=15000)
-    botones = page.query_selector_all("button.botonfecha")
-
-    ultimo = botones[-1]
+    last_button = collecting_avaible_date_buttons(page)[-1]
     human_delay()
-    ultimo.click()
+    last_button.click()
 
     logger.success("🕒 Última fecha seleccionada")
+    return True
 
 
-def select_by_day(page: Page, spanish_day_name: str):
+def select_by_day(page: Page, spanish_day_name: str) -> bool:
+
     logger.info(f"🕒 Buscando fecha correspondiente a '{spanish_day_name}'")
-    page.wait_for_selector("button.botonfecha", timeout=15000)
 
-    botones = page.query_selector_all("button.botonfecha")
+    for button in collecting_avaible_date_buttons(page):
+        text = str_normalizer(button.inner_text())
 
-    for boton in botones:
-        texto = str_normalizer(boton.inner_text())
-
-        if spanish_day_name in texto:
+        if spanish_day_name in text:
             human_delay()
-            boton.click()
-            logger.success(f"🕒 Fecha seleccionada: {texto}")
-            return
+            button.click()
+            logger.success(f"🕒 Fecha seleccionada: {text}")
+            return True
 
-    logger.warning(f"⛔ No se encontró fecha para el día {spanish_day_name}")
+    logger.warning(f"⛔ No se encontró el día {spanish_day_name}")
+    return False

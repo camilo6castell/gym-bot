@@ -62,7 +62,6 @@ def main():
             ),
             page,
             "Proceso de login",
-            "https://seguridad.compensar.com/**",
         )
 
         # Sometimes, after login, there's an unexpected "Entiendo" button (cookie/privacy related).
@@ -116,27 +115,33 @@ def main():
                 # Day selection
 
                 if env.BOT_FORCE_RUN:
-                    with_recovery(
+                    if with_recovery(
                         lambda: select_by_day(page, spanish_day_name),
                         page,
                         f"Seleccionando día {env.BOT_FORCE_RUN_DAY}' forzado",
-                    )
+                    ):
+                        # Class selection
+                        with_recovery(
+                            lambda: gym_class_selector(
+                                page, gym_class["name"], gym_class["hour"]
+                            ),
+                            page,
+                            f"Seleccionando clase '{spanish_day_name}' en horario '{gym_class['hour']}'",
+                        )
                 else:
-                    with_recovery(
+                    if with_recovery(
                         lambda: select_latest_date(page),
                         page,
                         f"Seleccionando día {spanish_day_name}",
-                    )
-
-                # Class selection
-
-                with_recovery(
-                    lambda: gym_class_selector(
-                        page, gym_class["name"], gym_class["hour"]
-                    ),
-                    page,
-                    f"Seleccionando clase '{spanish_day_name}' en horario '{gym_class['hour']}'",
-                )
+                    ):
+                        # Class selection
+                        with_recovery(
+                            lambda: gym_class_selector(
+                                page, gym_class["name"], gym_class["hour"]
+                            ),
+                            page,
+                            f"Seleccionando clase '{spanish_day_name}' en horario '{gym_class['hour']}'",
+                        )
 
             except Exception as e:
                 send_error_broadcast(

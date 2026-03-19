@@ -1,10 +1,17 @@
 import time
+from typing import Callable, Any
+from playwright.sync_api import Page
 from notifications.telegram import notify, getUpdates
 from utils.logger import logger
 from core.env import TOKEN, CHAT_ID
 
 
-def with_recovery(action_fn, page, action_name="acción", max_retries=None):
+def with_recovery(
+    action_fn: Callable,
+    page: Page,
+    action_name: str = "acción",
+    max_retries: int | None = None,
+) -> Any:
     """
     Ejecuta action_fn con recuperación ante fallos vía Telegram.
 
@@ -22,7 +29,7 @@ def with_recovery(action_fn, page, action_name="acción", max_retries=None):
         except Exception as e:
             logger.error(f"❌ Error en '{action_name}': {e}")
 
-            if max_retries and retry_count >= max_retries:
+            if max_retries is not None and retry_count >= max_retries:
                 raise RuntimeError(
                     f"'{action_name}' falló tras {retry_count} intentos."
                 )

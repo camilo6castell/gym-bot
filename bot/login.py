@@ -5,7 +5,12 @@ from utils.human_behavior import human_delay, human_type, human_click
 
 
 def login(
-    COMPENSAR_DOC_TYPE, COMPENSAR_DOC_NUM, COMPENSAR_PASSWORD, LOGIN_URL, page: Page
+    COMPENSAR_DOC_TYPE,
+    COMPENSAR_DOC_NUM,
+    COMPENSAR_PASSWORD,
+    LOGIN_URL,
+    page: Page,
+    redirect_url_pattern: str | None = None,
 ):
 
     if not all([COMPENSAR_DOC_TYPE, COMPENSAR_DOC_NUM, COMPENSAR_PASSWORD]):
@@ -47,4 +52,5 @@ def login(
     human_click(page, "button[type='submit']")
     raise_if_captcha(page)
 
-    wait_for_redirect(page, "https://seguridad.compensar.com/**", timeout=10000)
+    if redirect_url_pattern:
+        wait_for_redirect(page, redirect_url_pattern, timeout=10000)

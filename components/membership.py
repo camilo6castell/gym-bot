@@ -1,8 +1,9 @@
+from playwright.sync_api import Page
 from utils.logger import logger
 from utils.page_utils import wait_network_idle
 
 
-def open_plan_and_use_membership(page):
+def open_plan_and_use_membership(page: Page):
 
     logger.info("🔎 Buscando botones 'Usar Membresía' o 'Usar tiquetera'...")
 

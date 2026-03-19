@@ -27,7 +27,7 @@ def launch_browser(headless=False):
             "--no-first-run",
             "--no-default-browser-check",
         ],
-        ignore_default_args=["--enable-automation"],
+        ignore_default_args=["--enable-automation", "--no-sandbox"],
         no_viewport=True,
         permissions=["geolocation"],
         geolocation={"latitude": 4.7110, "longitude": -74.0721},
@@ -36,19 +36,17 @@ def launch_browser(headless=False):
     # stealth básico limpio
     context.add_init_script(
         """
-        Object.defineProperty(navigator, 'webdriver', {
-            get: () => undefined
-        });
-        Object.defineProperty(navigator, 'plugins', {
-            get: () => [1, 2, 3, 4, 5]  // plugins reales tienen contenido
-        });
-        Object.defineProperty(navigator, 'languages', {
-            get: () => ['es-CO', 'es', 'en']  // coherente con tu geolocation
-        });
-        window.chrome = {
-            runtime: {}  // chromium sin esto parece headless
-        };
-    """
+            Object.defineProperty(navigator, 'webdriver', {
+                get: () => undefined
+            });
+            Object.defineProperty(navigator, 'plugins', {
+                get: () => [1, 2, 3, 4, 5]
+            });
+            Object.defineProperty(navigator, 'languages', {
+                get: () => ['es-CO', 'es', 'en']
+            });
+            window.chrome = { runtime: {} };
+        """
     )
 
     page = context.pages[0] if context.pages else context.new_page()
