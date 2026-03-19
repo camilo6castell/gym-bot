@@ -10,6 +10,8 @@ days:
       hour: "06:00 - 07:00"
     - name: Estiramiento
       hour: "07:00 - 08:00"
+    - name: test
+      hour: "20:24 - 08:00"
 
   #JUEVES
   tuesday:
@@ -31,7 +33,7 @@ days:
       hour: "07:00 - 08:00"
 
   #DOMINGO
-  # viernes:
+  # friday:
   #   - name: test1
   #     hour: "16:45 - 08:00"
   #   - name: test2

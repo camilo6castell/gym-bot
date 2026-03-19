@@ -3,20 +3,21 @@ from bot.gym_class_confirmation_handler import gym_class_confirmation
 from utils.logger import logger
 from utils.human_behavior import human_delay
 from utils.recovery import with_recovery
+from utils.element_utils import str_normalizer
 
 
-def gym_class_selector(page: Page, nombre_clase: str, horario: str):
+def gym_class_selector(page: Page, gym_class_name: str, gym_class_hour: str):
 
-    logger.info(f"🔎 Buscando clase '{nombre_clase}' en horario '{horario}'")
+    logger.info(f"🔎 Buscando clase '{gym_class_name}' en horario '{gym_class_hour}'")
 
     page.wait_for_selector("#contenedor-horarios", timeout=15000)
 
     botones = page.query_selector_all("button.btn-theme-inverse:not([disabled])")
 
     for boton in botones:
-        texto = boton.inner_text()
+        texto = str_normalizer(boton.inner_text())
 
-        if nombre_clase.lower() in texto.lower() and horario in texto:
+        if gym_class_name in texto and gym_class_hour in texto:
             human_delay()
             boton.click()
             logger.success("✔️ Clase seleccionada correctamente")
@@ -25,7 +26,7 @@ def gym_class_selector(page: Page, nombre_clase: str, horario: str):
                 page,
                 "Confirmando clase seleccionada",
             )
-            logger.success(f"🎉 ¡Reserva de {nombre_clase} completada!")
+            logger.success(f"🎉 ¡Reserva de {gym_class_name} completada!")
             return
 
     logger.warning("⛔Clase objetivo no encontrada o no disponible")

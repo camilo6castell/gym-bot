@@ -1,5 +1,4 @@
 from bot.day_selector_handler import select_by_day, select_latest_date
-from bot.gym_class_confirmation_handler import gym_class_confirmation
 from bot.browser import launch_browser
 from bot.login import login
 from bot.logout import logout
@@ -13,6 +12,8 @@ from core import env
 from utils.error_broadcast import send_error_broadcast
 from utils.logger import logger
 from utils.recovery import with_recovery
+from utils.days_handler import spanish_day_mapper
+from utils.element_utils import str_normalizer
 from utils.page_utils import (
     confirm_url,
     force_url,
@@ -88,10 +89,13 @@ def main():
         logger.success(f"✅ Login completado: {page.url}")
 
         for index, gym_class in enumerate(tentative_classes):
+            spanish_day_name = spanish_day_mapper(str_normalizer(gym_class["day"]))
             logger.info(
                 f"🎯 Intentando clase {index+1}/{len(tentative_classes)}: "
-                f"{gym_class['name']} | {gym_class['hour']} | {gym_class['day']}"
+                f"{gym_class['name']} | {gym_class['hour']} | {spanish_day_name}"
             )
+
+            # Start point for class reservation flow
 
             confirm_url(
                 page,
@@ -100,15 +104,19 @@ def main():
 
             try:
 
+                # Membership usage
+
                 with_recovery(
                     lambda: open_plan_and_use_membership(page),
                     page,
-                    f"Usando memebresía para clase '{gym_class['name']}'",
+                    f"Usando memebresía para clase '{spanish_day_name}'",
                 )
+
+                # Day selection
 
                 if env.BOT_FORCE_RUN:
                     with_recovery(
-                        lambda: select_by_day(page, gym_class["day"]),
+                        lambda: select_by_day(page, spanish_day_name),
                         page,
                         f"Seleccionando día {env.BOT_FORCE_RUN_DAY}' forzado",
                     )
@@ -116,20 +124,22 @@ def main():
                     with_recovery(
                         lambda: select_latest_date(page),
                         page,
-                        f"Seleccionando día {gym_class['day']}",
+                        f"Seleccionando día {spanish_day_name}",
                     )
+
+                # Class selection
 
                 with_recovery(
                     lambda: gym_class_selector(
                         page, gym_class["name"], gym_class["hour"]
                     ),
                     page,
-                    f"Seleccionando clase '{gym_class['name']}' en horario '{gym_class['hour']}'",
+                    f"Seleccionando clase '{spanish_day_name}' en horario '{gym_class['hour']}'",
                 )
 
             except Exception as e:
                 send_error_broadcast(
-                    page, f"❌ Error reservando {gym_class['name']}: {e}"
+                    page, f"❌ Error reservando {spanish_day_name}: {e}"
                 )
 
             # Esperar 60 segundos entre clases
