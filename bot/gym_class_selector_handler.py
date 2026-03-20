@@ -17,8 +17,7 @@ def gym_class_selector(page: Page, gym_class_name: str, gym_class_hour: str):
 
     for boton in botones:
         texto = str_normalizer(boton.inner_text())
-
-        if gym_class_name in texto and gym_class_hour in texto:
+        if str_normalizer(gym_class_name) in texto and gym_class_hour in texto:
             human_delay()
             boton.click()
             logger.success("✔️ Clase seleccionada correctamente")
