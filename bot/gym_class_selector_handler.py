@@ -2,16 +2,21 @@ from playwright.sync_api import Page
 from bot.gym_class_confirmation_handler import gym_class_confirmation
 from utils.logger import logger
 from utils.human_behavior import human_delay
-from utils.recovery import with_recovery
+from utils.recovery import with_recovery, with_soft_recovery
 from utils.element_utils import str_normalizer
-from utils.page_utils import wait_idle_and_search_selector
+from utils.page_utils import wait_network_idle
 
 
 def gym_class_selector(page: Page, gym_class_name: str, gym_class_hour: str):
 
     logger.info(f"🔎 Buscando clase '{gym_class_name}' en horario '{gym_class_hour}'")
 
-    wait_idle_and_search_selector(page, "#contenedor-horarios", timeout=15000)
+    wait_network_idle(page)
+    with_soft_recovery(
+        lambda: page.wait_for_selector("#contenedor-horarios", timeout=10000),
+        page,
+        "Esperando contenedor de horarios",
+    )
 
     botones = page.query_selector_all("button.btn-theme-inverse:not([disabled])")
 
@@ -21,7 +26,7 @@ def gym_class_selector(page: Page, gym_class_name: str, gym_class_hour: str):
             human_delay()
             boton.click()
             logger.success("✔️ Clase seleccionada correctamente")
-            with_recovery(
+            with_soft_recovery(
                 lambda: gym_class_confirmation(page),
                 page,
                 "Confirmando clase seleccionada",

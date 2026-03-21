@@ -6,6 +6,39 @@ from utils.logger import logger
 from core.env import TOKEN, CHAT_ID
 
 
+def with_soft_recovery(
+    action_fn: Callable,
+    page: Page,
+    action_name: str = "please specify an action name",
+    ms_to_retry: int = 5000,
+    max_retries: int = 3,
+) -> Any:
+    attempts = 0
+    last_exception = None
+
+    while attempts <= max_retries:
+        try:
+            action_fn()
+            return  # ✅ éxito — sale de la función, programa continúa
+        except Exception as e:
+            last_exception = e
+            attempts += 1
+            remaining = max_retries - attempts
+            logger.error(
+                f"❌ '{action_name}' falló. "
+                f"Intentos restantes: {remaining}. Razón: {e}"
+            )
+            if attempts > max_retries:
+                break
+            logger.info(f"⏳ Reintentando en {ms_to_retry}ms...")
+            page.wait_for_timeout(ms_to_retry)
+
+    raise RuntimeError(
+        f"'{action_name}' falló tras {max_retries} intentos. "
+        f"Último error: {last_exception}"
+    )
+
+
 def with_recovery(
     action_fn: Callable,
     page: Page,

@@ -1,6 +1,7 @@
 from playwright.sync_api import Page
 from utils.logger import logger
 from utils.page_utils import wait_network_idle
+from utils.recovery import with_soft_recovery
 
 
 def open_plan_and_use_membership(page: Page):
@@ -9,9 +10,13 @@ def open_plan_and_use_membership(page: Page):
 
     try:
         # Esperar a que aparezca cualquiera de los dos textos
-        page.wait_for_selector(
-            'button:has-text("Usar Membresía"), button:has-text("Usar tiquetera")',
-            timeout=20000,
+        with_soft_recovery(
+            lambda: page.wait_for_selector(
+                'button:has-text("Usar Membresía"), button:has-text("Usar tiquetera")',
+                timeout=5000,
+            ),
+            page,
+            "Esperando botones de membresía/tiquetera",
         )
 
         # Locator que contempla ambas opciones

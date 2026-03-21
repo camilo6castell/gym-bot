@@ -12,10 +12,6 @@ def login(
     page: Page,
     redirect_url_pattern: str | None = None,
 ):
-
-    if not all([COMPENSAR_DOC_TYPE, COMPENSAR_DOC_NUM, COMPENSAR_PASSWORD]):
-        raise RuntimeError("❌ Faltan variables de entorno del login")
-
     logger.info("🌐 Abriendo página de login")
     page.goto(LOGIN_URL, wait_until="domcontentloaded")
     human_delay(1.5, 2.5)

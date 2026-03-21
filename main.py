@@ -114,34 +114,33 @@ def main():
 
                 # Day selection
 
-                if env.BOT_FORCE_RUN:
-                    if with_recovery(
+                day_selected = (
+                    with_recovery(
                         lambda: select_by_day(page, spanish_day_name),
                         page,
-                        f"Seleccionando día {env.BOT_FORCE_RUN_DAY}' forzado",
-                    ):
-                        # Class selection
-                        with_recovery(
-                            lambda: gym_class_selector(
-                                page, gym_class["name"], gym_class["hour"]
-                            ),
-                            page,
-                            f"Seleccionando clase '{spanish_day_name}' en horario '{gym_class['hour']}'",
-                        )
-                else:
-                    if with_recovery(
+                        f"Seleccionando día '{env.BOT_FORCE_RUN_DAY}' forzado",
+                    )
+                    if env.BOT_FORCE_RUN
+                    else with_recovery(
                         lambda: select_latest_date(page),
                         page,
                         f"Seleccionando día {spanish_day_name}",
-                    ):
-                        # Class selection
-                        with_recovery(
-                            lambda: gym_class_selector(
-                                page, gym_class["name"], gym_class["hour"]
-                            ),
-                            page,
-                            f"Seleccionando clase '{spanish_day_name}' en horario '{gym_class['hour']}'",
-                        )
+                    )
+                )
+
+                if day_selected:
+                    with_recovery(
+                        lambda: gym_class_selector(
+                            page, gym_class["name"], gym_class["hour"]
+                        ),
+                        page,
+                        f"Seleccionando clase '{gym_class['name']}' en horario '{gym_class['hour']}'",
+                    )
+                else:
+                    logger.warning(
+                        f"⚠️ Día '{spanish_day_name}' no encontrado, saltando clase."
+                    )
+                    continue
 
             except Exception as e:
                 send_error_broadcast(
@@ -159,14 +158,9 @@ def main():
         send_error_broadcast(page, f"❌ Error general durante la ejecución: {e}")
     finally:
         try:
-            with_recovery(
-                lambda: logout(page),
-                page,
-                "Intentando cerrar sesión",
-            )
+            logout(page)
         except Exception as logout_error:
             logger.warning(f"❌Error en logout: {logout_error}")
-
         try:
             context.close()
             playwright.stop()

@@ -2,11 +2,17 @@ from playwright.sync_api import Page
 from utils.logger import logger
 from utils.element_utils import str_normalizer
 from utils.human_behavior import human_delay
-from utils.page_utils import wait_idle_and_search_selector
+from utils.page_utils import wait_network_idle, search_and_click
+from utils.recovery import with_soft_recovery
 
 
 def collecting_avaible_date_buttons(page: Page):
-    wait_idle_and_search_selector(page, "button.botonfecha", timeout=15000)
+    wait_network_idle(page)
+    with_soft_recovery(
+        lambda: search_and_click(page, "button.botonfecha", timeout=10000),
+        page,
+        "Esperando botones de fecha disponibles",
+    )
     return page.query_selector_all("button.botonfecha")
 
 
