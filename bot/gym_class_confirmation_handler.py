@@ -5,8 +5,8 @@ from utils.recovery import with_soft_recovery
 
 
 def gym_class_confirmation(page: Page):
-    logger.info("🕤 Esperando modal de confirmación...")
+    logger.info("🕤 → Esperando modal de confirmación...")
     try:
         search_and_click(page, "#btnConfirmarReserva", timeout=5000)
     except TimeoutError:
-        raise RuntimeError("❌ No apareció el botón Confirmar Reserva")
+        raise RuntimeError("❌ → No apareció el botón Confirmar Reserva")

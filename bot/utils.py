@@ -106,17 +106,17 @@ def handle_page_load(page: Page, wait_on_soft_captcha=True) -> bool:
 
         # Verificar captcha activo
         if check_for_captcha(page):
-            logger.error("❌ Captcha activo detectado. Necesita intervención manual.")
+            logger.error("❌ → Captcha activo detectado. Necesita intervención manual.")
             page.screenshot(path="captcha_detected.png")
             return False
 
         # Esperar verificaciones pasivas (Cloudflare toast / overlay)
         if wait_on_soft_captcha:
-            logger.info("⏳ Esperando posibles verificaciones pasivas...")
+            logger.info("⏳ → Esperando posibles verificaciones pasivas...")
             page.wait_for_timeout(5000)
 
         return True
 
     except Exception as e:
-        logger.error(f"❌ Error durante handle_page_load: {e}")
+        logger.error(f"❌ → Error durante handle_page_load: {e}")
         return False

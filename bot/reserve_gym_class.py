@@ -29,7 +29,7 @@ def reserve_gym_class_handler(
     )
 
     if not day_selected:
-        logger.warning(f"⚠️ Día '{spanish_day_name}' no encontrado, saltando.")
+        logger.warning(f"⚠️ → Día '{spanish_day_name}' no encontrado, saltando.")
         return False
 
     gym_class_selector(page, gym_class_name, gym_class_hour)

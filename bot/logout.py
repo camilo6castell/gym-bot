@@ -6,7 +6,7 @@ from utils.recovery import with_soft_recovery
 
 def logout(page: Page):
     try:
-        logger.info("🚪 Intentando cerrar sesión")
+        logger.info("🚪 → Intentando cerrar sesión")
 
         dismiss_if_present(page, "notific8-close-button", timeout=3000)
 
@@ -27,8 +27,8 @@ def logout(page: Page):
         # Confirmar que volvimos al login o a página pública
         wait_network_idle(page, timeout=10000)  # Esperar que se complete la navegación
 
-        logger.success("✅ Sesión cerrada correctamente")
+        logger.success("✅ → Sesión cerrada correctamente")
 
     except Exception as e:
         # MUY importante: nunca romper el flujo por logout
-        logger.warning(f"⚠️ No se pudo cerrar sesión limpiamente: {e}")
+        logger.warning(f"⚠️ → No se pudo cerrar sesión limpiamente: {e}")

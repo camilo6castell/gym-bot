@@ -12,14 +12,14 @@ def login(
     page: Page,
     redirect_url_pattern: str | None = None,
 ):
-    logger.info("🌐 Abriendo página de login")
+    logger.info("🌐 → Abriendo página de login")
     page.goto(LOGIN_URL, wait_until="domcontentloaded")
     human_delay(1.5, 2.5)
 
     raise_if_captcha(page)
 
     # Tipo documento
-    logger.info("🫆 Seleccionando tipo de documento")
+    logger.info("🫆 → Seleccionando tipo de documento")
     page.wait_for_selector("#tipodoc", timeout=20000)
     human_click(page, "#tipodoc")
     human_delay(0.6, 1.2)
@@ -28,12 +28,12 @@ def login(
 
     # Número documento
     page.wait_for_selector("#numdoc:not([disabled])", timeout=10000)
-    logger.info("🫆 Ingresando número de documento")
+    logger.info("🫆 → Ingresando número de documento")
     human_type(page, "#numdoc", COMPENSAR_DOC_NUM)
     human_delay(0.6, 1.2)
 
     # Contraseña
-    logger.info("🫆 Ingresando contraseña")
+    logger.info("🫆 → Ingresando contraseña")
     human_type(page, "#clavepwd", COMPENSAR_PASSWORD)
     human_delay(0.8, 1.5)
     raise_if_captcha(page)
@@ -43,7 +43,7 @@ def login(
     human_delay(0.4, 0.8)
 
     # Submit
-    logger.info("🕒 Enviando formulario")
+    logger.info("🕒 → Enviando formulario")
     page.wait_for_selector("button[type='submit']:not([disabled])", timeout=5000)
     human_click(page, "button[type='submit']")
     raise_if_captcha(page)

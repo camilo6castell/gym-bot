@@ -81,12 +81,12 @@ def main():
             "Forzando URL para entrar al plan bienestar",
         )
 
-        logger.success(f"✅ Login completado: {page.url}")
+        logger.success(f"✅ → Login completado: {page.url}")
 
         for index, gym_class in enumerate(tentative_classes):
             spanish_day_name = spanish_day_mapper(str_normalizer(gym_class["day"]))
             logger.info(
-                f"🎯 Intentando clase {index+1}/{len(tentative_classes)}: "
+                f"🎯 → Intentando clase {index+1}/{len(tentative_classes)}: "
                 f"{gym_class['name']} | {gym_class['hour']} | {spanish_day_name}"
             )
 
@@ -106,22 +106,22 @@ def main():
 
             except Exception as e:
                 send_error_broadcast(
-                    page, f"❌ Error reservando {gym_class['name']}: {e}"
+                    page, f"❌ → Error reservando {gym_class['name']}: {e}"
                 )
 
             if index < len(tentative_classes) - 1:
-                logger.info("⏳ Esperando 60 segundos para siguiente clase...")
+                logger.info("⏳ → Esperando 60 segundos para siguiente clase...")
                 page.wait_for_timeout(60000)
 
-        logger.success("🏁 Flujo completado")
+        logger.success("🏁 → Flujo completado")
 
     except Exception as e:
-        send_error_broadcast(page, f"❌ Error general durante la ejecución: {e}")
+        send_error_broadcast(page, f"❌ → Error general durante la ejecución: {e}")
     finally:
         try:
             logout(page)
         except Exception as logout_error:
-            logger.warning(f"❌Error en logout: {logout_error}")
+            logger.warning(f"❌ → Error en logout: {logout_error}")
         try:
             context.close()
             playwright.stop()

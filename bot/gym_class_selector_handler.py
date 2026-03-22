@@ -9,7 +9,7 @@ from utils.page_utils import wait_network_idle
 
 def gym_class_selector(page: Page, gym_class_name: str, gym_class_hour: str):
 
-    logger.info(f"🔎 Buscando clase '{gym_class_name}' en horario '{gym_class_hour}'")
+    logger.info(f"🔎 → Buscando clase '{gym_class_name}' en horario '{gym_class_hour}'")
 
     wait_network_idle(page)
     with_soft_recovery(
@@ -25,13 +25,13 @@ def gym_class_selector(page: Page, gym_class_name: str, gym_class_hour: str):
         if str_normalizer(gym_class_name) in texto and gym_class_hour in texto:
             human_delay()
             boton.click()
-            logger.success("✔️ Clase seleccionada correctamente")
+            logger.success("✔️ → Clase seleccionada correctamente")
             with_soft_recovery(
                 lambda: gym_class_confirmation(page),
                 page,
                 "Confirmando clase seleccionada",
             )
-            logger.success(f"🎉 ¡Reserva de {gym_class_name} completada!")
+            logger.success(f"🎉 → ¡Reserva de {gym_class_name} completada!")
             return
 
-    logger.warning("⛔Clase objetivo no encontrada o no disponible")
+    logger.warning("⛔ → Clase objetivo no encontrada o no disponible")

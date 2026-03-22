@@ -3,6 +3,7 @@ from playwright.sync_api import Page, TimeoutError
 from utils.logger import logger
 from utils.human_behavior import human_click, human_delay
 from utils.recovery import with_soft_recovery
+from utils.exceptions import CaptchaDetectedError
 
 CAPTCHA_SELECTORS = [
     "iframe[title='recaptcha challenge expires in two minutes']",
@@ -21,10 +22,10 @@ def raise_if_captcha(page: Page):
         try:
             element = page.query_selector(selector)
         except Exception as e:
-            logger.debug(f"Error consultando selector '{selector}': {e}")
+            logger.debug(f"⚠️ → Error consultando selector '{selector}': {e}")
             continue
         if element and element.is_visible():
-            raise RuntimeError("⚠️ CAPTCHA detectado. Completar y resumir.")
+            raise CaptchaDetectedError("⚠️ → CAPTCHA detectado. Completar y resumir.")
 
 
 def dismiss_if_present(
@@ -32,25 +33,25 @@ def dismiss_if_present(
 ):
     try:
         search_and_click(page, selector, timeout=timeout)
-        logger.info(f"👀Elemento '{selector}' encontrado y clickeado.")
+        logger.info(f"👀 → Elemento '{selector}' encontrado y clickeado.")
     except TimeoutError:
         if is_mandatory:
-            raise RuntimeError(f"❌ Elemento '{selector}' es obligatorio.")
-        logger.debug(f"🗑️Elemento '{selector}' no apareció, Intentando continuar.")
+            raise RuntimeError(f"❌ → Elemento '{selector}' es obligatorio.")
+        logger.debug(f"🗑️ → Elemento '{selector}' no apareció, Intentando continuar.")
 
 
 def wait_network_idle(page: Page, timeout: int = 5000):
     try:
         page.wait_for_load_state("networkidle", timeout=timeout)
     except TimeoutError:
-        logger.debug("🕒wait_network_idle: timeout alcanzado, continuando.")
+        logger.debug("🕒 → wait_network_idle: timeout alcanzado, continuando.")
 
 
 def wait_for_redirect(page: Page, url_pattern: str, timeout: int = 15000):
     try:
         page.wait_for_url(url_pattern, timeout=timeout, wait_until="networkidle")
     except TimeoutError:
-        raise RuntimeError(f"❌ No se completó la redirección a '{url_pattern}'")
+        raise RuntimeError(f"❌ → No se completó la redirección a '{url_pattern}'")
 
 
 def confirm_url(page: Page, url: str):
@@ -79,7 +80,7 @@ def force_url(
     redirect_pattern: str | None = None,
 ):
     """Navega a forced_url, maneja modal opcional y verifica redirección."""
-    logger.info(f"🔀 Forzando URL: {forced_url[:64]}")
+    logger.info(f"🔀 → Forzando URL: {forced_url[:64]}")
     page.goto(forced_url, wait_until="networkidle")
     monitor_new_page(page, selector)
     if redirect_pattern:
