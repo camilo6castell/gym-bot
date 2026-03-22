@@ -11,6 +11,7 @@ BOT_HEADLESS = env_bool("BOT_HEADLESS", True)
 # BOT_ENV = os.getenv("BOT_ENV", "prod")
 
 LOGIN_URL = os.getenv("LOGIN_URL")
+POST_LOGIN_URL = os.getenv("POST_LOGIN_URL")
 
 COMPENSAR_DOC_TYPE = os.getenv("COMPENSAR_DOC_TYPE")
 COMPENSAR_DOC_NUM = os.getenv("COMPENSAR_DOC_NUM")

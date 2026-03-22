@@ -1,11 +1,9 @@
-from bot.day_selector_handler import select_by_day, select_latest_date
 from bot.browser import launch_browser
 from bot.login import login
 from bot.logout import logout
-from bot.gym_class_selector_handler import gym_class_selector
+from bot.reserve_gym_class import reserve_gym_class_handler
 
 from components.bot_run import get_classes
-from components.membership import open_plan_and_use_membership
 
 from core import env
 
@@ -14,11 +12,7 @@ from utils.logger import logger
 from utils.recovery import with_recovery
 from utils.days_handler import spanish_day_mapper
 from utils.element_utils import str_normalizer
-from utils.page_utils import (
-    confirm_url,
-    force_url,
-    monitor_new_page,
-)
+from utils.page_utils import force_url, monitor_new_page
 
 
 def main():
@@ -30,6 +24,7 @@ def main():
             env.COMPENSAR_DOC_NUM,
             env.COMPENSAR_PASSWORD,
             env.LOGIN_URL,
+            env.POST_LOGIN_URL,
         ]
     ):
         logger.error("❌ Faltan credenciales de acceso en .env")
@@ -78,7 +73,7 @@ def main():
         with_recovery(
             lambda: force_url(
                 page,
-                "https://sistemaplanbienestar.deportescompensar.com/entrenamiento/reserva/practica/libre",
+                env.POST_LOGIN_URL,
                 "#presso-login",
                 "**deportescompensar.com/**",
             ),
@@ -95,59 +90,25 @@ def main():
                 f"{gym_class['name']} | {gym_class['hour']} | {spanish_day_name}"
             )
 
-            # Start point for class reservation flow
-
-            confirm_url(
-                page,
-                "https://sistemaplanbienestar.deportescompensar.com/entrenamiento/reserva/practica/libre",
-            )
-
             try:
-
-                # Membership usage
-
                 with_recovery(
-                    lambda: open_plan_and_use_membership(page),
+                    lambda: reserve_gym_class_handler(
+                        page,
+                        env.POST_LOGIN_URL,
+                        spanish_day_name,
+                        env.BOT_FORCE_RUN,
+                        gym_class["name"],
+                        gym_class["hour"],
+                    ),
                     page,
-                    f"Usando memebresía para clase '{spanish_day_name}'",
+                    f"Reservando '{gym_class['name']}' | {spanish_day_name}",
                 )
-
-                # Day selection
-
-                day_selected = (
-                    with_recovery(
-                        lambda: select_by_day(page, spanish_day_name),
-                        page,
-                        f"Seleccionando día '{env.BOT_FORCE_RUN_DAY}' forzado",
-                    )
-                    if env.BOT_FORCE_RUN
-                    else with_recovery(
-                        lambda: select_latest_date(page),
-                        page,
-                        f"Seleccionando día {spanish_day_name}",
-                    )
-                )
-
-                if day_selected:
-                    with_recovery(
-                        lambda: gym_class_selector(
-                            page, gym_class["name"], gym_class["hour"]
-                        ),
-                        page,
-                        f"Seleccionando clase '{gym_class['name']}' en horario '{gym_class['hour']}'",
-                    )
-                else:
-                    logger.warning(
-                        f"⚠️ Día '{spanish_day_name}' no encontrado, saltando clase."
-                    )
-                    continue
 
             except Exception as e:
                 send_error_broadcast(
-                    page, f"❌ Error reservando {spanish_day_name}: {e}"
+                    page, f"❌ Error reservando {gym_class['name']}: {e}"
                 )
 
-            # Esperar 60 segundos entre clases
             if index < len(tentative_classes) - 1:
                 logger.info("⏳ Esperando 60 segundos para siguiente clase...")
                 page.wait_for_timeout(60000)

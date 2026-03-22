@@ -74,7 +74,7 @@ def monitor_new_page(page: Page, selector: str | None = None):
 
 def force_url(
     page: Page,
-    forced_url: str,
+    forced_url,
     selector: str | None = None,
     redirect_pattern: str | None = None,
 ):
