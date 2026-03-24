@@ -1,7 +1,7 @@
 from bot.browser import launch_browser
-from bot.login import login
-from bot.logout import logout
-from bot.reserve_gym_class import reserve_gym_class_handler
+from bot.login import perform_login
+from bot.logout import perform_logout
+from bot.reserve_gym_class import perform_reserve_gym_class
 
 from components.bot_run import get_classes
 
@@ -10,9 +10,10 @@ from core import env
 from utils.error_broadcast import send_error_broadcast
 from utils.logger import logger
 from utils.recovery import with_recovery
-from utils.days_handler import spanish_day_mapper
+from utils.time_utils import spanish_day_mapper
 from utils.element_utils import str_normalizer
 from utils.page_utils import force_url, monitor_new_page
+from bot.gym_class_verification_handler import perform_gym_class_verification
 
 
 def main():
@@ -25,6 +26,10 @@ def main():
             env.COMPENSAR_PASSWORD,
             env.LOGIN_URL,
             env.POST_LOGIN_URL,
+            env.GYM_CLASS_VERIFICATION_URL,
+            env.POTENTIAL_MODAL_ENTIENDO_SELECTOR,
+            env.POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR,
+            env.INSIDE_SYSTEM_PATTERN_URL,
         ]
     ):
         logger.error("❌ Faltan credenciales de acceso en .env")
@@ -48,37 +53,19 @@ def main():
     try:
 
         with_recovery(
-            lambda: login(
+            lambda: perform_login(
+                page,
                 env.COMPENSAR_DOC_TYPE,
                 env.COMPENSAR_DOC_NUM,
                 env.COMPENSAR_PASSWORD,
                 env.LOGIN_URL,
-                page,
+                env.POST_LOGIN_URL,
+                env.POTENTIAL_MODAL_ENTIENDO_SELECTOR,
+                env.POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR,
+                env.INSIDE_SYSTEM_PATTERN_URL,
             ),
             page,
             "Proceso de login",
-        )
-
-        # Sometimes, after login, there's an unexpected "Entiendo" button (cookie/privacy related).
-        # If it appears, we click it and continue. This is handled in monitor_new_page.
-
-        with_recovery(
-            lambda: monitor_new_page(page, "button:has-text('Entiendo')"),
-            page,
-            "Monitoreo de nueva página post-login",
-        )
-
-        #
-
-        with_recovery(
-            lambda: force_url(
-                page,
-                env.POST_LOGIN_URL,
-                "#presso-login",
-                "**deportescompensar.com/**",
-            ),
-            page,
-            "Forzando URL para entrar al plan bienestar",
         )
 
         logger.success(f"✅ → Login completado: {page.url}")
@@ -92,13 +79,16 @@ def main():
 
             try:
                 with_recovery(
-                    lambda: reserve_gym_class_handler(
+                    lambda: perform_reserve_gym_class(
                         page,
                         env.POST_LOGIN_URL,
                         spanish_day_name,
                         env.BOT_FORCE_RUN,
                         gym_class["name"],
                         gym_class["hour"],
+                        env.GYM_CLASS_VERIFICATION_URL,
+                        env.POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR,
+                        env.INSIDE_SYSTEM_PATTERN_URL,
                     ),
                     page,
                     f"Reservando '{gym_class['name']}' | {spanish_day_name}",
@@ -119,7 +109,7 @@ def main():
         send_error_broadcast(page, f"❌ → Error general durante la ejecución: {e}")
     finally:
         try:
-            logout(page)
+            perform_logout(page)
         except Exception as logout_error:
             logger.warning(f"❌ → Error en logout: {logout_error}")
         try:

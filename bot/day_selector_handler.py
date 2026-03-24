@@ -18,19 +18,19 @@ def collecting_avaible_date_buttons(page: Page):
 
 def select_latest_date(page: Page) -> bool:
 
-    logger.info("🕒 → Seleccionando última fecha disponible...")
+    logger.info("🏃‍♀️‍➡️ → Seleccionando última fecha disponible...")
 
     last_button = collecting_avaible_date_buttons(page)[-1]
     human_delay()
     last_button.click()
 
-    logger.success("🕒 → Última fecha seleccionada")
+    logger.success("✔️ → Última fecha seleccionada")
     return True
 
 
 def select_by_day(page: Page, spanish_day_name: str) -> bool:
 
-    logger.info(f"🕒 → Buscando fecha correspondiente a '{spanish_day_name}'")
+    logger.info(f"🔎 → Buscando fecha correspondiente a '{spanish_day_name}'")
 
     for button in collecting_avaible_date_buttons(page):
         text = str_normalizer(button.inner_text())

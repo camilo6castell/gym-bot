@@ -1,5 +1,6 @@
 from playwright.sync_api import Page
 from bot.gym_class_confirmation_handler import gym_class_confirmation
+from bot.gym_class_verification_handler import perform_gym_class_verification
 from utils.logger import logger
 from utils.human_behavior import human_delay
 from utils.recovery import with_recovery, with_soft_recovery
@@ -7,7 +8,14 @@ from utils.element_utils import str_normalizer
 from utils.page_utils import wait_network_idle
 
 
-def gym_class_selector(page: Page, gym_class_name: str, gym_class_hour: str):
+def gym_class_selector(
+    page: Page,
+    gym_class_name: str,
+    gym_class_hour: str,
+    GYM_CLASS_VERIFICATION_URL: str,
+    POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR: str,
+    INSIDE_SYSTEM_PATTERN_URL: str,
+):
 
     logger.info(f"🔎 → Buscando clase '{gym_class_name}' en horario '{gym_class_hour}'")
 
@@ -25,13 +33,25 @@ def gym_class_selector(page: Page, gym_class_name: str, gym_class_hour: str):
         if str_normalizer(gym_class_name) in texto and gym_class_hour in texto:
             human_delay()
             boton.click()
-            logger.success("✔️ → Clase seleccionada correctamente")
+            logger.success("✔️  → Clase seleccionada correctamente")
             with_soft_recovery(
                 lambda: gym_class_confirmation(page),
                 page,
                 "Confirmando clase seleccionada",
             )
-            logger.success(f"🎉 → ¡Reserva de {gym_class_name} completada!")
+            logger.success(f"🤔 → ¡Reserva de {gym_class_name} completada! (?)")
+            with_soft_recovery(
+                lambda: perform_gym_class_verification(
+                    page,
+                    gym_class_name,
+                    gym_class_hour,
+                    GYM_CLASS_VERIFICATION_URL,
+                    POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR,
+                    INSIDE_SYSTEM_PATTERN_URL,
+                ),
+                page,
+                f"Verificando '{gym_class_name}' a las '{gym_class_hour}'",
+            )
             return
 
     logger.warning("⛔ → Clase objetivo no encontrada o no disponible")

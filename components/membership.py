@@ -35,7 +35,7 @@ def open_plan_and_use_membership(page: Page):
 
             if btn.is_visible() and btn.is_enabled():
                 text = btn.inner_text()
-                logger.info(f"✔️ → Usando botón índice {i} → '{text}'")
+                logger.info(f"✔️  → Usando botón índice {i} → '{text}'")
                 btn.click()
                 wait_network_idle(page)
                 return

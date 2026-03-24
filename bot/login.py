@@ -1,16 +1,23 @@
 from playwright.sync_api import Page
 from utils.logger import logger
-from utils.page_utils import raise_if_captcha, wait_for_redirect
+from utils.page_utils import (
+    monitor_new_page,
+    raise_if_captcha,
+    force_url,
+)
 from utils.human_behavior import human_delay, human_type, human_click
 
 
-def login(
+def perform_login(
+    page: Page,
     COMPENSAR_DOC_TYPE,
     COMPENSAR_DOC_NUM,
     COMPENSAR_PASSWORD,
     LOGIN_URL,
-    page: Page,
-    redirect_url_pattern: str | None = None,
+    POST_LOGIN_URL,
+    POTENTIAL_MODAL_ENTIENDO_SELECTOR: str | None = None,
+    POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR: str | None = None,
+    INSIDE_SYSTEM_PATTERN_URL: str | None = None,
 ):
     logger.info("🌐 → Abriendo página de login")
     page.goto(LOGIN_URL, wait_until="domcontentloaded")
@@ -19,7 +26,7 @@ def login(
     raise_if_captcha(page)
 
     # Tipo documento
-    logger.info("🫆 → Seleccionando tipo de documento")
+    logger.info("🫆  → Seleccionando tipo de documento")
     page.wait_for_selector("#tipodoc", timeout=20000)
     human_click(page, "#tipodoc")
     human_delay(0.6, 1.2)
@@ -28,12 +35,12 @@ def login(
 
     # Número documento
     page.wait_for_selector("#numdoc:not([disabled])", timeout=10000)
-    logger.info("🫆 → Ingresando número de documento")
+    logger.info("🫆  → Ingresando número de documento")
     human_type(page, "#numdoc", COMPENSAR_DOC_NUM)
     human_delay(0.6, 1.2)
 
     # Contraseña
-    logger.info("🫆 → Ingresando contraseña")
+    logger.info("🫆  → Ingresando contraseña")
     human_type(page, "#clavepwd", COMPENSAR_PASSWORD)
     human_delay(0.8, 1.5)
     raise_if_captcha(page)
@@ -46,7 +53,14 @@ def login(
     logger.info("🕒 → Enviando formulario")
     page.wait_for_selector("button[type='submit']:not([disabled])", timeout=5000)
     human_click(page, "button[type='submit']")
-    raise_if_captcha(page)
 
-    if redirect_url_pattern:
-        wait_for_redirect(page, redirect_url_pattern, timeout=10000)
+    # Sometimes, after login, there's an unexpected "Entiendo" button (cookie/privacy related).
+    # If it appears, we click it and continue. This is handled in monitor_new_page.
+    monitor_new_page(page, POTENTIAL_MODAL_ENTIENDO_SELECTOR)
+
+    force_url(
+        page,
+        POST_LOGIN_URL,
+        POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR,
+        INSIDE_SYSTEM_PATTERN_URL,
+    )

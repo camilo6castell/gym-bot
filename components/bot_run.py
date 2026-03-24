@@ -1,17 +1,17 @@
 import pytz
 from datetime import datetime
-from utils.days_handler import days_mapper
+from utils.time_utils import days_mapper
 from utils.logger import logger
 from components.add_a_minute_for_x import should_add_a_minute_for_x
 from core.env import SCHEDULE
 
 
 def is_force_run(BOT_FORCE_RUN_CLASS, BOT_FORCE_RUN_HOUR, BOT_FORCE_RUN_DAY):
-    logger.warning("⚠️ BOT_FORCE_RUN activo ⚠️")
+    logger.warning("⚠️  → BOT_FORCE_RUN activo ⚠️")
 
     if not BOT_FORCE_RUN_CLASS or not BOT_FORCE_RUN_HOUR or not BOT_FORCE_RUN_DAY:
         raise ValueError(
-            "❌ Error BOT_FORCE_RUN activo pero faltan datos de clase forzada."
+            "❌ → Error BOT_FORCE_RUN activo pero faltan datos de clase forzada."
         )
 
     return [

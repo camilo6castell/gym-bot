@@ -4,7 +4,7 @@ from utils.page_utils import dismiss_if_present, search_and_click, wait_network_
 from utils.recovery import with_soft_recovery
 
 
-def logout(page: Page):
+def perform_logout(page: Page):
     try:
         logger.info("🚪 → Intentando cerrar sesión")
 

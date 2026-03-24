@@ -33,7 +33,7 @@ def dismiss_if_present(
 ):
     try:
         search_and_click(page, selector, timeout=timeout)
-        logger.info(f"👀 → Elemento '{selector}' encontrado y clickeado.")
+        logger.info(f"😉 → Elemento '{selector}' encontrado y clickeado.")
     except TimeoutError:
         if is_mandatory:
             raise RuntimeError(f"❌ → Elemento '{selector}' es obligatorio.")
@@ -80,8 +80,12 @@ def force_url(
     redirect_pattern: str | None = None,
 ):
     """Navega a forced_url, maneja modal opcional y verifica redirección."""
-    logger.info(f"🔀 → Forzando URL: {forced_url[:64]}")
+    logger.info(f"🔀 → Forzando URL: {forced_url[:64]} - URL actual: {page.url[:64]}")
     page.goto(forced_url, wait_until="networkidle")
     monitor_new_page(page, selector)
     if redirect_pattern:
-        wait_for_redirect(page, redirect_pattern, timeout=8000)
+        with_soft_recovery(
+            lambda: wait_for_redirect(page, redirect_pattern, timeout=5000),
+            page,
+            action_name=f"Verificando redirección a '{redirect_pattern}'",
+        )
