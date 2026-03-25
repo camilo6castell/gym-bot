@@ -7,7 +7,7 @@ import pytz
 import datetime
 import subprocess
 
-from utils.days_handler import days_mapper
+from utils.time_utils import days_mapper
 from core.env import (
     SCHEDULE,
     WAKEALARM_PATH,
