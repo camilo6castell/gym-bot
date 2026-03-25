@@ -3,17 +3,15 @@ from bot.login import perform_login
 from bot.logout import perform_logout
 from bot.reserve_gym_class import perform_reserve_gym_class
 
-from components.bot_run import get_classes
-
-from core import env
-
 from utils.error_broadcast import send_error_broadcast
 from utils.logger import logger
 from utils.recovery import with_recovery
 from utils.time_utils import spanish_day_mapper
 from utils.element_utils import str_normalizer
-from utils.page_utils import force_url, monitor_new_page
-from bot.gym_class_verification_handler import perform_gym_class_verification
+
+from components.bot_run import get_classes
+
+from core import env
 
 
 def main():

@@ -6,21 +6,11 @@ from utils.page_utils import wait_network_idle, search_and_click
 from utils.recovery import with_soft_recovery
 
 
-def collecting_avaible_date_buttons(page: Page):
-    wait_network_idle(page)
-    with_soft_recovery(
-        lambda: search_and_click(page, "button.botonfecha", timeout=10000),
-        page,
-        "Esperando botones de fecha disponibles",
-    )
-    return page.query_selector_all("button.botonfecha")
-
-
 def select_latest_date(page: Page) -> bool:
 
     logger.info("🏃‍♀️‍➡️ → Seleccionando última fecha disponible...")
 
-    last_button = collecting_avaible_date_buttons(page)[-1]
+    last_button = _collecting_avaible_date_buttons(page)[-1]
     human_delay()
     last_button.click()
 
@@ -32,7 +22,7 @@ def select_by_day(page: Page, spanish_day_name: str) -> bool:
 
     logger.info(f"🔎 → Buscando fecha correspondiente a '{spanish_day_name}'")
 
-    for button in collecting_avaible_date_buttons(page):
+    for button in _collecting_avaible_date_buttons(page):
         text = str_normalizer(button.inner_text())
 
         if spanish_day_name in text:
@@ -43,3 +33,13 @@ def select_by_day(page: Page, spanish_day_name: str) -> bool:
 
     logger.warning(f"⛔ → No se encontró el día {spanish_day_name}")
     return False
+
+
+def _collecting_avaible_date_buttons(page: Page):
+    wait_network_idle(page)
+    with_soft_recovery(
+        lambda: search_and_click(page, "button.botonfecha", timeout=10000),
+        page,
+        "Esperando botones de fecha disponibles",
+    )
+    return page.query_selector_all("button.botonfecha")
