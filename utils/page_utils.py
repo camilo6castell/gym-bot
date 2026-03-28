@@ -12,9 +12,7 @@ CAPTCHA_SELECTORS = [
 
 
 def search_and_click(page: Page, selector: str, timeout: int = 5000):
-    wait_network_idle(page, timeout=timeout)
     page.wait_for_selector(selector, timeout=timeout)
-    human_delay()
     human_click(page, selector)
 
 
@@ -33,6 +31,7 @@ def dismiss_if_present(
     page: Page, selector: str, is_mandatory: bool = False, timeout: int = 3000
 ):
     try:
+        wait_network_idle(page, timeout=timeout)
         search_and_click(page, selector, timeout=timeout)
         logger.info(f"😉 → Elemento '{selector}' encontrado y clickeado.")
     except TimeoutError:

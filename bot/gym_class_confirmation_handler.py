@@ -9,12 +9,17 @@ def gym_class_confirmation(page: Page):
     logger.info("🕤 → Esperando modal de confirmación...")
     human_delay()
     try:
-        search_and_click(page, "#btnConfirmarReserva", timeout=5000)
+
+        with_soft_recovery(
+            lambda: dismiss_if_present(page, "#btnConfirmarReserva", True, 15000),
+            page,
+            "Confirmando modal de reserva de clase",
+        )
         human_delay()
         with_soft_recovery(
             lambda: dismiss_if_present(page, ".notific8-close-button", False, 15000),
             page,
-            "Cerrando modal de confirmación de clase",
+            "Cerrando notificación de éxito de reserva",
         )
         logger.success("✔️  → Ciclo de reserva hecho, esperando confirmación final.")
     except TimeoutError:
