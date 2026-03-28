@@ -1,11 +1,12 @@
 from bot.browser import launch_browser
 from bot.login import perform_login
 from bot.logout import perform_logout
+from bot.post_login_flow import perform_post_login_flow
 from bot.reserve_gym_class import perform_reserve_gym_class
 
 from utils.error_broadcast import send_error_broadcast
 from utils.logger import logger
-from utils.recovery import with_recovery
+from utils.recovery import with_recovery, with_soft_recovery
 from utils.time_utils import spanish_day_mapper
 from utils.element_utils import str_normalizer
 
@@ -28,6 +29,7 @@ def main():
             env.POTENTIAL_MODAL_ENTIENDO_SELECTOR,
             env.POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR,
             env.INSIDE_SYSTEM_PATTERN_URL,
+            env.INSIDE_SYSTEM_URL_PATTERN,
         ]
     ):
         logger.error("❌ Faltan credenciales de acceso en .env")
@@ -59,14 +61,22 @@ def main():
                 env.LOGIN_URL,
                 env.POST_LOGIN_URL,
                 env.POTENTIAL_MODAL_ENTIENDO_SELECTOR,
-                env.POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR,
-                env.INSIDE_SYSTEM_PATTERN_URL,
             ),
             page,
             "Proceso de login",
         )
 
-        logger.success(f"✅ → Login completado: {page.url}")
+        with_soft_recovery(
+            lambda: perform_post_login_flow(
+                page,
+                env.POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR,
+                env.INSIDE_SYSTEM_PATTERN_URL,
+            ),
+            page,
+            "Flujo post-login",
+        )
+
+        logger.info(f"🥁 → Iniciando iteraciones de clases. URL: {page.url}")
 
         for index, gym_class in enumerate(tentative_classes):
             spanish_day_name = spanish_day_mapper(str_normalizer(gym_class["day"]))
@@ -79,7 +89,7 @@ def main():
                 with_recovery(
                     lambda: perform_reserve_gym_class(
                         page,
-                        env.POST_LOGIN_URL,
+                        env.INSIDE_SYSTEM_URL_PATTERN,
                         spanish_day_name,
                         env.BOT_FORCE_RUN,
                         gym_class["name"],

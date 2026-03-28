@@ -1,6 +1,7 @@
 from playwright.sync_api import Page
+from utils.human_behavior import human_delay
 from utils.logger import logger
-from utils.page_utils import confirm_url, force_url
+from utils.page_utils import confirm_url, force_url, search_and_click
 from utils.time_utils import military_time_range_to_ampm
 from utils.recovery import with_soft_recovery
 from utils.element_utils import str_normalizer
@@ -17,14 +18,11 @@ def perform_gym_class_verification(
 
     logger.info(f"🔍 → Verificando reserva: '{gym_class_name}' | '{gym_class_hour}'")
 
-    force_url(
-        page,
-        GYM_CLASS_VERIFICATION_URL,
-        POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR,
-        INSIDE_SYSTEM_PATTERN_URL,
-    )
-
-    confirm_url(page, GYM_CLASS_VERIFICATION_URL)
+    human_delay()
+    search_and_click(page, "a[href='#mm-m1-p2']")
+    human_delay()
+    search_and_click(page, "a[href='/sistema.php/entrenamiento/mis/turnos']")
+    human_delay()
 
     # Esperar que carguen las tarjetas
     with_soft_recovery(
@@ -40,9 +38,6 @@ def perform_gym_class_verification(
         texto = str_normalizer(tarjeta.inner_text())
         nombre_normalizado = str_normalizer(gym_class_name)
         hora_normalizada = str_normalizer(ampm_hour)
-        print(
-            f"Comparando con: '{nombre_normalizado}' y '{hora_normalizada}'"
-        )  # Debug: mostrar valores normalizados
 
         if nombre_normalizado in texto and hora_normalizada in texto:
             logger.success(

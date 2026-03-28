@@ -14,6 +14,7 @@ CAPTCHA_SELECTORS = [
 def search_and_click(page: Page, selector: str, timeout: int = 5000):
     wait_network_idle(page, timeout=timeout)
     page.wait_for_selector(selector, timeout=timeout)
+    human_delay()
     human_click(page, selector)
 
 
@@ -47,9 +48,15 @@ def wait_network_idle(page: Page, timeout: int = 5000):
         logger.debug("🕒 → wait_network_idle: timeout alcanzado, continuando.")
 
 
-def wait_for_redirect(page: Page, url_pattern: str, timeout: int = 15000):
+def wait_for_redirect(page: Page, url_pattern: str | None, timeout: int = 15000):
     try:
-        page.wait_for_url(url_pattern, timeout=timeout, wait_until="networkidle")
+        if url_pattern:
+            page.wait_for_url(url_pattern, timeout=timeout, wait_until="networkidle")
+        else:
+            logger.warning(
+                "⚠️ → wait_for_redirect: No se proporcionó patrón de URL, omitiendo espera."
+            )
+            pass
     except TimeoutError:
         raise RuntimeError(f"❌ → No se completó la redirección a '{url_pattern}'")
 

@@ -37,7 +37,7 @@ def gym_class_selector(
             with_soft_recovery(
                 lambda: gym_class_confirmation(page),
                 page,
-                "Confirmando clase seleccionada",
+                "Agendando clase en sistema.",
             )
             logger.success(f"🤔 → ¡Reserva de {gym_class_name} completada! (?)")
             with_soft_recovery(

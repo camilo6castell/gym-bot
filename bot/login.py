@@ -3,7 +3,7 @@ from utils.logger import logger
 from utils.page_utils import (
     monitor_new_page,
     raise_if_captcha,
-    force_url,
+    wait_for_redirect,
 )
 from utils.human_behavior import human_delay, human_type, human_click
 
@@ -16,8 +16,6 @@ def perform_login(
     LOGIN_URL,
     POST_LOGIN_URL,
     POTENTIAL_MODAL_ENTIENDO_SELECTOR: str | None = None,
-    POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR: str | None = None,
-    INSIDE_SYSTEM_PATTERN_URL: str | None = None,
 ):
     logger.info("🌐 → Abriendo página de login")
     page.goto(LOGIN_URL, wait_until="domcontentloaded")
@@ -58,9 +56,4 @@ def perform_login(
     # If it appears, we click it and continue. This is handled in monitor_new_page.
     monitor_new_page(page, POTENTIAL_MODAL_ENTIENDO_SELECTOR)
 
-    force_url(
-        page,
-        POST_LOGIN_URL,
-        POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR,
-        INSIDE_SYSTEM_PATTERN_URL,
-    )
+    wait_for_redirect(page, POST_LOGIN_URL)

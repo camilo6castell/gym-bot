@@ -1,4 +1,5 @@
 from playwright.sync_api import Page
+from utils.human_behavior import human_delay
 from utils.logger import logger
 from utils.page_utils import dismiss_if_present, search_and_click, wait_network_idle
 from utils.recovery import with_soft_recovery
@@ -8,7 +9,9 @@ def perform_logout(page: Page):
     try:
         logger.info("🚪 → Intentando cerrar sesión")
 
-        dismiss_if_present(page, "notific8-close-button", timeout=3000)
+        # dismiss_if_present(page, "notific8-close-button", timeout=3000)
+
+        human_delay()
 
         # Esperar que el menú de usuario exista
         with_soft_recovery(
@@ -16,6 +19,8 @@ def perform_logout(page: Page):
             page,
             "Esperando menú de usuario para logout",
         )
+
+        human_delay()
 
         # Click en Salir
         with_soft_recovery(

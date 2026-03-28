@@ -9,7 +9,7 @@ from utils.logger import logger
 
 def perform_reserve_gym_class(
     page: Page,
-    POST_LOGIN_URL,
+    INSIDE_SYSTEM_URL_PATTERN,
     spanish_day_name,
     BOT_FORCE_RUN: bool,
     gym_class_name: str,
@@ -22,7 +22,7 @@ def perform_reserve_gym_class(
     # Siempre parte desde la URL base
     confirm_url(
         page,
-        POST_LOGIN_URL,
+        INSIDE_SYSTEM_URL_PATTERN,
     )
 
     open_plan_and_use_membership(page)
