@@ -57,7 +57,9 @@ def wait_for_redirect(page: Page, url_pattern: str | None, timeout: int = 15000)
             )
             pass
     except TimeoutError:
-        raise RuntimeError(f"❌ → No se completó la redirección a '{url_pattern}'")
+        raise RuntimeError(
+            f"❌ → Mala redirección a '{url_pattern}' | actual: '{page.url}'"
+        )
 
 
 def confirm_url(page: Page, url: str):
