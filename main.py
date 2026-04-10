@@ -1,4 +1,4 @@
-from bot.browser import launch_browser
+from bot.browser import launch_firefox, launch_chromium
 from bot.login import perform_login
 from bot.logout import perform_logout
 from bot.post_login_flow import perform_post_login_flow
@@ -48,7 +48,10 @@ def main():
         # logger.info("📭 No hay clases para ejecutar en este momento.")
         return
 
-    playwright, context, page = launch_browser(headless=env.BOT_HEADLESS)
+    if env.BOT_FORCE_RUN:
+        playwright, context, page = launch_chromium(headless=env.BOT_HEADLESS)
+    else:
+        playwright, context, page = launch_firefox(headless=env.BOT_HEADLESS)
 
     try:
 
