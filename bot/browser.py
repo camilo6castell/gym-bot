@@ -68,9 +68,15 @@ def launch_chromium(headless=False):
             "--start-maximized",
             "--disable-features=PasswordManagerOnboarding",
             "--disable-save-password-bubble",
-            "--disable-blink-features=AutomationControlled",  # ← importante
+            "--disable-blink-features=AutomationControlled",
             "--no-first-run",
             "--no-default-browser-check",
+            # ← flags para deshabilitar GPU
+            "--disable-gpu",
+            "--disable-gpu-compositing",
+            "--disable-gpu-rasterization",
+            "--disable-software-rasterizer",
+            "--disable-dev-shm-usage",  # ← ayuda en sistemas con poca memoria compartida
         ],
         ignore_default_args=["--enable-automation", "--no-sandbox"],
         no_viewport=True,

@@ -48,10 +48,7 @@ def main():
         # logger.info("📭 No hay clases para ejecutar en este momento.")
         return
 
-    if env.BOT_FORCE_RUN:
-        playwright, context, page = launch_chromium(headless=env.BOT_HEADLESS)
-    else:
-        playwright, context, page = launch_firefox(headless=env.BOT_HEADLESS)
+    playwright, context, page = launch_chromium(headless=env.BOT_HEADLESS)
 
     try:
 
