@@ -11,9 +11,6 @@ def perform_gym_class_verification(
     page: Page,
     gym_class_name,
     gym_class_hour,
-    GYM_CLASS_VERIFICATION_URL,
-    POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR,
-    INSIDE_SYSTEM_PATTERN_URL,
 ):
 
     logger.info(f"🔍 → Verificando reserva: '{gym_class_name}' | '{gym_class_hour}'")
@@ -24,15 +21,17 @@ def perform_gym_class_verification(
     search_and_click(page, "a[href='/sistema.php/entrenamiento/mis/turnos']")
     human_delay()
 
-    # Esperar que carguen las tarjetas
+    # Esperar que cargue cualquiera de los dos tipos de tarjetas
     with_soft_recovery(
-        lambda: page.wait_for_selector(".panel-proximos-turno", timeout=10000),
+        lambda: page.wait_for_selector(".panel", timeout=10000),
         page,
-        "Esperando tarjetas de próximos turnos",
+        "Esperando tarjetas de turnos",
     )
 
     ampm_hour = military_time_range_to_ampm(gym_class_hour)
-    tarjetas = page.query_selector_all(".panel-proximos-turno")
+
+    # 🔥 IMPORTANTE: capturar ambos tipos
+    tarjetas = page.query_selector_all(".panel-proximos-turno, .panel.panel-shadow")
 
     for tarjeta in tarjetas:
         texto = str_normalizer(tarjeta.inner_text())

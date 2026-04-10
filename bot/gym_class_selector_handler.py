@@ -12,9 +12,6 @@ def gym_class_selector(
     page: Page,
     gym_class_name: str,
     gym_class_hour: str,
-    GYM_CLASS_VERIFICATION_URL: str,
-    POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR: str,
-    INSIDE_SYSTEM_PATTERN_URL: str,
 ):
 
     logger.info(f"🔎 → Buscando clase '{gym_class_name}' en horario '{gym_class_hour}'")
@@ -40,18 +37,15 @@ def gym_class_selector(
                 "Agendando clase en sistema.",
             )
             logger.success(f"🤔 → ¡Reserva de {gym_class_name} completada! (?)")
-            # with_soft_recovery(
-            #     lambda: perform_gym_class_verification(
-            #         page,
-            #         gym_class_name,
-            #         gym_class_hour,
-            #         GYM_CLASS_VERIFICATION_URL,
-            #         POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR,
-            #         INSIDE_SYSTEM_PATTERN_URL,
-            #     ),
-            #     page,
-            #     f"Verificando '{gym_class_name}' a las '{gym_class_hour}'",
-            # )
+            with_soft_recovery(
+                lambda: perform_gym_class_verification(
+                    page,
+                    gym_class_name,
+                    gym_class_hour,
+                ),
+                page,
+                f"Verificando '{gym_class_name}' a las '{gym_class_hour}'",
+            )
             return
 
     logger.warning("⛔ → Clase objetivo no encontrada o no disponible")

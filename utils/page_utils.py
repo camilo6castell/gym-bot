@@ -21,7 +21,7 @@ def raise_if_captcha(page: Page):
         try:
             element = page.query_selector(selector)
         except Exception as e:
-            logger.debug(f"⚠️ → Error consultando selector '{selector}': {e}")
+            logger.info(f"⚠️ → Error consultando selector '{selector}': {e}")
             continue
         if element and element.is_visible():
             raise CaptchaDetectedError("⚠️ → CAPTCHA detectado. Completar y resumir.")
@@ -37,14 +37,14 @@ def dismiss_if_present(
     except TimeoutError:
         if is_mandatory:
             raise RuntimeError(f"❌ → Elemento '{selector}' es obligatorio.")
-        logger.debug(f"🗑️ → Elemento '{selector}' no apareció, Intentando continuar.")
+        logger.info(f"🗑️ → Elemento '{selector}' no apareció, Intentando continuar.")
 
 
 def wait_network_idle(page: Page, timeout: int = 5000):
     try:
         page.wait_for_load_state("networkidle", timeout=timeout)
     except TimeoutError:
-        logger.debug("🕒 → wait_network_idle: timeout alcanzado, continuando.")
+        logger.info("🕒 → wait_network_idle: timeout alcanzado, continuando.")
 
 
 def wait_for_redirect(page: Page, url_pattern: str | None, timeout: int = 15000):

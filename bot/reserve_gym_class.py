@@ -41,8 +41,5 @@ def perform_reserve_gym_class(
         page,
         gym_class_name,
         gym_class_hour,
-        GYM_CLASS_VERIFICATION_URL,
-        POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR,
-        INSIDE_SYSTEM_PATTERN_URL,
     )
     return True
