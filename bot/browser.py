@@ -1,7 +1,5 @@
 import os
 from playwright.sync_api import sync_playwright
-from loguru import logger
-
 
 HOME = os.path.expanduser("~")
 
@@ -11,7 +9,7 @@ HOME = os.path.expanduser("~")
 FIREFOX_PATH = "/usr/bin/firefox"
 
 
-def launch_firefox(headless=False):
+def launch_firefox(headless: bool = False):
 
     FIREFOX_PROFILE_PATH = os.path.join(
         HOME, ".config", ".mozilla", "firefox", f"edirvssi.gym-bot"

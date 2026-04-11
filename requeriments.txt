@@ -1,8 +1,13 @@
+certifi==2026.2.25
+charset-normalizer==3.4.7
 greenlet==3.3.0
+idna==3.11
 loguru==0.7.3
 playwright==1.57.0
 pyee==13.0.0
 python-dotenv==1.2.1
 pytz==2025.2
 PyYAML==6.0.3
+requests==2.33.1
 typing_extensions==4.15.0
+urllib3==2.6.3

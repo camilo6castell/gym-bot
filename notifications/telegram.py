@@ -3,10 +3,10 @@ from utils.logger import logger
 from core.env import TOKEN, CHAT_ID
 
 
-def notify(msg):
+def notify(msg: str):
     try:
         url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-        requests.post(url, json={"chat_id": CHAT_ID, "text": msg}, timeout=10)
+        _ = requests.post(url, json={"chat_id": CHAT_ID, "text": msg}, timeout=10)
     except Exception as e:
         logger.warning(f"notify falló: {e}")
 

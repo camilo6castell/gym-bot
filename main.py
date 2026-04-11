@@ -1,4 +1,4 @@
-from bot.browser import launch_firefox, launch_chromium
+from bot.browser import launch_chromium
 from bot.login import perform_login
 from bot.logout import perform_logout
 from bot.post_login_flow import perform_post_login_flow
@@ -94,9 +94,6 @@ def main():
                         env.BOT_FORCE_RUN,
                         gym_class["name"],
                         gym_class["hour"],
-                        env.GYM_CLASS_VERIFICATION_URL,
-                        env.POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR,
-                        env.INSIDE_SYSTEM_PATTERN_URL,
                     ),
                     page,
                     f"Reservando '{gym_class['name']}' | {spanish_day_name}",

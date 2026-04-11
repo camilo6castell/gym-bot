@@ -1,7 +1,6 @@
 from playwright.sync_api import Page
 from bot.day_selector_handler import select_by_day, select_latest_date
 from bot.gym_class_selector_handler import gym_class_selector
-from bot.gym_class_verification_handler import perform_gym_class_verification
 from components.membership import open_plan_and_use_membership
 from utils.page_utils import confirm_url
 from utils.logger import logger
@@ -14,9 +13,7 @@ def perform_reserve_gym_class(
     BOT_FORCE_RUN: bool,
     gym_class_name: str,
     gym_class_hour: str,
-    GYM_CLASS_VERIFICATION_URL,
-    POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR,
-    INSIDE_SYSTEM_PATTERN_URL,
+
 ) -> bool:
 
     # Siempre parte desde la URL base
