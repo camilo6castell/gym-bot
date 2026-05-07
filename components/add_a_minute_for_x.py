@@ -1,7 +1,9 @@
 from utils.logger import logger
 
 
-def should_add_a_minute_for_x(ADDITIONAL_MINUTE_FOR_EXECUTION, hour, minute):
+def should_add_a_minute_for_x(
+    ADDITIONAL_MINUTE_FOR_EXECUTION: bool, hour: int, minute: int
+) -> tuple[int, int]:
     if ADDITIONAL_MINUTE_FOR_EXECUTION:
         logger.warning("⚠️ → ¡Agregando minuto extra! ⚠️")
         minute += 1

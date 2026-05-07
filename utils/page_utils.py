@@ -1,4 +1,3 @@
-from typing import Any
 from playwright.sync_api import Page, TimeoutError
 from utils.logger import logger
 from utils.human_behavior import human_click, human_delay
@@ -31,13 +30,14 @@ def dismiss_if_present(
     page: Page, selector: str, is_mandatory: bool = False, timeout: int = 3000
 ):
     try:
-        wait_network_idle(page, timeout=timeout)
-        search_and_click(page, selector, timeout=timeout)
+        # ← espera activa al elemento, no a la red
+        page.wait_for_selector(selector, state="visible", timeout=timeout)
+        page.click(selector)
         logger.info(f"😉 → Elemento '{selector}' encontrado y clickeado.")
     except TimeoutError:
         if is_mandatory:
             raise RuntimeError(f"❌ → Elemento '{selector}' es obligatorio.")
-        logger.info(f"🗑️ → Elemento '{selector}' no apareció, Intentando continuar.")
+        logger.debug(f"🗑️ → Elemento '{selector}' no apareció, continuando.")
 
 
 def wait_network_idle(page: Page, timeout: int = 5000):
@@ -83,7 +83,7 @@ def monitor_new_page(page: Page, selector: str | None = None):
 
 def force_url(
     page: Page,
-    forced_url,
+    forced_url: str,
     selector: str | None = None,
     redirect_pattern: str | None = None,
 ):

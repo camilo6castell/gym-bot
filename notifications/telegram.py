@@ -1,4 +1,5 @@
 import requests
+from typing import Any
 from utils.logger import logger
 from core.env import TOKEN, CHAT_ID
 
@@ -11,7 +12,7 @@ def notify(msg: str):
         logger.warning(f"notify falló: {e}")
 
 
-def getUpdates():
+def getUpdates() -> dict[str, Any]:
     try:
         url = f"https://api.telegram.org/bot{TOKEN}/getUpdates"
         response = requests.get(url, timeout=10)

@@ -1,0 +1,16 @@
+{
+    "venvPath": ".",
+    "venv": ".venv",
+    "typeCheckingMode": "strict",
+    "reportMissingImports": true,
+    "reportMissingTypeStubs": false,
+    "include": [
+        "."
+    ],
+    // "include": [
+    //     "src"
+    // ],
+    "exclude": [
+        "**/__pycache__"
+    ]
+}

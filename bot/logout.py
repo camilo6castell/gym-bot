@@ -1,7 +1,7 @@
 from playwright.sync_api import Page
 from utils.human_behavior import human_delay
 from utils.logger import logger
-from utils.page_utils import dismiss_if_present, search_and_click, wait_network_idle
+from utils.page_utils import search_and_click, wait_network_idle
 from utils.recovery import with_soft_recovery
 
 

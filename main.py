@@ -5,10 +5,13 @@ from bot.post_login_flow import perform_post_login_flow
 from bot.reserve_gym_class import perform_reserve_gym_class
 
 from utils.error_broadcast import send_error_broadcast
+import asyncio
 from utils.logger import logger
 from utils.recovery import with_recovery, with_soft_recovery
 from utils.time_utils import spanish_day_mapper
 from utils.element_utils import str_normalizer
+from typing import cast
+from playwright._impl._page import Page as ImplPage
 
 from components.bot_run import get_classes
 
@@ -55,12 +58,12 @@ def main():
         with_recovery(
             lambda: perform_login(
                 page,
-                env.COMPENSAR_DOC_TYPE,
-                env.COMPENSAR_DOC_NUM,
-                env.COMPENSAR_PASSWORD,
-                env.LOGIN_URL,
-                env.POST_LOGIN_URL,
-                env.POTENTIAL_MODAL_ENTIENDO_SELECTOR,
+                cast(str, env.COMPENSAR_DOC_TYPE),
+                cast(str, env.COMPENSAR_DOC_NUM),
+                cast(str, env.COMPENSAR_PASSWORD),
+                cast(str, env.LOGIN_URL),
+                cast(str, env.POST_LOGIN_URL),
+                cast(str, env.POTENTIAL_MODAL_ENTIENDO_SELECTOR),
             ),
             page,
             "Proceso de login",
@@ -69,8 +72,8 @@ def main():
         with_soft_recovery(
             lambda: perform_post_login_flow(
                 page,
-                env.POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR,
-                env.INSIDE_SYSTEM_PATTERN_URL,
+                cast(str, env.POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR),
+                cast(str, env.INSIDE_SYSTEM_PATTERN_URL),
             ),
             page,
             "Flujo post-login",
@@ -89,7 +92,7 @@ def main():
                 with_recovery(
                     lambda: perform_reserve_gym_class(
                         page,
-                        env.INSIDE_SYSTEM_URL_PATTERN,
+                        cast(str, env.INSIDE_SYSTEM_URL_PATTERN),
                         spanish_day_name,
                         env.BOT_FORCE_RUN,
                         gym_class["name"],
@@ -100,8 +103,12 @@ def main():
                 )
 
             except Exception as e:
-                send_error_broadcast(
-                    page, f"❌ → Error reservando {gym_class['name']}: {e}"
+                page_for_broadcast = cast(ImplPage, getattr(page, "_impl_obj"))
+                asyncio.run(
+                    send_error_broadcast(
+                        page_for_broadcast,
+                        f"❌ → Error reservando {gym_class['name']}: {e}",
+                    )
                 )
 
             if index < len(tentative_classes) - 1:
@@ -111,7 +118,12 @@ def main():
         logger.success("🏁 → Flujo completado")
 
     except Exception as e:
-        send_error_broadcast(page, f"❌ → Error general durante la ejecución: {e}")
+        # send_error_broadcast is async and expects the underlying Playwright impl Page
+        try:
+            page_for_broadcast = cast(ImplPage, getattr(page, "_impl_obj"))
+            asyncio.run(send_error_broadcast(page_for_broadcast, f"❌ → Error general durante la ejecución: {e}"))
+        except Exception:
+            pass
     finally:
         try:
             perform_logout(page)

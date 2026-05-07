@@ -1,15 +1,13 @@
 import time
 from typing import Callable, Any
 from playwright.sync_api import Page
-
 from notifications.telegram import notify, getUpdates
-
 from utils.logger import logger
 from utils.exceptions import CaptchaDetectedError
 
 
 def with_soft_recovery(
-    action_fn: Callable,
+    action_fn: Callable[[], Any],
     page: Page,
     action_name: str = "please specify an action name",
     ms_to_retry: int = 5000,
@@ -42,7 +40,7 @@ def with_soft_recovery(
 
 
 def with_recovery(
-    action_fn: Callable,
+    action_fn: Callable[[], Any],
     page: Page,
     action_name: str = "acción",
     max_retries: int | None = 3,
@@ -94,7 +92,9 @@ def with_recovery(
             )
 
 
-def wait_for_user_action(error_description, timeout=600, retry_count=0) -> str:
+def wait_for_user_action(
+    error_description: str, timeout: int = 600, retry_count: int = 0
+) -> str:
     full_msg = (
         f"❌ → {error_description}."
         "\n"

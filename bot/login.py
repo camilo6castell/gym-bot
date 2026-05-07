@@ -10,11 +10,11 @@ from utils.human_behavior import human_delay, human_type, human_click
 
 def perform_login(
     page: Page,
-    COMPENSAR_DOC_TYPE,
-    COMPENSAR_DOC_NUM,
-    COMPENSAR_PASSWORD,
-    LOGIN_URL,
-    POST_LOGIN_URL,
+    COMPENSAR_DOC_TYPE: str,
+    COMPENSAR_DOC_NUM: str,
+    COMPENSAR_PASSWORD: str,
+    LOGIN_URL: str,
+    POST_LOGIN_URL: str,
     POTENTIAL_MODAL_ENTIENDO_SELECTOR: str | None = None,
 ):
     logger.info("🌐 → Abriendo página de login")

@@ -8,12 +8,11 @@ from utils.logger import logger
 
 def perform_reserve_gym_class(
     page: Page,
-    INSIDE_SYSTEM_URL_PATTERN,
-    spanish_day_name,
+    INSIDE_SYSTEM_URL_PATTERN: str,
+    spanish_day_name: str,
     BOT_FORCE_RUN: bool,
     gym_class_name: str,
     gym_class_hour: str,
-
 ) -> bool:
 
     # Siempre parte desde la URL base

@@ -31,14 +31,12 @@ def launch_firefox(headless: bool = False):
 
     # Stealth — Firefox ya no expone navigator.webdriver por defecto
     # pero lo dejamos por si acaso
-    context.add_init_script(
-        """
+    context.add_init_script("""
             Object.defineProperty(navigator, 'webdriver', {
                 get: () => undefined
             });
             window.chrome = undefined; 
-        """
-    )
+        """)
 
     page = context.pages[0] if context.pages else context.new_page()
     page.set_default_timeout(30000)
@@ -55,7 +53,7 @@ REAL_PROFILE_PATH = os.path.join(HOME, ".config", "chromium")
 CHROMIUM_PATH = "/usr/bin/chromium"
 
 
-def launch_chromium(headless=False):
+def launch_chromium(headless: bool = False):
     playwright = sync_playwright().start()
 
     context = playwright.chromium.launch_persistent_context(
@@ -83,8 +81,7 @@ def launch_chromium(headless=False):
     )
 
     # stealth básico limpio
-    context.add_init_script(
-        """
+    context.add_init_script("""
             Object.defineProperty(navigator, 'webdriver', {
                 get: () => undefined
             });
@@ -95,8 +92,7 @@ def launch_chromium(headless=False):
                 get: () => ['es-CO', 'es', 'en']
             });
             window.chrome = { runtime: {} };
-        """
-    )
+        """)
 
     page = context.pages[0] if context.pages else context.new_page()
     page.set_default_timeout(30000)

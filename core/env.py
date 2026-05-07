@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 from dotenv import load_dotenv
 from core.env_utils import env_bool, load_schedule
 

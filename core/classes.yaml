@@ -17,6 +17,8 @@ days:
   tuesday:
     - name: PD Yoga
       hour: "06:00 - 07:00"
+    - name: Balance
+      hour: "07:00 - 08:00"
 
   #VIERNES
   wednesday:

@@ -3,7 +3,7 @@ from bot.gym_class_confirmation_handler import gym_class_confirmation
 from bot.gym_class_verification_handler import perform_gym_class_verification
 from utils.logger import logger
 from utils.human_behavior import human_delay
-from utils.recovery import with_recovery, with_soft_recovery
+from utils.recovery import with_soft_recovery
 from utils.element_utils import str_normalizer
 from utils.page_utils import wait_network_idle
 

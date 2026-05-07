@@ -1,5 +1,7 @@
 import sys
 from pathlib import Path
+from typing import Optional
+import datetime as dt_module
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -19,9 +21,9 @@ def get_now():
     return datetime.datetime.now(tz)
 
 
-def find_next_reservation():
+def find_next_reservation() -> Optional[datetime.datetime]:
     now = get_now()
-    upcoming = []
+    upcoming: list[datetime.datetime] = []
 
     for day_name, gym_classes in SCHEDULE.get("days", {}).items():
 
@@ -49,7 +51,7 @@ def find_next_reservation():
     return min(upcoming) if upcoming else None
 
 
-def set_wake_alarm(dt):
+def set_wake_alarm(dt: dt_module.datetime) -> None:
     timestamp = int(dt.timestamp())
     with open(WAKEALARM_PATH, "w") as f:
         f.write("0")

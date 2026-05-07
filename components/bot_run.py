@@ -6,7 +6,11 @@ from components.add_a_minute_for_x import should_add_a_minute_for_x
 from core.env import SCHEDULE
 
 
-def is_force_run(BOT_FORCE_RUN_CLASS, BOT_FORCE_RUN_HOUR, BOT_FORCE_RUN_DAY):
+def is_force_run(
+    BOT_FORCE_RUN_CLASS: str | None,
+    BOT_FORCE_RUN_HOUR: str | None,
+    BOT_FORCE_RUN_DAY: str | None,
+) -> list[dict[str, str]]:
     logger.warning("⚠️  → BOT_FORCE_RUN activo ⚠️")
 
     if not BOT_FORCE_RUN_CLASS or not BOT_FORCE_RUN_HOUR or not BOT_FORCE_RUN_DAY:
@@ -24,8 +28,8 @@ def is_force_run(BOT_FORCE_RUN_CLASS, BOT_FORCE_RUN_HOUR, BOT_FORCE_RUN_DAY):
 
 
 def is_regular_run(
-    ADDITIONAL_MINUTE_FOR_EXECUTION,
-):
+    ADDITIONAL_MINUTE_FOR_EXECUTION: bool,
+) -> list[dict[str, str]]:
     if not SCHEDULE or "days" not in SCHEDULE:
         return []
 
@@ -37,7 +41,7 @@ def is_regular_run(
     # 🔥 Siempre 2 días atrás
     target_weekday = (now.weekday() - 2) % 7
 
-    gym_classes = []
+    gym_classes: list[dict[str, str]] = []
 
     for day_name, day_classes in SCHEDULE.get("days", {}).items():
 
@@ -68,11 +72,11 @@ def is_regular_run(
 
 
 def get_classes(
-    BOT_FORCE_RUN,
-    BOT_FORCE_RUN_CLASS,
-    BOT_FORCE_RUN_HOUR,
-    BOT_FORCE_RUN_DAY,
-    ADDITIONAL_MINUTE_FOR_EXECUTION,
+    BOT_FORCE_RUN: bool,
+    BOT_FORCE_RUN_CLASS: str | None,
+    BOT_FORCE_RUN_HOUR: str | None,
+    BOT_FORCE_RUN_DAY: str | None,
+    ADDITIONAL_MINUTE_FOR_EXECUTION: bool,
 ):
     return (
         is_force_run(BOT_FORCE_RUN_CLASS, BOT_FORCE_RUN_HOUR, BOT_FORCE_RUN_DAY)

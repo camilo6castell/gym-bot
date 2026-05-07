@@ -1,11 +1,19 @@
 import random
 import time
+from typing import Optional
+
 from loguru import logger
-from playwright.sync_api import Page
+from playwright.sync_api import Page, ElementHandle
 
 
-def wait_for_element_with_retry(page, selector, max_retries=3, timeout=10000):
-    """Espera elemento con reintentos inteligentes"""
+def wait_for_element_with_retry(
+    page: Page, selector: str, max_retries: int = 3, timeout: int = 10000
+) -> Optional[ElementHandle]:
+    """Espera elemento con reintentos inteligentes
+
+    Retorna ElementHandle si se encuentra, None si wait_for_selector devuelve None.
+    Puede lanzar excepciones si falla tras los reintentos.
+    """
     for attempt in range(max_retries):
         try:
             element = page.wait_for_selector(selector, timeout=timeout)
@@ -81,7 +89,7 @@ def check_for_captcha(page: Page) -> bool:
     return False
 
 
-def handle_page_load(page: Page, wait_on_soft_captcha=True) -> bool:
+def handle_page_load(page: Page, wait_on_soft_captcha: bool = True) -> bool:
     """
     Manejo inteligente de carga:
     - Espera networkidle
