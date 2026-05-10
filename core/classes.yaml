@@ -37,11 +37,11 @@ days:
       # hour: "19:28 - 08:00"
 
   #DOMINGO
-  # friday:
-  #   - name: test1
-  #     hour: "16:45 - 08:00"
-  #   - name: test2
-  #     hour: "16:49 - 08:00"
+  friday:
+    - name: Estiramiento
+      hour: "06:00 - 07:00"
+    - name: Pilates
+      hour: "07:00 - 08:00"
   
   #LUNES
   saturday:
