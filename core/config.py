@@ -51,6 +51,13 @@ class Config:
                 "BOT_HEADLESS",
             ]:
                 self._env_vars[key] = env_bool(value)
+            elif key in ["WAKE_MINUTES_BEFORE", "SLEEP_MINUTES_AFTER"]:
+                try:
+                    self._env_vars[key] = float(value)
+                except ValueError:
+                    raise ValueError(
+                        f"Variable de entorno '{key}' debe ser un número. {description}"
+                    )
             elif key == "HOME_USER":
                 self._env_vars[key] = os.path.expanduser(value)
                 self._env_vars["CHROMIUM_PROFILE_PATH"] = os.path.join(

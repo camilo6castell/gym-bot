@@ -19,16 +19,9 @@ dist/
 build/
 *.egg-info/
 
-# Variables de entorno (¡Muy importante para seguridad!)
-#.env
-
 # Archivos específicos del sistema operativo
 .DS_Store
 Thumbs.db
-
-# Configuración de editores (Opcional, pero recomendado)
-.vscode/
-.idea/
 
 # Estado del navegador para Playwright
 bot/state/
