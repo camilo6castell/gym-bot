@@ -1,3 +1,4 @@
+from core.config import Config
 from playwright.sync_api import Page
 from utils.logger import logger
 from utils.page_utils import (
@@ -7,19 +8,17 @@ from utils.page_utils import (
 )
 from utils.human_behavior import human_delay, human_type, human_click
 
+config = Config(env_file=".env")
 
-def perform_login(
-    page: Page,
-    COMPENSAR_DOC_TYPE: str,
-    COMPENSAR_DOC_NUM: str,
-    COMPENSAR_PASSWORD: str,
-    LOGIN_URL: str,
-    POST_LOGIN_URL: str,
-    POTENTIAL_MODAL_ENTIENDO_SELECTOR: str | None = None,
-):
+
+def perform_login(page: Page):
     logger.info("🌐 → Abriendo página de login")
-    page.goto(LOGIN_URL, wait_until="domcontentloaded")
-    human_delay(1.5, 2.5)
+    page.goto(config.get("LOGIN_URL"), wait_until="domcontentloaded")
+
+    # human_delay(1.5, 2.5)
+    human_delay(
+        10, 15
+    )  # Espera más larga para asegurar que todo cargue, especialmente en conexiones lentas
 
     raise_if_captcha(page)
 
@@ -28,18 +27,18 @@ def perform_login(
     page.wait_for_selector("#tipodoc", timeout=20000)
     human_click(page, "#tipodoc")
     human_delay(0.6, 1.2)
-    page.select_option("#tipodoc", value=COMPENSAR_DOC_TYPE)
+    page.select_option("#tipodoc", value=config.get("COMPENSAR_DOC_TYPE"))
     human_delay(0.8, 1.5)
 
     # Número documento
     page.wait_for_selector("#numdoc:not([disabled])", timeout=10000)
     logger.info("🫆  → Ingresando número de documento")
-    human_type(page, "#numdoc", COMPENSAR_DOC_NUM)
+    human_type(page, "#numdoc", config.get("COMPENSAR_DOC_NUM"))
     human_delay(0.6, 1.2)
 
     # Contraseña
     logger.info("🫆  → Ingresando contraseña")
-    human_type(page, "#clavepwd", COMPENSAR_PASSWORD)
+    human_type(page, "#clavepwd", config.get("COMPENSAR_PASSWORD"))
     human_delay(0.8, 1.5)
     raise_if_captcha(page)
 
@@ -54,6 +53,6 @@ def perform_login(
 
     # Sometimes, after login, there's an unexpected "Entiendo" button (cookie/privacy related).
     # If it appears, we click it and continue. This is handled in monitor_new_page.
-    monitor_new_page(page, POTENTIAL_MODAL_ENTIENDO_SELECTOR)
+    monitor_new_page(page, config.get("POTENTIAL_MODAL_ENTIENDO_SELECTOR"))
 
-    wait_for_redirect(page, POST_LOGIN_URL)
+    wait_for_redirect(page, config.get("POST_LOGIN_URL"))

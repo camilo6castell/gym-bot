@@ -1,40 +1,40 @@
 import pytz
+from core.config import Config
 from datetime import datetime
 from utils.time_utils import days_mapper
 from utils.logger import logger
 from components.add_a_minute_for_x import should_add_a_minute_for_x
-from core.env import SCHEDULE
+
+config = Config(env_file=".env")
 
 
-def is_force_run(
-    BOT_FORCE_RUN_CLASS: str | None,
-    BOT_FORCE_RUN_HOUR: str | None,
-    BOT_FORCE_RUN_DAY: str | None,
-) -> list[dict[str, str]]:
+def is_force_run() -> list[dict[str, str]]:
     logger.warning("⚠️  → BOT_FORCE_RUN activo ⚠️")
 
-    if not BOT_FORCE_RUN_CLASS or not BOT_FORCE_RUN_HOUR or not BOT_FORCE_RUN_DAY:
+    if (
+        not config.get("BOT_FORCE_RUN_CLASS")
+        or not config.get("BOT_FORCE_RUN_HOUR")
+        or not config.get("BOT_FORCE_RUN_DAY")
+    ):
         raise ValueError(
             "❌ → Error BOT_FORCE_RUN activo pero faltan datos de clase forzada."
         )
 
     return [
         {
-            "name": BOT_FORCE_RUN_CLASS,
-            "hour": BOT_FORCE_RUN_HOUR,
-            "day": BOT_FORCE_RUN_DAY,
+            "name": config.get("BOT_FORCE_RUN_CLASS"),
+            "hour": config.get("BOT_FORCE_RUN_HOUR"),
+            "day": config.get("BOT_FORCE_RUN_DAY"),
         }
     ]
 
 
-def is_regular_run(
-    ADDITIONAL_MINUTE_FOR_EXECUTION: bool,
-) -> list[dict[str, str]]:
-    if not SCHEDULE or "days" not in SCHEDULE:
+def is_regular_run() -> list[dict[str, str]]:
+    if not config.get("SCHEDULE") or "days" not in config.get("SCHEDULE"):
         return []
 
     # 🕒 Zona horaria segura
-    timezone_str = SCHEDULE.get("timezone", "UTC")
+    timezone_str = config.get("SCHEDULE").get("timezone", "UTC")
     tz = pytz.timezone(timezone_str)
     now = datetime.now(tz)
 
@@ -43,7 +43,7 @@ def is_regular_run(
 
     gym_classes: list[dict[str, str]] = []
 
-    for day_name, day_classes in SCHEDULE.get("days", {}).items():
+    for day_name, day_classes in config.get("SCHEDULE").get("days", {}).items():
 
         if days_mapper(day_name) != target_weekday:
             continue
@@ -61,7 +61,7 @@ def is_regular_run(
 
             # ➕ Agregar minuto adicional si está activado
             activation_hour, activation_minute = should_add_a_minute_for_x(
-                ADDITIONAL_MINUTE_FOR_EXECUTION, hour, minute
+                config.get("ADDITIONAL_MINUTE_FOR_EXECUTION"), hour, minute
             )
 
             # 🎯 Comparación exacta
@@ -71,15 +71,6 @@ def is_regular_run(
     return gym_classes
 
 
-def get_classes(
-    BOT_FORCE_RUN: bool,
-    BOT_FORCE_RUN_CLASS: str | None,
-    BOT_FORCE_RUN_HOUR: str | None,
-    BOT_FORCE_RUN_DAY: str | None,
-    ADDITIONAL_MINUTE_FOR_EXECUTION: bool,
-):
-    return (
-        is_force_run(BOT_FORCE_RUN_CLASS, BOT_FORCE_RUN_HOUR, BOT_FORCE_RUN_DAY)
-        if BOT_FORCE_RUN
-        else is_regular_run(ADDITIONAL_MINUTE_FOR_EXECUTION)
-    )
+def get_classes():
+    print(config.get("BOT_FORCE_RUN"))
+    return is_force_run() if config.get("BOT_FORCE_RUN") else is_regular_run()

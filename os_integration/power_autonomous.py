@@ -1,20 +1,18 @@
 import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
 import time
 import datetime
+from pathlib import Path
+from core.config import Config
 from os_integration.os_integration_utils import (
     get_now,
     find_next_reservation,
     set_wake_alarm,
     suspend,
 )
-from core.env import (
-    WAKE_MINUTES_BEFORE,
-    SLEEP_MINUTES_AFTER,
-)
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+config = Config(env_file=".env")
 
 
 def main():
@@ -23,8 +21,12 @@ def main():
         print("No upcoming reservations")
         return
 
-    wake_time = next_reservation - datetime.timedelta(minutes=WAKE_MINUTES_BEFORE)
-    sleep_time = next_reservation + datetime.timedelta(minutes=SLEEP_MINUTES_AFTER)
+    wake_time = next_reservation - datetime.timedelta(
+        minutes=config.get("WAKE_MINUTES_BEFORE")
+    )
+    sleep_time = next_reservation + datetime.timedelta(
+        minutes=config.get("SLEEP_MINUTES_AFTER")
+    )
     now = get_now()
 
     print("Now:", now)
@@ -45,7 +47,9 @@ def main():
             print("No upcoming reservations after sleep")
             return
 
-        next_wake = next_reservation - datetime.timedelta(minutes=WAKE_MINUTES_BEFORE)
+        next_wake = next_reservation - datetime.timedelta(
+            minutes=config.get("WAKE_MINUTES_BEFORE")
+        )
 
         set_wake_alarm(next_wake)
         print("Suspending for next reservation at:", next_wake)

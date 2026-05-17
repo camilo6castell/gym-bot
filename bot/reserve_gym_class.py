@@ -1,3 +1,4 @@
+from core.config import Config
 from playwright.sync_api import Page
 from bot.day_selector_handler import select_by_day, select_latest_date
 from bot.gym_class_selector_handler import gym_class_selector
@@ -5,12 +6,12 @@ from components.membership import open_plan_and_use_membership
 from utils.page_utils import confirm_url
 from utils.logger import logger
 
+config = Config(env_file=".env")
+
 
 def perform_reserve_gym_class(
     page: Page,
-    INSIDE_SYSTEM_URL_PATTERN: str,
     spanish_day_name: str,
-    BOT_FORCE_RUN: bool,
     gym_class_name: str,
     gym_class_hour: str,
 ) -> bool:
@@ -18,14 +19,14 @@ def perform_reserve_gym_class(
     # Siempre parte desde la URL base
     confirm_url(
         page,
-        INSIDE_SYSTEM_URL_PATTERN,
+        config.get("INSIDE_SYSTEM_URL"),
     )
 
     open_plan_and_use_membership(page)
 
     day_selected = (
         select_by_day(page, spanish_day_name)
-        if BOT_FORCE_RUN
+        if config.get("BOT_FORCE_RUN")
         else select_latest_date(page)
     )
 

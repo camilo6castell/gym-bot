@@ -1,25 +1,19 @@
-import os
+from core.config import Config
 from playwright.sync_api import sync_playwright
 
-HOME = os.path.expanduser("~")
+config = Config(env_file=".env")
 
-# ----------------------------
+
 # FIREFOX (USANDO UN PERFIL REAL)
-# ----------------------------
-FIREFOX_PATH = "/usr/bin/firefox"
 
 
 def launch_firefox(headless: bool = False):
 
-    FIREFOX_PROFILE_PATH = os.path.join(
-        HOME, ".config", ".mozilla", "firefox", f"edirvssi.gym-bot"
-    )
-
     playwright = sync_playwright().start()
 
     context = playwright.firefox.launch_persistent_context(
-        user_data_dir=FIREFOX_PROFILE_PATH,
-        executable_path=FIREFOX_PATH,
+        user_data_dir=config.get("FIREFOX_PROFILE_PATH"),
+        executable_path=config.get("FIREFOX_PATH"),
         headless=headless,
         args=[],  # Firefox ignora la mayoría de flags de Chromium
         no_viewport=True,
@@ -44,22 +38,16 @@ def launch_firefox(headless: bool = False):
     return playwright, context, page
 
 
-# ----------------------------
 # CHROMIUM (USANDO TU PERFIL REAL)
-# ----------------------------
-
-# REAL_PROFILE_PATH = os.path.join(HOME, ".config", "chromium-bot")
-REAL_PROFILE_PATH = os.path.join(HOME, ".config", "chromium")
-CHROMIUM_PATH = "/usr/bin/chromium"
 
 
-def launch_chromium(headless: bool = False):
+def launch_chromium():
     playwright = sync_playwright().start()
 
     context = playwright.chromium.launch_persistent_context(
-        user_data_dir=REAL_PROFILE_PATH,
-        executable_path=CHROMIUM_PATH,
-        headless=headless,
+        user_data_dir=config.get("CHROMIUM_PROFILE_PATH"),
+        executable_path=config.get("CHROMIUM_PATH"),
+        headless=config.get("BOT_HEADLESS"),
         args=[
             "--start-maximized",
             "--disable-features=PasswordManagerOnboarding",

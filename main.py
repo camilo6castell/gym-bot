@@ -15,66 +15,28 @@ from playwright._impl._page import Page as ImplPage
 
 from components.bot_run import get_classes
 
-from core import env
-
 
 def main():
 
-    # 1. Validar credenciales — estas SÍ deben existir siempre
-    if not all(
-        [
-            env.COMPENSAR_DOC_TYPE,
-            env.COMPENSAR_DOC_NUM,
-            env.COMPENSAR_PASSWORD,
-            env.LOGIN_URL,
-            env.POST_LOGIN_URL,
-            env.GYM_CLASS_VERIFICATION_URL,
-            env.POTENTIAL_MODAL_ENTIENDO_SELECTOR,
-            env.POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR,
-            env.INSIDE_SYSTEM_PATTERN_URL,
-            env.INSIDE_SYSTEM_URL_PATTERN,
-        ]
-    ):
-        logger.error("❌ Faltan credenciales de acceso en .env")
-        return
-
-    # 2. Obtener clases — la lógica force/regular ya está en get_classes
-    tentative_classes = get_classes(
-        env.BOT_FORCE_RUN,
-        env.BOT_FORCE_RUN_CLASS,
-        env.BOT_FORCE_RUN_HOUR,
-        env.BOT_FORCE_RUN_DAY,
-        env.ADDITIONAL_MINUTE_FOR_EXECUTION,
-    )
+    # 1. Obtener clases — la lógica force/regular ya está en get_classes
+    tentative_classes = get_classes()
 
     if not tentative_classes:
         # logger.info("📭 No hay clases para ejecutar en este momento.")
         return
 
-    playwright, context, page = launch_chromium(headless=env.BOT_HEADLESS)
+    playwright, context, page = launch_chromium()
 
     try:
 
         with_recovery(
-            lambda: perform_login(
-                page,
-                cast(str, env.COMPENSAR_DOC_TYPE),
-                cast(str, env.COMPENSAR_DOC_NUM),
-                cast(str, env.COMPENSAR_PASSWORD),
-                cast(str, env.LOGIN_URL),
-                cast(str, env.POST_LOGIN_URL),
-                cast(str, env.POTENTIAL_MODAL_ENTIENDO_SELECTOR),
-            ),
+            lambda: perform_login(page),
             page,
             "Proceso de login",
         )
 
         with_soft_recovery(
-            lambda: perform_post_login_flow(
-                page,
-                cast(str, env.POTENTIAL_INTERMEDIATE_LOGIN_SELECTOR),
-                cast(str, env.INSIDE_SYSTEM_PATTERN_URL),
-            ),
+            lambda: perform_post_login_flow(page),
             page,
             "Flujo post-login",
         )
@@ -92,9 +54,7 @@ def main():
                 with_recovery(
                     lambda: perform_reserve_gym_class(
                         page,
-                        cast(str, env.INSIDE_SYSTEM_URL_PATTERN),
                         spanish_day_name,
-                        env.BOT_FORCE_RUN,
                         gym_class["name"],
                         gym_class["hour"],
                     ),
@@ -121,7 +81,11 @@ def main():
         # send_error_broadcast is async and expects the underlying Playwright impl Page
         try:
             page_for_broadcast = cast(ImplPage, getattr(page, "_impl_obj"))
-            asyncio.run(send_error_broadcast(page_for_broadcast, f"❌ → Error general durante la ejecución: {e}"))
+            asyncio.run(
+                send_error_broadcast(
+                    page_for_broadcast, f"❌ → Error general durante la ejecución: {e}"
+                )
+            )
         except Exception:
             pass
     finally:

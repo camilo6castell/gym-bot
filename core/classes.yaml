@@ -1,11 +1,10 @@
 timezone: America/Bogota
 
 days:
-
   #MIERCOLES
   monday:
-  #  - name: Tono Mixto
-  #    hour: "05:00 - 06:00"
+    #  - name: Tono Mixto
+    #    hour: "05:00 - 06:00"
     - name: Pilates
       hour: "06:00 - 07:00"
     - name: Estiramiento
@@ -22,8 +21,8 @@ days:
 
   #VIERNES
   wednesday:
-  #  - name: Pilates
-  #    hour: "05:00 - 06:00"
+    #  - name: Pilates
+    #    hour: "05:00 - 06:00"
     - name: Estiramiento
       hour: "06:00 - 07:00"
     - name: Pilates
@@ -31,6 +30,8 @@ days:
 
   #SABADO
   thursday:
+    - name: Bases Inestables
+      hour: "06:00 - 07:00"
     - name: Estiramiento
       hour: "07:00 - 08:00"
       # name: test
@@ -42,14 +43,14 @@ days:
       hour: "06:00 - 07:00"
     - name: Pilates
       hour: "07:00 - 08:00"
-  
+
   #LUNES
   saturday:
     - name: Pilates
       hour: "06:00 - 07:00"
     - name: Bases Inestables
       hour: "07:00 - 08:00"
-      
+
   #MARTES
   # sunday:
   #   - name: Test

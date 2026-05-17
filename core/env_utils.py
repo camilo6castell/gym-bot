@@ -1,5 +1,4 @@
 import yaml
-import os
 from typing import Any
 from pathlib import Path
 
@@ -8,11 +7,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SCHEDULE_FILE = BASE_DIR / "core" / "classes.yaml"
 
 
-def env_bool(name: str, default: bool = False) -> bool:
-    value = os.getenv(name)
-    if value is None:
-        return default
-    return value.lower() in ("1", "true", "yes", "on")
+def env_bool(name: str) -> bool:
+    return name.lower() in ("1", "true", "yes", "on")
 
 
 def load_schedule() -> dict[str, Any]:

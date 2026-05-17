@@ -1,19 +1,19 @@
 import sys
-from pathlib import Path
-from typing import Optional
-import datetime as dt_module
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
 import pytz
 import datetime
 import subprocess
-
+import datetime as dt_module
+from pathlib import Path
+from typing import Optional
 from utils.time_utils import days_mapper
-from core.env import (
-    SCHEDULE,
-    WAKEALARM_PATH,
-)
+from core.config import Config
+from core.env_utils import load_schedule
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+config = Config(env_file=".env")
+
+SCHEDULE = load_schedule()
 
 
 def get_now():
@@ -53,9 +53,10 @@ def find_next_reservation() -> Optional[datetime.datetime]:
 
 def set_wake_alarm(dt: dt_module.datetime) -> None:
     timestamp = int(dt.timestamp())
-    with open(WAKEALARM_PATH, "w") as f:
+    wakealarm_path: str = config.get("WAKEALARM_PATH")
+    with open(wakealarm_path, "w") as f:
         f.write("0")
-    with open(WAKEALARM_PATH, "w") as f:
+    with open(wakealarm_path, "w") as f:
         f.write(str(timestamp))
 
 
