@@ -5,19 +5,17 @@ import subprocess
 import datetime as dt_module
 from pathlib import Path
 from typing import Optional
-from utils.time_utils import days_mapper
-from core.config import Config
-from core.env_utils import load_schedule
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-config = Config(env_file=".env")
+from utils.time_utils import days_mapper
+from core.config import Config
 
-SCHEDULE = load_schedule()
+config = Config(env_file=".env")
 
 
 def get_now():
-    tz = pytz.timezone(SCHEDULE.get("timezone", "UTC"))
+    tz = pytz.timezone(config.get("SCHEDULE").get("timezone", "UTC"))
     return datetime.datetime.now(tz)
 
 
@@ -25,7 +23,7 @@ def find_next_reservation() -> Optional[datetime.datetime]:
     now = get_now()
     upcoming: list[datetime.datetime] = []
 
-    for day_name, gym_classes in SCHEDULE.get("days", {}).items():
+    for day_name, gym_classes in config.get("SCHEDULE").get("days", {}).items():
 
         reservation_weekday = (days_mapper(day_name) + 2) % 7
 

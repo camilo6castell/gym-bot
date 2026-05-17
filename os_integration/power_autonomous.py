@@ -2,6 +2,9 @@ import sys
 import time
 import datetime
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from core.config import Config
 from os_integration.os_integration_utils import (
     get_now,
@@ -9,8 +12,6 @@ from os_integration.os_integration_utils import (
     set_wake_alarm,
     suspend,
 )
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 config = Config(env_file=".env")
 

@@ -1,57 +1,64 @@
 timezone: America/Bogota
 
+forcedClass:
+  name: Rumba
+  hour: 08:00 - 09:00
+  day: monday
+
 days:
   #MIERCOLES
   monday:
     #  - name: Tono Mixto
-    #    hour: "05:00 - 06:00"
+    #    hour: 05:00 - 06:00
     - name: Pilates
-      hour: "06:00 - 07:00"
+      hour: 06:00 - 07:00
     - name: Estiramiento
-      hour: "07:00 - 08:00"
+      hour: 07:00 - 08:00
     # - name: test
-    #   hour: "20:24 - 08:00"
+    #   hour: 20:24 - 08:00
 
   #JUEVES
   tuesday:
     - name: PD Yoga
-      hour: "06:00 - 07:00"
+      hour: 06:00 - 07:00
     - name: Balance
-      hour: "07:00 - 08:00"
+      hour: 07:00 - 08:00
 
   #VIERNES
   wednesday:
     #  - name: Pilates
-    #    hour: "05:00 - 06:00"
+    #    hour: 05:00 - 06:00
     - name: Estiramiento
-      hour: "06:00 - 07:00"
+      hour: 06:00 - 07:00
     - name: Pilates
-      hour: "07:00 - 08:00"
+      hour: 07:00 - 08:00
 
   #SABADO
   thursday:
     - name: Bases Inestables
-      hour: "06:00 - 07:00"
+      hour: 06:00 - 07:00
     - name: Estiramiento
-      hour: "07:00 - 08:00"
+      hour: 07:00 - 08:00
       # name: test
-      # hour: "19:28 - 08:00"
+      # hour: 19:28 - 08:00
 
   #DOMINGO
   friday:
     - name: Estiramiento
-      hour: "06:00 - 07:00"
+      hour: 06:00 - 07:00
     - name: Pilates
-      hour: "07:00 - 08:00"
+      hour: 07:00 - 08:00
+    - name: test
+      hour: 10:38 - 08:00
 
   #LUNES
   saturday:
     - name: Pilates
-      hour: "06:00 - 07:00"
+      hour: 06:00 - 07:00
     - name: Bases Inestables
-      hour: "07:00 - 08:00"
+      hour: 07:00 - 08:00
 
   #MARTES
   # sunday:
   #   - name: Test
-  #     hour: "15:53 - 23:00"
+  #     hour: 15:53 - 23:00

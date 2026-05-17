@@ -18,7 +18,7 @@ from components.bot_run import get_classes
 
 def main():
 
-    # 1. Obtener clases — la lógica force/regular ya está en get_classes
+    # Obtener clases — la lógica force/regular ya está en get_classes
     tentative_classes = get_classes()
 
     if not tentative_classes:

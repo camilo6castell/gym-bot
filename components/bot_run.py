@@ -6,35 +6,32 @@ from utils.logger import logger
 from components.add_a_minute_for_x import should_add_a_minute_for_x
 
 config = Config(env_file=".env")
+schedule = config.get("SCHEDULE")
 
 
 def is_force_run() -> list[dict[str, str]]:
     logger.warning("⚠️  → BOT_FORCE_RUN activo ⚠️")
 
+    forcedClass = schedule.get("forcedClass")
+
     if (
-        not config.get("BOT_FORCE_RUN_CLASS")
-        or not config.get("BOT_FORCE_RUN_HOUR")
-        or not config.get("BOT_FORCE_RUN_DAY")
+        not forcedClass.get("name")
+        or not forcedClass.get("hour")
+        or not forcedClass.get("day")
     ):
         raise ValueError(
             "❌ → Error BOT_FORCE_RUN activo pero faltan datos de clase forzada."
         )
 
-    return [
-        {
-            "name": config.get("BOT_FORCE_RUN_CLASS"),
-            "hour": config.get("BOT_FORCE_RUN_HOUR"),
-            "day": config.get("BOT_FORCE_RUN_DAY"),
-        }
-    ]
+    return [forcedClass]
 
 
 def is_regular_run() -> list[dict[str, str]]:
-    if not config.get("SCHEDULE") or "days" not in config.get("SCHEDULE"):
+    if not schedule or "days" not in schedule:
         return []
 
     # 🕒 Zona horaria segura
-    timezone_str = config.get("SCHEDULE").get("timezone", "UTC")
+    timezone_str = schedule.get("timezone")
     tz = pytz.timezone(timezone_str)
     now = datetime.now(tz)
 
@@ -43,7 +40,7 @@ def is_regular_run() -> list[dict[str, str]]:
 
     gym_classes: list[dict[str, str]] = []
 
-    for day_name, day_classes in config.get("SCHEDULE").get("days", {}).items():
+    for day_name, day_classes in schedule.get("days", {}).items():
 
         if days_mapper(day_name) != target_weekday:
             continue
@@ -72,5 +69,4 @@ def is_regular_run() -> list[dict[str, str]]:
 
 
 def get_classes():
-    print(config.get("BOT_FORCE_RUN"))
     return is_force_run() if config.get("BOT_FORCE_RUN") else is_regular_run()

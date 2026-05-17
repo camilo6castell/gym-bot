@@ -2,7 +2,7 @@
 import os
 from typing import Dict, Any, Optional
 from dotenv import load_dotenv
-from .env_utils import env_bool  # Asegúrate de importar env_bool
+from .env_utils import env_bool, load_schedule  # Asegúrate de importar env_bool
 
 
 class Config:
@@ -25,9 +25,6 @@ class Config:
             "INSIDE_SYSTEM_URL": "URL base dentro del sistema",
             "INSIDE_SYSTEM_URL_PATTERN": "Patrón de URL para clases",
             "BOT_FORCE_RUN": "Forzar ejecución de clases",
-            "BOT_FORCE_RUN_CLASS": "Clase específica para forzar",
-            "BOT_FORCE_RUN_HOUR": "Hora para forzar",
-            "BOT_FORCE_RUN_DAY": "Día para forzar",
             "ADDITIONAL_MINUTE_FOR_EXECUTION": "Minutos adicionales para ejecución",
             "BOT_HEADLESS": "Ejecutar en modo headless",
             "WAKE_MINUTES_BEFORE": "Minutos antes de despertar",
@@ -71,6 +68,8 @@ class Config:
                     )
             else:
                 self._env_vars[key] = value
+
+        self._env_vars["SCHEDULE"] = load_schedule()
 
     @property
     def env_vars(self) -> Dict[str, Any]:
