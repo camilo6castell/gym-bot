@@ -11,7 +11,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from utils.time_utils import days_mapper
 from core.config import Config
 
-config = Config(env_file=".env")
+ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
+config = Config(env_file=str(ENV_FILE))
 
 
 def get_now():

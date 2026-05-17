@@ -11,7 +11,8 @@ from os_integration.os_integration_utils import (
     suspend,
 )
 
-config = Config(env_file=".env")
+ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
+config = Config(env_file=str(ENV_FILE))
 
 
 def main():
