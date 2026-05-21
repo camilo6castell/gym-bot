@@ -4,7 +4,7 @@ from utils.page_utils import wait_network_idle
 from utils.recovery import with_soft_recovery
 
 
-def open_plan_and_use_membership(page: Page):
+def perform_open_plan_and_use_membership(page: Page):
 
     logger.info("🔎 → Buscando botones 'Usar Membresía' o 'Usar tiquetera'...")
 

@@ -1,8 +1,8 @@
 from bot.browser import launch_chromium
-from bot.login import perform_login
-from bot.logout import perform_logout
-from bot.post_login_flow import perform_post_login_flow
-from bot.reserve_gym_class import perform_reserve_gym_class
+from components.login_handler import perform_login
+from components.logout_handler import perform_logout
+from components.post_login_handler import perform_post_login
+from components.reserve_gym_class_process_handler import perform_reserve_gym_class
 
 from utils.error_broadcast import send_error_broadcast
 import asyncio
@@ -13,7 +13,7 @@ from utils.element_utils import str_normalizer
 from typing import cast
 from playwright._impl._page import Page as ImplPage
 
-from components.bot_run import get_classes
+from bot.bot_run import get_classes
 
 
 def main():
@@ -36,12 +36,12 @@ def main():
         )
 
         with_soft_recovery(
-            lambda: perform_post_login_flow(page),
+            lambda: perform_post_login(page),
             page,
             "Flujo post-login",
         )
 
-        logger.info(f"🥁 → Iniciando iteraciones de clases. URL: {page.url}")
+        logger.info(f"🥁 → Iniciando iteraciones de clases.")
 
         for index, gym_class in enumerate(tentative_classes):
             spanish_day_name = spanish_day_mapper(str_normalizer(gym_class["day"]))

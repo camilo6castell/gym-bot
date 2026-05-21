@@ -1,8 +1,11 @@
 from core.config import Config
 from playwright.sync_api import Page
-from bot.day_selector_handler import select_by_day, select_latest_date
-from bot.gym_class_selector_handler import gym_class_selector
-from components.membership import open_plan_and_use_membership
+from components.day_selector_handler import (
+    perform_select_by_day,
+    perform_select_latest_date,
+)
+from components.gym_class_booker_handler import perform_gym_class_booker
+from components.membership_handler import perform_open_plan_and_use_membership
 from utils.page_utils import confirm_url
 from utils.logger import logger
 
@@ -22,19 +25,19 @@ def perform_reserve_gym_class(
         config.get("INSIDE_SYSTEM_URL"),
     )
 
-    open_plan_and_use_membership(page)
+    perform_open_plan_and_use_membership(page)
 
     day_selected = (
-        select_by_day(page, spanish_day_name)
+        perform_select_by_day(page, spanish_day_name)
         if config.get("BOT_FORCE_RUN")
-        else select_latest_date(page)
+        else perform_select_latest_date(page)
     )
 
     if not day_selected:
         logger.warning(f"⚠️ → Día '{spanish_day_name}' no encontrado, saltando.")
         return False
 
-    gym_class_selector(
+    perform_gym_class_booker(
         page,
         gym_class_name,
         gym_class_hour,

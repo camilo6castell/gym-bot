@@ -1,6 +1,6 @@
 from playwright.sync_api import Page, TimeoutError
 from utils.logger import logger
-from utils.human_behavior import human_click, human_delay
+from utils.human_behavior import human_click
 from utils.recovery import with_soft_recovery
 from utils.exceptions import CaptchaDetectedError
 
@@ -20,10 +20,21 @@ def raise_if_captcha(page: Page):
         try:
             element = page.query_selector(selector)
         except Exception as e:
-            logger.info(f"⚠️ → Error consultando selector '{selector}': {e}")
+            # Error consultando el selector — no es un captcha, es un problema técnico
+            logger.debug(f"🔍 → Error consultando selector captcha '{selector}': {e}")
+            continue  # seguimos con el siguiente selector, no lanzamos excepción
+
+        if element is None:
+            # No encontró el elemento — situación normal, no hay captcha
             continue
-        if element and element.is_visible():
+
+        if element.is_visible():
+            # Encontró el elemento Y es visible — captcha real activo
+            logger.warning(f"🔒 → CAPTCHA detectado: '{selector}'")
             raise CaptchaDetectedError("⚠️ → CAPTCHA detectado. Completar y resumir.")
+        else:
+            # Encontró el elemento pero está oculto — captcha de setup, no activo
+            logger.debug(f"🔍 → Selector captcha encontrado pero oculto: '{selector}'")
 
 
 def dismiss_if_present(
@@ -70,7 +81,6 @@ def confirm_url(page: Page, url: str):
 
 def monitor_new_page(page: Page, selector: str | None = None):
     """Espera red idle, verifica captcha y descarta modal opcional."""
-    human_delay()
     wait_network_idle(page)
     raise_if_captcha(page)
     if selector:

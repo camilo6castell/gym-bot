@@ -4,7 +4,7 @@ from utils.logger import logger
 from utils.recovery import with_soft_recovery
 
 
-def gym_class_confirmation(page: Page):
+def perform_gym_class_acceptance(page: Page):
     logger.info("🕤 → Esperando modal de confirmación...")
     human_delay()
 

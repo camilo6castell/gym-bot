@@ -1,9 +1,9 @@
 timezone: America/Bogota
 
 forcedClass:
-  name: Rumba
+  name: PD Yoga
   hour: 08:00 - 09:00
-  day: monday
+  day: tuesday
 
 days:
   #MIERCOLES

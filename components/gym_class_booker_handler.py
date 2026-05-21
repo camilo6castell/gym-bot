@@ -1,6 +1,6 @@
 from playwright.sync_api import Page
-from bot.gym_class_confirmation_handler import gym_class_confirmation
-from bot.gym_class_verification_handler import perform_gym_class_verification
+from components.gym_class_acceptance_handler import perform_gym_class_acceptance
+from components.gym_class_checker_handler import perform_gym_class_checker
 from utils.logger import logger
 from utils.human_behavior import human_delay
 from utils.recovery import with_soft_recovery
@@ -8,7 +8,7 @@ from utils.element_utils import str_normalizer
 from utils.page_utils import wait_network_idle
 
 
-def gym_class_selector(
+def perform_gym_class_booker(
     page: Page,
     gym_class_name: str,
     gym_class_hour: str,
@@ -32,13 +32,13 @@ def gym_class_selector(
             boton.click()
             logger.success("✔️  → Clase seleccionada correctamente")
             with_soft_recovery(
-                lambda: gym_class_confirmation(page),
+                lambda: perform_gym_class_acceptance(page),
                 page,
                 "Agendando clase en sistema.",
             )
             logger.success(f"🤔 → ¡Reserva de {gym_class_name} completada! (?)")
             with_soft_recovery(
-                lambda: perform_gym_class_verification(
+                lambda: perform_gym_class_checker(
                     page,
                     gym_class_name,
                     gym_class_hour,

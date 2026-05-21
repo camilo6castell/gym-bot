@@ -7,18 +7,14 @@ from utils.recovery import with_soft_recovery
 from utils.element_utils import str_normalizer
 
 
-def perform_gym_class_verification(
+def perform_gym_class_checker(
     page: Page,
     gym_class_name: str,
     gym_class_hour: str,
 ):
     logger.info(f"🔍 → Verificando reserva: '{gym_class_name}' | '{gym_class_hour}'")
-    human_delay()
-
     search_and_click(page, "a[href='#mm-m1-p2']")
-    human_delay()
     search_and_click(page, "a[href='/sistema.php/entrenamiento/mis/turnos']")
-    human_delay()
 
     # ✅ Cambio 1 — esperar contenido Angular renderizado, no solo el panel vacío
     with_soft_recovery(

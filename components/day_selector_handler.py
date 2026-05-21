@@ -6,7 +6,7 @@ from utils.page_utils import wait_network_idle, search_and_click
 from utils.recovery import with_soft_recovery
 
 
-def select_latest_date(page: Page) -> bool:
+def perform_select_latest_date(page: Page) -> bool:
 
     logger.info("🏃‍♀️‍➡️ → Seleccionando última fecha disponible...")
 
@@ -18,7 +18,7 @@ def select_latest_date(page: Page) -> bool:
     return True
 
 
-def select_by_day(page: Page, spanish_day_name: str) -> bool:
+def perform_select_by_day(page: Page, spanish_day_name: str) -> bool:
 
     logger.info(f"🔎 → Buscando fecha correspondiente a '{spanish_day_name}'")
 
