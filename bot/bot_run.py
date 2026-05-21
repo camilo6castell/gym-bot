@@ -67,7 +67,6 @@ def is_regular_run() -> list[dict[str, str]]:
 
 
 def get_classes():
-    logger.info(f"🏳️  → Inicio: {now.strftime('%H:%M:%S')}")
     return is_force_run() if config_execution.get("bot_force_run") else is_regular_run()
 
 

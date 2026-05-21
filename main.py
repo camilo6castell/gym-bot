@@ -1,17 +1,16 @@
+import asyncio
+from utils.logger import logger
+from playwright._impl._page import Page as ImplPage
+from typing import cast
 from bot.browser import launch_chromium
 from components.login_handler import perform_login
 from components.logout_handler import perform_logout
 from components.post_login_handler import perform_post_login
 from components.reserve_gym_class_process_handler import perform_reserve_gym_class
-
 from utils.error_broadcast import send_error_broadcast
-import asyncio
-from utils.logger import logger
 from utils.recovery import with_recovery, with_soft_recovery
 from utils.time_utils import spanish_day_mapper
 from utils.element_utils import str_normalizer
-from typing import cast
-from playwright._impl._page import Page as ImplPage
 
 from bot.bot_run import get_classes
 
