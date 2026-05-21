@@ -5,16 +5,18 @@ from utils.time_utils import days_mapper
 from utils.logger import logger
 
 config = Config(env_file=".env")
+
 schedule = config.get("SCHEDULE")
-# 🕒 Zona horaria segura
 timezone_str = schedule.get("timezone")
 tz = pytz.timezone(timezone_str)
 now = datetime.now(tz)
 
+config_execution = config.get("APP_CONFIG").get("execution", {})
+
 
 def is_force_run() -> list[dict[str, str]]:
-    logger.warning("⚠️  → BOT_FORCE_RUN activo ⚠️")
 
+    logger.warning("⚠️  → BOT_FORCE_RUN activo ⚠️")
     forcedClass = schedule.get("forcedClass")
 
     if (
@@ -66,13 +68,12 @@ def is_regular_run() -> list[dict[str, str]]:
 
 def get_classes():
     logger.info(f"🏳️  → Inicio: {now.strftime('%H:%M:%S')}")
-    return is_force_run() if config.get("BOT_FORCE_RUN") else is_regular_run()
+    return is_force_run() if config_execution.get("bot_force_run") else is_regular_run()
 
 
 def _execution_adjustment(hour: int, minute: int) -> tuple[int, int]:
-    execution_adjustment = config.get("EXECUTION_ADJUSTMENT")
+    execution_adjustment = config_execution.get("execution_time_adjustment_minutes", 0)
     if execution_adjustment != 0:
-        logger.warning("⚠️  → ¡Ajustando tiempo de ejecución! ⚠️")
         minute += execution_adjustment
         if minute < 0:
             hour -= 1

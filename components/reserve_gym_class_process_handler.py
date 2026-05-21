@@ -9,7 +9,11 @@ from components.membership_handler import perform_open_plan_and_use_membership
 from utils.page_utils import confirm_url
 from utils.logger import logger
 
-config = Config(env_file=".env")
+app_config = Config(env_file=".env").get("APP_CONFIG")
+
+config_environment = app_config.get("environment", {})
+config_selectors = app_config.get("selectors", {})
+config_execution = app_config.get("execution", {})
 
 
 def perform_reserve_gym_class(
@@ -22,14 +26,14 @@ def perform_reserve_gym_class(
     # Siempre parte desde la URL base
     confirm_url(
         page,
-        config.get("INSIDE_SYSTEM_URL"),
+        config_environment.get("inside_system_url"),
     )
 
     perform_open_plan_and_use_membership(page)
 
     day_selected = (
         perform_select_by_day(page, spanish_day_name)
-        if config.get("BOT_FORCE_RUN")
+        if config_execution.get("BOT_FORCE_RUN")
         else perform_select_latest_date(page)
     )
 

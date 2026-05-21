@@ -4,16 +4,18 @@ from utils.logger import logger
 from utils.page_utils import (
     monitor_new_page,
     raise_if_captcha,
-    wait_for_redirect,
 )
 from utils.human_behavior import human_delay, human_type, human_click
 
 config = Config(env_file=".env")
 
+config_environment = config.get("APP_CONFIG").get("environment", {})
+config_selectors = config.get("APP_CONFIG").get("selectors", {})
+
 
 def perform_login(page: Page):
     logger.info("🌐 → Abriendo página de login")
-    page.goto(config.get("LOGIN_URL"), wait_until="domcontentloaded")
+    page.goto(config_environment.get("login_url"), wait_until="domcontentloaded")
 
     raise_if_captcha(page)
 
@@ -47,7 +49,6 @@ def perform_login(page: Page):
     human_click(page, "button[type='submit']")
 
     # After login, there's an unexpected "Entiendo" button (cookie/privacy related).
-    # If it appears, we click it and continue. This is handled in monitor_new_page.
-    monitor_new_page(page, config.get("POTENTIAL_MODAL_ENTIENDO_SELECTOR"))
+    monitor_new_page(page, config_selectors.get("potential_modal_entiendo_selector"))
 
-    wait_for_redirect(page, config.get("POST_LOGIN_URL"))
+    # wait_for_redirect(page, config.get("APP_CONFIG")["environment"]["post_login_url"])

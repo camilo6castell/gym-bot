@@ -38,7 +38,7 @@ def raise_if_captcha(page: Page):
 
 
 def dismiss_if_present(
-    page: Page, selector: str, is_mandatory: bool = False, timeout: int = 3000
+    page: Page, selector: str, is_mandatory: bool = False, timeout: int = 10000
 ):
     try:
         # ← espera activa al elemento, no a la red
