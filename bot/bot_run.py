@@ -6,6 +6,10 @@ from utils.logger import logger
 
 config = Config(env_file=".env")
 schedule = config.get("SCHEDULE")
+# 🕒 Zona horaria segura
+timezone_str = schedule.get("timezone")
+tz = pytz.timezone(timezone_str)
+now = datetime.now(tz)
 
 
 def is_force_run() -> list[dict[str, str]]:
@@ -28,11 +32,6 @@ def is_force_run() -> list[dict[str, str]]:
 def is_regular_run() -> list[dict[str, str]]:
     if not schedule or "days" not in schedule:
         return []
-
-    # 🕒 Zona horaria segura
-    timezone_str = schedule.get("timezone")
-    tz = pytz.timezone(timezone_str)
-    now = datetime.now(tz)
 
     # 🔥 Siempre 2 días atrás
     target_weekday = (now.weekday() - 2) % 7
@@ -66,13 +65,14 @@ def is_regular_run() -> list[dict[str, str]]:
 
 
 def get_classes():
+    logger.info(f"🏳️  → Inicio: {now.strftime('%H:%M:%S')}")
     return is_force_run() if config.get("BOT_FORCE_RUN") else is_regular_run()
 
 
 def _execution_adjustment(hour: int, minute: int) -> tuple[int, int]:
     execution_adjustment = config.get("EXECUTION_ADJUSTMENT")
     if execution_adjustment != 0:
-        logger.warning("⚠️ → ¡Ajustando tiempo de ejecución! ⚠️")
+        logger.warning("⚠️  → ¡Ajustando tiempo de ejecución! ⚠️")
         minute += execution_adjustment
         if minute < 0:
             hour -= 1
