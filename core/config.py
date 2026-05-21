@@ -25,7 +25,7 @@ class Config:
             "INSIDE_SYSTEM_URL": "URL base dentro del sistema",
             "INSIDE_SYSTEM_URL_PATTERN": "Patrón de URL para clases",
             "BOT_FORCE_RUN": "Forzar ejecución de clases",
-            "ADDITIONAL_MINUTE_FOR_EXECUTION": "Minutos adicionales para ejecución",
+            "EXECUTION_ADJUSTMENT": "Minutos a ajustar para ejecución (puede ser negativo)",
             "BOT_HEADLESS": "Ejecutar en modo headless",
             "WAKE_MINUTES_BEFORE": "Minutos antes de despertar",
             "SLEEP_MINUTES_AFTER": "Minutos después de dormir",
@@ -44,20 +44,29 @@ class Config:
                 raise ValueError(
                     f"Variable de entorno '{key}' requerida pero no encontrada. {description}"
                 )
-            # Aplica conversiones según el tipo
+            # Aplicar conversiones específicas según el tipo esperado
+
+            # Booleans
             if key in [
                 "BOT_FORCE_RUN",
                 "ADDITIONAL_MINUTE_FOR_EXECUTION",
                 "BOT_HEADLESS",
             ]:
                 self._env_vars[key] = env_bool(value)
-            elif key in ["WAKE_MINUTES_BEFORE", "SLEEP_MINUTES_AFTER"]:
+
+            # Números (pueden ser enteros o flotantes)
+            elif key in [
+                "WAKE_MINUTES_BEFORE",
+                "SLEEP_MINUTES_AFTER",
+                "EXECUTION_ADJUSTMENT",
+            ]:
                 try:
                     self._env_vars[key] = float(value)
                 except ValueError:
                     raise ValueError(
                         f"Variable de entorno '{key}' debe ser un número. {description}"
                     )
+
             elif key == "HOME_USER":
                 self._env_vars[key] = os.path.expanduser(value)
                 self._env_vars["CHROMIUM_PROFILE_PATH"] = os.path.join(

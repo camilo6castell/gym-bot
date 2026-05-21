@@ -11,6 +11,12 @@
     //     "src"
     // ],
     "exclude": [
-        "**/__pycache__"
+        "**/__pycache__",
+        "**/.venv",
+        "**/venv",
+        "**/env",
+        "**/.env",
+        "**/.*",
+        "**/node_modules",
     ]
 }

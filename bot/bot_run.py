@@ -56,9 +56,7 @@ def is_regular_run() -> list[dict[str, str]]:
                 continue
 
             # ➕ Agregar minuto adicional si está activado
-            activation_hour, activation_minute = _should_add_a_minute_for_x(
-                config.get("ADDITIONAL_MINUTE_FOR_EXECUTION"), hour, minute
-            )
+            activation_hour, activation_minute = _execution_adjustment(hour, minute)
 
             # 🎯 Comparación exacta
             if now.hour == activation_hour and now.minute == activation_minute:
@@ -71,12 +69,14 @@ def get_classes():
     return is_force_run() if config.get("BOT_FORCE_RUN") else is_regular_run()
 
 
-def _should_add_a_minute_for_x(
-    ADDITIONAL_MINUTE_FOR_EXECUTION: bool, hour: int, minute: int
-) -> tuple[int, int]:
-    if ADDITIONAL_MINUTE_FOR_EXECUTION:
-        logger.warning("⚠️ → ¡Agregando minuto extra! ⚠️")
-        minute += 1
+def _execution_adjustment(hour: int, minute: int) -> tuple[int, int]:
+    execution_adjustment = config.get("EXECUTION_ADJUSTMENT")
+    if execution_adjustment != 0:
+        logger.warning("⚠️ → ¡Ajustando tiempo de ejecución! ⚠️")
+        minute += execution_adjustment
+        if minute < 0:
+            hour -= 1
+            minute += 60
         if minute >= 60:
             hour += 1
             minute -= 60
