@@ -12,7 +12,9 @@ from os_integration.os_integration_utils import (
 )
 
 ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
-config = Config(env_file=str(ENV_FILE))
+config_power_autonomous = (
+    Config(env_file=str(ENV_FILE)).get("APP_CONFIG").get("power_autonomous", {})
+)
 
 
 def main():
@@ -22,7 +24,7 @@ def main():
         return
 
     wake_time = next_reservation - datetime.timedelta(
-        minutes=config.get("WAKE_MINUTES_BEFORE")
+        minutes=config_power_autonomous.get("wake_minutes_before")
     )
 
     print("Next reservation:", next_reservation)

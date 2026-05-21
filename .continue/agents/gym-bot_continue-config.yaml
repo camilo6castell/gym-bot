@@ -1,0 +1,191 @@
+name: Local FLM Config
+version: 1.0.0
+schema: v1
+
+########################################################
+# MODELS
+########################################################
+
+models:
+  ########################################################
+  # MAIN AGENT MODELs (NPU via FLM)
+  ########################################################
+
+  # 1: General purpose coding assistant with strong reasoning and tool use capabilities
+
+  - name: Qwen3 8B Agent
+    provider: openai
+    model: qwen3:8b
+    apiBase: http://127.0.0.1:52625/v1
+    apiKey: flm
+
+    capabilities:
+      - tool_use
+
+    roles:
+      - chat
+      - edit
+      - apply
+
+    defaultCompletionOptions:
+      contextLength: 32768
+      maxTokens: 4096
+      temperature: 0.1
+      topP: 0.9
+
+    autocompleteOptions:
+      disable: true
+
+    requestOptions:
+      timeout: 720000
+
+    chatOptions:
+      baseSystemMessage: |
+        You are an expert senior software engineer.
+
+        IMPORTANT:
+        - Analyze repository context before answering
+        - Reuse existing project patterns
+        - Never invent APIs or files
+        - If repository context is insufficient, explicitly say so
+        - Keep answers concise and technical
+
+      baseAgentSystemMessage: |
+        You are an expert autonomous coding agent.
+
+        IMPORTANT:
+        - Always inspect the provided repository context first
+        - Prefer modifying existing code over rewriting
+        - Follow existing architecture and conventions
+        - Never hallucinate files, APIs or libraries
+        - Explicitly mention uncertainty when context is missing
+
+  # 2: More powerful model for complex reasoning and tool use, but with higher latency and cost. Used selectively for difficult tasks.
+
+  - name: GPT-OSS 20B
+    provider: openai
+    model: gpt-oss:20b
+    apiBase: http://127.0.0.1:52625/v1
+    apiKey: flm
+
+    capabilities:
+      - tool_use
+
+    roles:
+      - chat
+
+    defaultCompletionOptions:
+      contextLength: 32768
+      maxTokens: 4096
+      temperature: 0.2
+      reasoning: true
+
+    autocompleteOptions:
+      disable: true
+
+    requestOptions:
+      timeout: 720000
+
+  ########################################################
+  # AUTOCOMPLETE MODEL - Por ahora manejado por Copilot
+  ########################################################
+
+  # - name: Qwen3.5 2B Autocomplete
+  #   provider: openai
+  #   model: qwen3.5:2b
+  #   apiBase: http://127.0.0.1:52625/v1
+  #   apiKey: flm
+
+  #   roles:
+  #     - autocomplete
+
+  #   autocompleteOptions:
+  #     disable: false
+  #     debounceDelay: 200
+  #     maxPromptTokens: 768
+  #     onlyMyCode: true
+  #     useCache: true
+  #     useImports: true
+  #     useRecentlyEdited: true
+  #     useRecentlyOpened: true
+
+  #   defaultCompletionOptions:
+  #     temperature: 0.1
+  #     maxTokens: 128
+
+  #   requestOptions:
+  #     timeout: 10000
+
+  ########################################################
+  # EMBEDDINGS
+  ########################################################
+
+  # 1: Fast and efficient embedding model for code search and retrieval tasks.
+
+  - name: Nomic Embeddings
+    provider: ollama
+    model: nomic-embed-text
+    apiBase: http://127.0.0.1:11434
+
+    roles:
+      - embed
+
+    embedOptions:
+      maxChunkSize: 384
+      maxBatchSize: 16
+
+    defaultCompletionOptions:
+      keepAlive: 1800
+
+  ########################################################
+  # RERANKER - No hay modelos bnuenos disponibles.
+  ########################################################
+
+  # - name: BGE Reranker
+  #   provider: ollama
+  #   model: bbjson/bge-reranker-base:latest
+  #   apiBase: http://127.0.0.1:11434
+
+  #   roles:
+  #     - rerank
+
+  #   defaultCompletionOptions:
+  #     keepAlive: 1800
+
+########################################################
+# CONTEXT PROVIDERS
+########################################################
+
+context:
+  - provider: codebase
+  - provider: file
+  - provider: code
+  - provider: diff
+  - provider: terminal
+  - provider: open
+  - provider: currentFile
+  - provider: tree
+  - provider: problems
+  - provider: os
+  - provider: repo-map
+    params:
+      includeSignatures: true
+
+########################################################
+# DOCS
+########################################################
+
+# docs:
+#   - name: Continue
+#     startUrl: https://docs.continue.dev/intro
+#     favicon: https://docs.continue.dev/favicon.ico
+
+########################################################
+# RULES
+########################################################
+
+rules:
+  - "Reuse existing project patterns whenever possible."
+  - "Prefer minimal modifications over rewrites."
+  - "Do not invent APIs, files, or architecture."
+  - "If insufficient codebase context exists, explicitly state it."

@@ -13,6 +13,7 @@ from core.config import Config
 
 ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
 config = Config(env_file=str(ENV_FILE))
+config_power_autonomous = config.get("APP_CONFIG").get("power_autonomous", {})
 
 
 def get_now():
@@ -52,7 +53,7 @@ def find_next_reservation() -> Optional[datetime.datetime]:
 
 def set_wake_alarm(dt: dt_module.datetime) -> None:
     timestamp = int(dt.timestamp())
-    wakealarm_path: str = config.get("WAKEALARM_PATH")
+    wakealarm_path: str = config_power_autonomous.get("wakealarm_path")
     with open(wakealarm_path, "w") as f:
         f.write("0")
     with open(wakealarm_path, "w") as f:
