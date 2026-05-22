@@ -33,7 +33,7 @@ def perform_reserve_gym_class(
 
     day_selected = (
         perform_select_by_day(page, spanish_day_name)
-        if config_execution.get("BOT_FORCE_RUN")
+        if config_execution.get("bot_force_run")
         else perform_select_latest_date(page)
     )
 

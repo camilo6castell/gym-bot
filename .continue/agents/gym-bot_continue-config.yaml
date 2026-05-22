@@ -73,6 +73,8 @@ models:
 
     roles:
       - chat
+      - edit
+      - apply
 
     defaultCompletionOptions:
       contextLength: 32768
@@ -186,6 +188,5 @@ context:
 
 rules:
   - "Reuse existing project patterns whenever possible."
-  - "Prefer minimal modifications over rewrites."
   - "Do not invent APIs, files, or architecture."
   - "If insufficient codebase context exists, explicitly state it."
