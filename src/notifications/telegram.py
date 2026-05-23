@@ -1,10 +1,9 @@
-from pathlib import Path
 from typing import Any
 import requests
 from src.utils.logger import logger
 from src.config.config import Config
 
-_config = Config(env_file=str(Path(__file__).resolve().parent.parent / ".env"))
+_config = Config()
 _BASE_URL = f"https://api.telegram.org/bot{_config.get('TOKEN')}"
 
 

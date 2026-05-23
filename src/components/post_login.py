@@ -1,10 +1,9 @@
-from pathlib import Path
 from playwright.sync_api import Page
 from src.config.config import Config
 from src.utils.logger import logger
 from src.utils.page_utils import monitor_new_page, search_and_click, wait_for_redirect
 
-_config = Config(env_file=str(Path(__file__).resolve().parent.parent / ".env"))
+_config = Config()
 _env = _config.get("APP_CONFIG").get("environment", {})
 _selectors = _config.get("APP_CONFIG").get("selectors", {})
 

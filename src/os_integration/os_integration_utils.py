@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Optional
 import pytz
 import datetime
@@ -6,8 +5,9 @@ import subprocess
 
 from src.config.config import Config
 from src.utils.time_utils import days_mapper
+from src.utils.logger import logger
 
-_config = Config(env_file=str(Path(__file__).resolve().parent.parent / ".env"))
+_config = Config()
 _power = _config.get("APP_CONFIG").get("power_autonomous", {})
 _tz = pytz.timezone(_config.get("SCHEDULE").get("timezone", "UTC"))
 
@@ -53,4 +53,11 @@ def set_wake_alarm(dt: datetime.datetime) -> None:
 
 
 def suspend() -> None:
-    subprocess.run(["/usr/bin/sudo", "-n", "/usr/bin/systemctl", "suspend"], check=True)
+    """Suspender el sistema con manejo de errores"""
+    try:
+        subprocess.run(
+            ["/usr/bin/sudo", "-n", "/usr/bin/systemctl", "suspend"], check=True
+        )
+    except Exception as e:
+        logger.error(f"❌ Error al suspender: {str(e)}", exc_info=True)
+        raise

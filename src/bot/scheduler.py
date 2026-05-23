@@ -1,11 +1,10 @@
-from pathlib import Path
 from datetime import datetime
 import pytz
 from src.config.config import Config
 from src.utils.logger import logger
 from src.utils.time_utils import days_mapper
 
-_config = Config(env_file=str(Path(__file__).resolve().parent.parent / ".env"))
+_config = Config()
 _schedule = _config.get("SCHEDULE")
 _execution = _config.get("APP_CONFIG").get("execution", {})
 _tz = pytz.timezone(_schedule.get("timezone", "UTC"))
