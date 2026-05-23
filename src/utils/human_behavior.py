@@ -4,7 +4,7 @@ from typing import Optional
 
 from playwright.sync_api import ElementHandle, Page
 
-from utils.logger import logger
+from src.utils.logger import logger
 
 
 def human_delay(min_sec: float = 0.4, max_sec: float = 1.2) -> None:

@@ -1,9 +1,9 @@
 import time
 from typing import Callable, Any
 from playwright.sync_api import Page
-from notifications.telegram import notify, getUpdates
-from utils.logger import logger
-from utils.exceptions import CaptchaDetectedError
+from src.notifications.telegram import notify, getUpdates
+from src.utils.logger import logger
+from src.utils.exceptions import CaptchaDetectedError
 
 
 def with_soft_recovery(

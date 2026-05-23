@@ -1,10 +1,9 @@
-from pathlib import Path
 from typing import TypedDict
 from playwright.sync_api import sync_playwright, BrowserContext, Page, Geolocation
 from src.config.config import Config
 from src.utils.logger import logger
 
-_config = Config(env_file=str(Path(__file__).resolve().parent.parent / ".env"))
+_config = Config()
 _os = _config.get("APP_CONFIG").get("os", {})
 _execution = _config.get("APP_CONFIG").get("execution", {})
 

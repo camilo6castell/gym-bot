@@ -13,7 +13,7 @@ CAPTCHA_SELECTORS = [
 ]
 
 CAPTCHA_HARD_INDICATORS = [
-    "g-recaptcha",
+    # "g-recaptcha",
     "hcaptcha",
     "cf-challenge",
     "i'm not a robot",
