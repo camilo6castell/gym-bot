@@ -1,14 +1,13 @@
 from playwright.sync_api import Page, TimeoutError
-from utils.human_behavior import human_delay
-from utils.logger import logger
-from utils.recovery import with_soft_recovery
+from src.utils.human_behavior import human_delay
+from src.utils.logger import logger
+from src.utils.recovery import with_soft_recovery
 
 
-def perform_gym_class_acceptance(page: Page):
+def perform_gym_class_acceptance(page: Page) -> None:
     logger.info("🕤 → Esperando modal de confirmación...")
     human_delay()
 
-    # Intenta por ID primero, fallback por texto
     confirm_selector = (
         "#btnConfirmarReserva:not([disabled])"
         if page.query_selector("#btnConfirmarReserva")
@@ -31,7 +30,7 @@ def perform_gym_class_acceptance(page: Page):
     human_delay()
 
     with_soft_recovery(
-        lambda: close_notific8(page),
+        lambda: _close_notific8(page),
         page,
         "Cerrando notificación de éxito",
     )
@@ -39,27 +38,21 @@ def perform_gym_class_acceptance(page: Page):
     logger.success("✔️ → Ciclo de reserva hecho.")
 
 
-def close_notific8(page: Page, timeout: int = 5000):
+def _close_notific8(page: Page, timeout: int = 5000) -> None:
     """Cierra notificación notific8 haciendo hover para revelar el botón de cierre."""
     try:
-        # Esperar que aparezca la notificación
         notification = page.wait_for_selector(
             "notific8-notification[open]", state="attached", timeout=timeout
         )
         if not notification:
             return
-
-        # Hover sobre la notificación para revelar el botón ×
         notification.hover()
         human_delay(0.3, 0.6)
-
-        # Ahora el botón debería ser visible
         close_btn = page.wait_for_selector(
             ".notific8-close-button", state="visible", timeout=3000
         )
         if close_btn:
             close_btn.click()
             logger.info("😉 → Notificación de reserva cerrada.")
-
     except TimeoutError:
         logger.debug("🗑️ → Notificación no apareció o ya se cerró sola.")

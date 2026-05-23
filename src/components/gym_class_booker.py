@@ -1,19 +1,16 @@
 from playwright.sync_api import Page
-from components.gym_class_acceptance_handler import perform_gym_class_acceptance
-from components.gym_class_checker_handler import perform_gym_class_checker
-from utils.logger import logger
-from utils.human_behavior import human_delay
-from utils.recovery import with_soft_recovery
-from utils.element_utils import str_normalizer
-from utils.page_utils import wait_network_idle
+from src.components.gym_class_acceptance import perform_gym_class_acceptance
+from src.components.gym_class_checker import perform_gym_class_checker
+from src.utils.logger import logger
+from src.utils.human_behavior import human_delay
+from src.utils.recovery import with_soft_recovery
+from src.utils.strings import str_normalizer
+from src.utils.page_utils import wait_network_idle
 
 
 def perform_gym_class_booker(
-    page: Page,
-    gym_class_name: str,
-    gym_class_hour: str,
-):
-
+    page: Page, gym_class_name: str, gym_class_hour: str
+) -> None:
     logger.info(f"🔎 → Buscando clase '{gym_class_name}' en horario '{gym_class_hour}'")
 
     wait_network_idle(page)
@@ -30,19 +27,14 @@ def perform_gym_class_booker(
         if str_normalizer(gym_class_name) in texto and gym_class_hour in texto:
             human_delay()
             boton.click()
-            logger.success("✔️  → Clase seleccionada correctamente")
+            logger.success("✔️ → Clase seleccionada correctamente")
             with_soft_recovery(
                 lambda: perform_gym_class_acceptance(page),
                 page,
-                "Agendando clase en sistema.",
+                "Confirmando reserva en sistema",
             )
-            logger.success(f"🤔 → ¡Reserva de {gym_class_name} completada! (?)")
             with_soft_recovery(
-                lambda: perform_gym_class_checker(
-                    page,
-                    gym_class_name,
-                    gym_class_hour,
-                ),
+                lambda: perform_gym_class_checker(page, gym_class_name, gym_class_hour),
                 page,
                 f"Verificando '{gym_class_name}' a las '{gym_class_hour}'",
             )

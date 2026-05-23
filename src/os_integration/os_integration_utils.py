@@ -1,32 +1,26 @@
-import sys
+from pathlib import Path
+from typing import Optional
 import pytz
 import datetime
 import subprocess
-import datetime as dt_module
-from pathlib import Path
-from typing import Optional
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from src.config.config import Config
+from src.utils.time_utils import days_mapper
 
-from utils.time_utils import days_mapper
-from core.config import Config
-
-ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
-config = Config(env_file=str(ENV_FILE))
-config_power_autonomous = config.get("APP_CONFIG").get("power_autonomous", {})
+_config = Config(env_file=str(Path(__file__).resolve().parent.parent / ".env"))
+_power = _config.get("APP_CONFIG").get("power_autonomous", {})
+_tz = pytz.timezone(_config.get("SCHEDULE").get("timezone", "UTC"))
 
 
-def get_now():
-    tz = pytz.timezone(config.get("SCHEDULE").get("timezone", "UTC"))
-    return datetime.datetime.now(tz)
+def get_now() -> datetime.datetime:
+    return datetime.datetime.now(_tz)
 
 
 def find_next_reservation() -> Optional[datetime.datetime]:
     now = get_now()
     upcoming: list[datetime.datetime] = []
 
-    for day_name, gym_classes in config.get("SCHEDULE").get("days", {}).items():
-
+    for day_name, gym_classes in _config.get("SCHEDULE").get("days", {}).items():
         reservation_weekday = (days_mapper(day_name) + 2) % 7
 
         for gym_class in gym_classes:
@@ -37,9 +31,7 @@ def find_next_reservation() -> Optional[datetime.datetime]:
                 continue
 
             days_ahead = (reservation_weekday - now.weekday()) % 7
-
-            reservation_date = now + datetime.timedelta(days=days_ahead)
-            reservation_date = reservation_date.replace(
+            reservation_date = (now + datetime.timedelta(days=days_ahead)).replace(
                 hour=hour, minute=minute, second=0, microsecond=0
             )
 
@@ -51,14 +43,14 @@ def find_next_reservation() -> Optional[datetime.datetime]:
     return min(upcoming) if upcoming else None
 
 
-def set_wake_alarm(dt: dt_module.datetime) -> None:
+def set_wake_alarm(dt: datetime.datetime) -> None:
+    wakealarm_path = _power.get("wakealarm_path")
     timestamp = int(dt.timestamp())
-    wakealarm_path: str = config_power_autonomous.get("wakealarm_path")
     with open(wakealarm_path, "w") as f:
         f.write("0")
     with open(wakealarm_path, "w") as f:
         f.write(str(timestamp))
 
 
-def suspend():
+def suspend() -> None:
     subprocess.run(["/usr/bin/sudo", "-n", "/usr/bin/systemctl", "suspend"], check=True)

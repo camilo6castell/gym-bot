@@ -4,12 +4,12 @@
     "typeCheckingMode": "strict",
     "reportMissingImports": true,
     "reportMissingTypeStubs": false,
-    "include": [
-        "."
-    ],
     // "include": [
-    //     "src"
+    //     "."
     // ],
+    "include": [
+        "src"
+    ],
     "exclude": [
         "**/__pycache__",
         "**/.venv",
