@@ -4,81 +4,111 @@
 
 ---
 
-## Overview
+## Table of Contents
 
-**gym-bot** is a Python automation system designed to handle recurring gym class reservations on the [Compensar / DeportesCompensar](https://deportescompensar.com) platform — fully unattended.
-
-Beyond simple task scheduling, the bot integrates deeply with the Linux operating system to manage the machine's power cycle autonomously: it suspends the host between reservation windows, wakes it up precisely before each booking, executes the reservation, and suspends again — all without human intervention.
-
-When errors occur, the bot does not crash silently. It notifies you via Telegram, pauses execution, and waits for your remote command to resume or retry — giving you a 10-minute intervention window to diagnose and resolve any issue from anywhere.
+- [Overview](#overview)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [OS Integration](#os-integration)
+- [Architecture](#architecture)
+- [Contributing](#contributing)
 
 ---
 
-## Key Features
+## Overview
 
-### 🤖 Intelligent Automation
-- Schedule-driven reservation engine that reads a YAML configuration and calculates the correct booking window (reservations open 2 days in advance)
-- Force-run mode for manual, on-demand execution with a specific class, hour, and day
-- Post-reservation verification: navigates to the user's upcoming sessions page and confirms the booking was recorded correctly
+**gym-bot** is a Python automation system that handles recurring gym class reservations on the [Compensar / DeportesCompensar](https://deportescompensar.com) platform — fully unattended.
+
+Beyond simple task scheduling, the bot integrates deeply with the Linux OS to manage the host machine's power cycle autonomously: it suspends the machine between reservation windows, wakes it precisely before each booking, executes the reservation, and suspends again — without human intervention.
+
+When errors occur, the bot does not crash silently. It notifies you via Telegram, pauses execution, and waits for your remote command to resume or retry — giving you a configurable intervention window to diagnose and resolve any issue from anywhere.
+
+---
+
+## Features
+
+### 🤖 Intelligent Scheduling
+
+- YAML-driven weekly schedule with per-day class configuration
+- Reservations open 2 days in advance — the bot calculates the correct booking window automatically
+- Force-run mode for on-demand execution with a specific class, hour, and day
+- Configurable execution time adjustment for fine-tuning trigger precision
 
 ### 🧠 Human Behavior Simulation
+
 Designed to avoid bot detection through realistic interaction patterns:
+
 - Variable mouse trajectories with randomized steps and micro-deviations
 - Randomized click offsets within element bounding boxes
-- Typing simulation with per-character delays and occasional typo-and-correction sequences
+- Per-character typing delays with occasional typo-and-correction sequences
 - Random scroll amounts and directions between interactions
 - Non-uniform delays between all actions
 
-### 🛡️ Anti-Detection (Browser Stealth)
-- Uses the user's real Chromium profile (cookies, history, extensions)
+### 🛡️ Anti-Detection
+
+- Real browser profile (cookies, history, extensions)
 - Removes automation flags (`--enable-automation`, `AutomationControlled`)
-- Injects JavaScript to mask `navigator.webdriver`, spoof plugins, and emulate real browser fingerprint
-- Geolocation set to Bogotá, Colombia
+- JavaScript injection to mask `navigator.webdriver`, spoof plugins, and emulate real browser fingerprint
+- Geolocation set to match the user's city
 
 ### 🔁 Layered Error Recovery
+
 Two recovery mechanisms handle failures at different severity levels:
 
-**`with_soft_recovery`** — Silent auto-retry for transient failures (configurable retries with delay between attempts).
+**`with_soft_recovery`** — silent auto-retry for transient failures, configurable retries with delay between attempts.
 
-**`with_recovery`** — Full recovery pipeline for critical failures:
-1. Automatically reloads the page and retries up to 2 times
+**`with_recovery`** — full recovery pipeline for critical failures:
+
+1. Automatically reloads the page and retries up to N times
 2. If the error persists, sends a Telegram notification and pauses execution
-3. Waits up to 10 minutes for a remote command:
+3. Waits for a remote command via Telegram:
    - `0` → Resume from current state
    - `1` → Refresh page and retry
 4. If no response within the timeout, aborts gracefully
 
-**CAPTCHA detection** is handled as a special case — any detected CAPTCHA immediately triggers a Telegram alert without attempting auto-retries, since human intervention is always required.
+**CAPTCHA detection** is treated as a special case — any detected active CAPTCHA immediately triggers a Telegram alert without auto-retries, since human intervention is always required.
 
 ### 💤 OS-Level Power Management
+
 The bot integrates with the Linux kernel to manage the host machine's power state autonomously:
 
 - Reads the class schedule and computes the next reservation timestamp
-- Programs the system's **RTC wakealarm** (`/sys/class/rtc/rtc0/wakealarm`) to wake the machine minutes before the booking window
+- Programs the system's **RTC wakealarm** to wake the machine minutes before the booking window
 - Suspends the system via `systemctl suspend`
-- On resume, a **systemd-sleep hook** re-executes the scheduler to program the next cycle
+- A **systemd-sleep hook** re-executes the power cycle manager on every resume
 
-This enables the host to remain suspended (consuming near-zero power) between reservation cycles, waking only when needed.
+This enables the host to remain suspended (near-zero power consumption) between reservation cycles.
 
-### 📲 Telegram Notifications
+### 📲 Telegram Integration
+
 - Real-time error alerts with full context (action name, error message, retry count)
-- Interactive remote control: resume, refresh, or abort — directly from your phone
-- Confirmation messages for successful reservations
+- Interactive remote control: resume, refresh, or abort directly from your phone
+- Reservation confirmation messages
+
+### ✅ Post-Reservation Verification
+
+After each reservation, the bot navigates to the user's upcoming sessions page and confirms the booking was recorded correctly — raising an error and triggering recovery if not found.
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Language | Python 3.11 |
-| Browser Automation | Playwright (sync API) |
-| Scheduling | systemd user timers |
-| Power Management | RTC wakealarm + systemd-sleep hooks |
-| Notifications | Telegram Bot API |
-| Configuration | `.env` + YAML |
-| Logging | Loguru |
-| Timezone handling | pytz |
+| Layer              | Technology                          |
+| ------------------ | ----------------------------------- |
+| Language           | Python 3.11+                        |
+| Browser Automation | Playwright (sync API)               |
+| Scheduling         | systemd user timers                 |
+| Power Management   | RTC wakealarm + systemd-sleep hooks |
+| Notifications      | Telegram Bot API                    |
+| Configuration      | `.env` + YAML                       |
+| Logging            | Loguru                              |
+| Timezone handling  | pytz                                |
+| CLI                | argparse                            |
 
 ---
 
@@ -86,50 +116,92 @@ This enables the host to remain suspended (consuming near-zero power) between re
 
 ```
 gym-bot/
-├── main.py                         # Entry point — orchestrates the full reservation flow
-│
-├── bot/                            # Browser automation layer
-│   ├── browser.py                  # Chromium launcher with stealth configuration
-│   ├── login.py                    # Login flow with CAPTCHA detection
-│   ├── logout.py                   # Session cleanup
-│   ├── day_selector_handler.py     # Selects the correct booking date
-│   ├── gym_class_selector_handler.py  # Finds and selects the target class
-│   ├── gym_class_confirmation_handler.py  # Confirms the selected class
-│   ├── gym_class_verification_handler.py  # Verifies the booking was recorded
-│   └── reserve_gym_class.py        # Orchestrates the full reservation sub-flow
-│
-├── components/
-│   ├── bot_run.py                  # Decides force-run vs schedule-run, returns class list
-│   ├── membership.py               # Opens the membership plan before booking
-│   └── add_a_minute_for_x.py      # Optional timing offset for execution window
-│
-├── core/
-│   ├── env.py                      # Centralized environment variable loading
-│   ├── env_utils.py                # Helpers for type-safe env parsing
-│   └── classes.yaml                # Weekly class schedule configuration
-│
-├── utils/
-│   ├── recovery.py                 # with_recovery / with_soft_recovery / Telegram control loop
-│   ├── human_behavior.py           # Mouse, click, typing, scroll simulation
-│   ├── page_utils.py               # Page waits, CAPTCHA detection, URL management
-│   ├── error_broadcast.py          # Screenshot + Telegram error notification
-│   ├── exceptions.py               # Custom exceptions (CaptchaDetectedError)
-│   ├── element_utils.py            # Text normalization for robust element matching
-│   ├── time_utils.py               # Time format conversion utilities
-│   ├── logger.py                   # Loguru configuration
-│   └── days_handler.py             # Day name mapping (EN ↔ ES, weekday index)
-│
-├── notifications/
-│   └── telegram.py                 # notify() and getUpdates() wrappers
-│
-├── os_integration/
-│   ├── os_integration_utils.py     # find_next_reservation(), set_wake_alarm(), suspend()
-│   ├── power_autonomous.py         # Full autonomous power cycle manager
-│   └── start_power_autonomous.py   # Lightweight entry point for alias / systemd
-│
-└── doc/
-    └── LINUX_integration-and-initialization-os-integration_power-optimization.md
+├── src/                            # Main application source
+│   ├── main.py                     # Single entry point with subcommands
+│   ├── config/
+│   │   ├── config.py               # Centralized configuration loader
+│   │   ├── app_config.yaml         # App settings (URLs, selectors, power, browser)
+│   │   └── schedule.yaml           # Weekly class schedule
+│   ├── bot/
+│   │   ├── browser.py              # Chromium/Firefox launcher with stealth config
+│   │   └── scheduler.py            # Schedule evaluation, force-run vs regular-run
+│   ├── components/
+│   │   ├── login.py                # Login flow with CAPTCHA detection
+│   │   ├── logout.py               # Session cleanup
+│   │   ├── post_login.py           # Post-login navigation flow
+│   │   ├── membership.py           # Membership/tiquetera selection
+│   │   ├── day_selector.py         # Booking date selection
+│   │   ├── gym_class_booker.py     # Class search and selection
+│   │   ├── gym_class_acceptance.py # Reservation confirmation modal
+│   │   ├── gym_class_checker.py    # Post-reservation verification
+│   │   └── reserve_process.py      # Orchestrates the full reservation sub-flow
+│   ├── notifications/
+│   │   └── telegram.py             # notify() and getUpdates() wrappers
+│   ├── os_integration/
+│   │   ├── os_integration_utils.py # RTC alarm, suspend, next reservation finder
+│   │   └── power_cycle.py          # Power management commands
+│   └── utils/
+│       ├── exceptions.py           # Custom exceptions (CaptchaDetectedError)
+│       ├── logger.py               # Loguru configuration
+│       ├── strings.py              # Text normalization utilities
+│       ├── time_utils.py           # Time format conversion, day mapping
+│       ├── human_behavior.py       # Mouse, click, typing, scroll simulation
+│       ├── page_utils.py           # Page waits, CAPTCHA detection, URL management
+│       ├── recovery.py             # with_recovery / with_soft_recovery
+│       └── error_broadcast.py      # Screenshot + Telegram error notification
+├── debug/                          # Auto-generated screenshots on error (gitignored)
+├── doc/
+│   └── os_integration.md           # Full OS integration setup guide
+├── .env                            # Secrets and credentials (gitignored)
+├── .env.example                    # Template for environment variables
+└── requirements.txt
 ```
+
+---
+
+## Requirements
+
+- Python 3.11+
+- Arch Linux (or any Linux distro with systemd)
+- Chromium or Firefox installed
+- A Telegram bot token and chat ID
+- A Compensar account with an active gym membership
+
+---
+
+## Installation
+
+**1. Clone the repository**
+
+```bash
+git clone https://github.com/youruser/gym-bot.git
+cd gym-bot
+```
+
+**2. Create and activate a virtual environment**
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+**3. Install dependencies**
+
+```bash
+pip install -r requirements.txt
+playwright install chromium
+```
+
+**4. Create your `.env` file**
+
+```bash
+cp .env.example .env
+# Edit .env with your credentials
+```
+
+**5. Configure your schedule and app settings**
+
+Edit `src/config/schedule.yaml` and `src/config/app_config.yaml` to match your gym class schedule and system paths.
 
 ---
 
@@ -138,132 +210,185 @@ gym-bot/
 ### `.env`
 
 ```env
-# Authentication
-LOGIN_URL=https://seguridad.compensar.com/sign-in?...
-POST_LOGIN_URL=https://sistemaplanbienestar.deportescompensar.com/...
-GYM_CLASS_VERIFICATION_URL=https://sistemared.deportescompensar.com/...
-
 COMPENSAR_DOC_TYPE=CC
-COMPENSAR_DOC_NUM=your_id
+COMPENSAR_DOC_NUM=your_id_number
 COMPENSAR_PASSWORD=your_password
 
-# Bot behavior
-BOT_HEADLESS=true
-ADDITIONAL_MINUTE_FOR_EXECUTION=false
+TOKEN=your_telegram_bot_token
+CHAT_ID=your_telegram_chat_id
 
-# Force run (optional override)
-BOT_FORCE_RUN=false
-BOT_FORCE_RUN_CLASS=Pilates
-BOT_FORCE_RUN_HOUR=06:00 - 07:00
-BOT_FORCE_RUN_DAY=monday
-
-# Telegram
-TOKEN=your_bot_token
-CHAT_ID=your_chat_id
-
-# Power management
-WAKEALARM_PATH=/sys/class/rtc/rtc0/wakealarm
-WAKE_MINUTES_BEFORE=2
-SLEEP_MINUTES_AFTER=10
+# Optional: Firefox profile name (e.g. abc12345.gym-bot)
+# FIREFOX_PROFILE_NAME=
 ```
 
-### `core/classes.yaml`
+### `src/config/app_config.yaml`
+
+```yaml
+environment:
+  login_url: https://seguridad.compensar.com/sign-in?...
+  inside_system_url: https://sistemaplanbienestar.deportescompensar.com/...
+  inside_system_url_pattern: "**deportescompensar.com/**"
+
+os:
+  home_user: "~"
+  chromium_path: /usr/bin/chromium
+  firefox_path: /usr/bin/firefox
+
+power_autonomous:
+  wake_minutes_before: 2
+  sleep_minutes_after: 10
+  wakealarm_path: /sys/class/rtc/rtc0/wakealarm
+
+execution:
+  bot_force_run: false
+  execution_adjustment: -1 # minutes offset for booking trigger
+  bot_headless: false
+```
+
+### `src/config/schedule.yaml`
+
+Classes are booked **2 days in advance**. A `monday` entry triggers on Saturday.
 
 ```yaml
 timezone: America/Bogota
+
+# Used when bot_force_run: true
+forcedClass:
+  name: PD Yoga
+  hour: 08:00 - 09:00
+  day: tuesday
+
 days:
   monday:
     - name: Pilates
-      hour: "06:00 - 07:00"
-  wednesday:
+      hour: 06:00 - 07:00
     - name: Estiramiento
-      hour: "06:00 - 07:00"
-    - name: Pilates
-      hour: "07:00 - 08:00"
+      hour: 07:00 - 08:00
+  tuesday:
+    - name: PD Yoga
+      hour: 06:00 - 07:00
 ```
-
-> Classes are booked 2 days in advance. A Monday entry triggers on Saturday.
 
 ---
 
-## How It Works
+## Usage
+
+All commands are executed from the project root using `python -m src.main`.
+
+### Reserve classes (default)
+
+```bash
+python -m src.main
+# or explicitly:
+python -m src.main run
+```
+
+### Force-run a specific class
+
+Set `bot_force_run: true` and configure `forcedClass` in `app_config.yaml`, then:
+
+```bash
+python -m src.main run
+```
+
+### Power management
+
+```bash
+# Program RTC wake alarm and suspend immediately
+python -m src.main suspend-now
+
+# Manage full power cycle (active window → suspend → next cycle)
+python -m src.main power-cycle
+```
+
+### Recommended shell aliases (`~/.zshrc`)
+
+```zsh
+alias gym-bot="cd /home/user/gym-bot && python -m src.main"
+alias suspend-now="cd /home/user/gym-bot && sudo -n /home/user/gym-bot/.venv/bin/python -m src.main suspend-now"
+alias power-cycle="cd /home/user/gym-bot && sudo -n /home/user/gym-bot/.venv/bin/python -m src.main power-cycle"
+```
+
+---
+
+## OS Integration
+
+Full setup documentation for systemd services, timers, sudoers configuration, and RTC wake management is available in:
+
+📄 [`doc/os_integration.md`](doc/os_integration.md)
+
+This covers:
+
+- sudoers rules for passwordless suspend (local and SSH)
+- `gym-bot.timer` and `gym-bot.service` — triggers `main.py` every minute
+- `power-autonomous.service` — runs power cycle on boot
+- systemd-sleep hook — re-runs power cycle on every system resume
+- USB wakeup source disabling (prevents premature wakeups)
+
+### Execution flow
 
 ```
 RTC wakealarm fires
        ↓
-systemd-sleep hook triggers power_autonomous.py
+systemd-sleep hook → python -m src.main power-cycle
        ↓
-gym-bot.timer fires main.py every minute
+gym-bot.timer fires every minute → python -m src.main run
        ↓
-main.py evaluates schedule → finds matching class
+Evaluates schedule → finds matching class
        ↓
-Launches Chromium with real user profile
+Launches browser → Login → Navigate → Select date
        ↓
-Login → Navigate → Select date → Select class → Confirm → Verify
+Select class → Confirm → Verify booking
        ↓
 Telegram: "✅ Reservation complete"
        ↓
-power_autonomous.py programs next RTC wake → suspends
+power-cycle programs next RTC wake → suspends
 ```
 
-If anything fails along the way:
+### Error recovery flow
 
 ```
-Exception raised
+Exception raised in any step
        ↓
-Auto-refresh x2 (silent)
+Auto-refresh × 2 (silent)
        ↓
-Telegram alert → wait up to 10 min
+Telegram alert → wait up to 10 minutes
        ↓
-User sends 0 (resume) or 1 (refresh)
+User replies: 0 (resume) or 1 (refresh & retry)
        ↓
-Bot continues
+Bot continues from current state
 ```
 
 ---
 
-## OS Integration Setup
+## Architecture
 
-See [`doc/LINUX_integration-and-initialization-os-integration_power-optimization.md`](doc/LINUX_integration-and-initialization-os-integration_power-optimization.md) for the full setup guide, including:
+The project follows a **layered architecture** with a single entry point:
 
-- sudoers configuration for passwordless suspend
-- systemd service and timer definitions
-- systemd-sleep hook for post-resume scheduler execution
-- USB wakeup source disabling (prevents premature wakeups from connected devices)
-- Shell alias for manual trigger
+```
+src/main.py                 ← entry point, CLI subcommands
+    ↓
+src/bot/scheduler.py        ← decides what to run and when
+    ↓
+src/components/             ← browser automation steps
+    ↓
+src/utils/                  ← cross-cutting concerns
+    ↓
+src/config/config.py        ← single source of truth for all config
+```
+
+**Key design decisions:**
+
+- `Config` is instantiated once per module using an absolute path — never relative to `cwd`
+- All page interactions go through `with_recovery` or `with_soft_recovery` — no bare try/except in business logic
+- Human behavior simulation is fully decoupled from automation logic
+- Power management is a separate concern triggered via CLI subcommands, not hardcoded into the bot flow
 
 ---
 
-## Broader Application
+## Contributing
 
-While built for a specific fitness platform, the architecture is designed with reusability in mind. The same patterns apply to any web-based reservation or form automation scenario:
-
-- **Human behavior layer** is fully decoupled from the bot logic
-- **Recovery system** is generic — any `Callable` can be wrapped
-- **Power management** works with any Linux machine and any scheduled task
-- **Telegram control loop** provides a universal remote intervention interface
-
-This makes gym-bot a practical reference implementation for building robust, autonomous, OS-integrated Python automation systems.
-
----
-
-## Requirements
-
-```
-playwright==1.57.0
-loguru==0.7.3
-python-dotenv==1.2.1
-pytz==2025.2
-PyYAML==6.0.3
-requests
-```
-
-Install dependencies and Playwright browsers:
-
-```bash
-pip install -r requeriments.txt
-playwright install chromium
-```
+This is a personal project. Feel free to fork and adapt it for your own automation needs. The recovery system, human behavior layer, and power management integration are designed to be reusable across different web automation scenarios.
 
 ---
 
