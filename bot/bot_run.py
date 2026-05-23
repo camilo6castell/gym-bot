@@ -71,7 +71,7 @@ def get_classes():
 
 
 def _execution_adjustment(hour: int, minute: int) -> tuple[int, int]:
-    execution_adjustment = config_execution.get("execution_time_adjustment_minutes", 0)
+    execution_adjustment = config_execution.get("execution_adjustment", 0)
     if execution_adjustment != 0:
         minute += execution_adjustment
         if minute < 0:
