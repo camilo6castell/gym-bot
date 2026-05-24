@@ -56,7 +56,7 @@ def suspend() -> None:
     """Suspender el sistema con manejo de errores"""
     try:
         subprocess.run(
-            ["/usr/bin/sudo", "-n", "/usr/bin/systemctl", "hibernate"], check=True
+            ["/usr/bin/sudo", "-n", "/usr/bin/systemctl", "suspend"], check=True
         )
     except Exception as e:
         logger.error(f"❌ Error al suspender: {str(e)}", exc_info=True)
