@@ -1,5 +1,11 @@
 from typing import TypedDict
-from playwright.sync_api import sync_playwright, BrowserContext, Page, Geolocation
+from playwright.sync_api import (
+    sync_playwright,
+    Playwright,
+    BrowserContext,
+    Page,
+    Geolocation,
+)
 from src.config.config import Config
 from src.utils.logger import logger
 
@@ -44,7 +50,7 @@ def _setup_page(context: BrowserContext, stealth_script: str) -> Page:
     return page
 
 
-def launch_firefox():
+def launch_firefox() -> tuple[Playwright, BrowserContext, Page]:
     profile_path = _config.get("FIREFOX_PROFILE_PATH")
     if not profile_path:
         raise RuntimeError("❌ → FIREFOX_PROFILE_NAME no configurado en .env")
@@ -62,7 +68,7 @@ def launch_firefox():
     return playwright, context, _setup_page(context, _STEALTH_SCRIPT_FIREFOX)
 
 
-def launch_chromium():
+def launch_chromium() -> tuple[Playwright, BrowserContext, Page]:
     logger.info("🌐 → Iniciando Chromium con perfil real")
     playwright = sync_playwright().start()
     context = playwright.chromium.launch_persistent_context(

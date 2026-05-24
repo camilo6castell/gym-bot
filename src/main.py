@@ -97,8 +97,12 @@ def main() -> None:
 
     elif args.command == "power-cycle":
         from src.os_integration.power_cycle import run_power_cycle
+        from filelock import FileLock
 
-        run_power_cycle()
+        lock: FileLock = FileLock("/tmp/gym-bot-power-cycle.lock")
+
+        with lock:
+            run_power_cycle()
 
     else:
         # default: sin subcomando o "run" → flujo de reserva

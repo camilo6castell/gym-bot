@@ -1,4 +1,4 @@
-from playwright.sync_api import Page
+from playwright.sync_api import ElementHandle, Page
 from src.utils.logger import logger
 from src.utils.strings import str_normalizer
 from src.utils.human_behavior import human_delay
@@ -30,7 +30,7 @@ def perform_select_by_day(page: Page, spanish_day_name: str) -> bool:
     return False
 
 
-def _get_available_date_buttons(page: Page):
+def _get_available_date_buttons(page: Page) -> list[ElementHandle]:
     wait_network_idle(page)
     with_soft_recovery(
         lambda: page.wait_for_selector("button.botonfecha", timeout=10000),

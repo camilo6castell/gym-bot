@@ -11,14 +11,14 @@ def human_delay(min_sec: float = 0.4, max_sec: float = 1.2) -> None:
     time.sleep(random.uniform(min_sec, max_sec))
 
 
-def human_scroll(page: Page):
+def human_scroll(page: Page) -> None:
     scroll_amount = random.randint(150, 450)
     direction = random.choice([-1, 1])
     page.evaluate("window.scrollBy(0, arguments[0])", scroll_amount * direction)
     human_delay(0.3, 0.8)
 
 
-def human_mouse_move(page: Page, selector: str):
+def human_mouse_move(page: Page, selector: str) -> None:
     try:
         element: Optional[ElementHandle] = page.query_selector(selector)
         if element is None:
@@ -49,7 +49,7 @@ def human_mouse_move(page: Page, selector: str):
         logger.debug(f"human_mouse_move falló en '{selector}': {e}")
 
 
-def human_click(page: Page, selector: str):
+def human_click(page: Page, selector: str) -> None:
     try:
         human_mouse_move(page, selector)
         human_delay(0.15, 0.4)

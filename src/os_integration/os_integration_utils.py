@@ -1,7 +1,7 @@
 from typing import Optional
-import pytz
 import datetime
 import subprocess
+from zoneinfo import ZoneInfo
 
 from src.config.config import Config
 from src.utils.time_utils import days_mapper
@@ -9,7 +9,7 @@ from src.utils.logger import logger
 
 _config = Config()
 _power = _config.get("APP_CONFIG").get("power_autonomous", {})
-_tz = pytz.timezone(_config.get("SCHEDULE").get("timezone", "UTC"))
+_tz = ZoneInfo(_config.get("SCHEDULE").get("timezone", "UTC"))
 
 
 def get_now() -> datetime.datetime:
@@ -56,7 +56,7 @@ def suspend() -> None:
     """Suspender el sistema con manejo de errores"""
     try:
         subprocess.run(
-            ["/usr/bin/sudo", "-n", "/usr/bin/systemctl", "suspend"], check=True
+            ["/usr/bin/sudo", "-n", "/usr/bin/systemctl", "hibernate"], check=True
         )
     except Exception as e:
         logger.error(f"❌ Error al suspender: {str(e)}", exc_info=True)

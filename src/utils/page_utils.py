@@ -64,6 +64,7 @@ def wait_for_element_with_retry(
             time.sleep(random.uniform(1, 3))
             page.evaluate("window.scrollBy(0, 200)")
             time.sleep(0.5)
+    return None
 
 
 # ─── Red y navegación ────────────────────────────────────────────────────────

@@ -1,9 +1,15 @@
-def str_normalizer(day: str):
-    return (
-        day.lower()
-        .replace("á", "a")
-        .replace("é", "e")
-        .replace("í", "i")
-        .replace("ó", "o")
-        .replace("ú", "u")
-    )
+from typing import Final
+
+_NORMALIZER_TABLE: Final = str.maketrans(
+    {
+        "á": "a",
+        "é": "e",
+        "í": "i",
+        "ó": "o",
+        "ú": "u",
+    }
+)
+
+
+def str_normalizer(day: str) -> str:
+    return day.lower().translate(_NORMALIZER_TABLE)

@@ -12,7 +12,7 @@ def with_soft_recovery(
     action_name: str = "please specify an action name",
     ms_to_retry: int = 5000,
     max_retries: int = 3,
-) -> Any:
+) -> None:
     attempts = 0
     last_exception = None
 
@@ -45,13 +45,14 @@ def with_recovery(
     action_name: str = "acción",
     max_retries: int | None = 3,
     auto_refresh_limit: int = 2,
-) -> Any:
+) -> None:
     retry_count = 0
     auto_refreshes = 0
 
     while True:
         try:
-            return action_fn()
+            action_fn()
+            return
 
         except CaptchaDetectedError:
             logger.warning(f"🔒 → CAPTCHA en '{action_name}', solicitando ayuda...")
