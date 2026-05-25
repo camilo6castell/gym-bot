@@ -26,8 +26,8 @@ def run_suspend_now() -> None:
 
     wake_time = calculate_wake_time(next_reservation)
 
-    logger.info(f"📅 → Próxima reserva: {next_reservation.strftime(_time_format)}")
-    logger.info(f"⏰ → Programando wake para: {wake_time.strftime(_time_format)}")
+    logger.info(f"📅 → Próxima reserva:\t{next_reservation.strftime(_time_format)}")
+    logger.info(f"⏰ → Programando wake para:\t{wake_time.strftime(_time_format)}")
 
     set_wake_alarm(wake_time)
     logger.info("💤 → Suspendiendo...")
@@ -50,9 +50,9 @@ def run_power_cycle() -> None:
     )
     now = get_now()
 
-    logger.info(f"🕐 → Ahora: {now.strftime(_time_format)}")
-    logger.info(f"⏰ → Wake programado: {wake_time.strftime(_time_format)}")
-    logger.info(f"💤 → Sleep después de: {sleep_time.strftime(_time_format)}")
+    logger.info(f"🕐 → Ahora:\t{now.strftime(_time_format)}")
+    logger.info(f"⏰ → Wake programado:\t{wake_time.strftime(_time_format)}")
+    logger.info(f"💤 → Sleep después de:\t{sleep_time.strftime(_time_format)}")
 
     if wake_time <= now <= sleep_time:
         wait_for_window_activation(now, sleep_time)

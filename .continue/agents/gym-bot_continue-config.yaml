@@ -1,106 +1,67 @@
+%YAML 1.1
+---
 name: Local FLM Config
 version: 1.0.0
 schema: v1
 
 ########################################################
+# YAML ANCHORS - Para evitar duplicación
+########################################################
+defaults: &defaults
+  provider: openai
+  apiBase: http://127.0.0.1:52625/v1
+  apiKey: flm
+  requestOptions:
+    timeout: 720000
+  defaultCompletionOptions:
+    contextLength: 32768
+    maxTokens: 4096
+    temperature: 0.1
+    topP: 0.9
+  autocompleteOptions:
+    disable: true
+
+########################################################
 # MODELS
 ########################################################
-
 models:
   ########################################################
-  # MAIN AGENT MODELs (NPU via FLM)
+  # MAIN AGENT MODELS (NPU via FLM)
   ########################################################
 
-  # 1: General purpose coding assistant with strong reasoning and tool use capabilities
-
+  # 1: General purpose coding assistant
   - name: Qwen3 8B Agent
-    provider: openai
+    <<: *defaults
     model: qwen3:8b
-    apiBase: http://127.0.0.1:52625/v1
-    apiKey: flm
-
     capabilities:
       - tool_use
-
     roles:
       - chat
       - edit
       - apply
 
-    defaultCompletionOptions:
-      contextLength: 32768
-      maxTokens: 4096
-      temperature: 0.1
-      topP: 0.9
-
-    autocompleteOptions:
-      disable: true
-
-    requestOptions:
-      timeout: 720000
-
-    chatOptions:
-      baseSystemMessage: |
-        You are an expert senior software engineer.
-
-        IMPORTANT:
-        - Analyze repository context before answering
-        - Reuse existing project patterns
-        - Never invent APIs or files
-        - If repository context is insufficient, explicitly say so
-        - Keep answers concise and technical
-
-      baseAgentSystemMessage: |
-        You are an expert autonomous coding agent.
-
-        IMPORTANT:
-        - Always inspect the provided repository context first
-        - Prefer modifying existing code over rewriting
-        - Follow existing architecture and conventions
-        - Never hallucinate files, APIs or libraries
-        - Explicitly mention uncertainty when context is missing
-
-  # 2: More powerful model for complex reasoning and tool use, but with higher latency and cost. Used selectively for difficult tasks.
-
+  # 2: Modelo para razonamiento complejo (usar selectivamente)
   - name: GPT-OSS 20B
-    provider: openai
+    <<: *defaults
     model: gpt-oss:20b
-    apiBase: http://127.0.0.1:52625/v1
-    apiKey: flm
-
     capabilities:
       - tool_use
-
     roles:
       - chat
-      - edit
-      - apply
-
     defaultCompletionOptions:
-      contextLength: 32768
-      maxTokens: 4096
+      <<: *defaults
       temperature: 0.2
-      reasoning: true
-
-    autocompleteOptions:
-      disable: true
-
-    requestOptions:
-      timeout: 720000
+      # ⚠️ Verifica si este modelo soporta 'reasoning: true'
+      # reasoning: true  # Solo para Claude 3.7+ y algunos modelos Ollama
 
   ########################################################
-  # AUTOCOMPLETE MODEL - Por ahora manejado por Copilot
+  # AUTOCOMPLETE MODEL (Comentado - usando Copilot)
   ########################################################
-
   # - name: Qwen3.5 2B Autocomplete
-  #   provider: openai
+  #   <<: *defaults
   #   model: qwen3.5:2b
-  #   apiBase: http://127.0.0.1:52625/v1
-  #   apiKey: flm
-
   #   roles:
   #     - autocomplete
-
   #   autocompleteOptions:
   #     disable: false
   #     debounceDelay: 200
@@ -110,54 +71,42 @@ models:
   #     useImports: true
   #     useRecentlyEdited: true
   #     useRecentlyOpened: true
-
   #   defaultCompletionOptions:
   #     temperature: 0.1
   #     maxTokens: 128
-
   #   requestOptions:
   #     timeout: 10000
 
   ########################################################
   # EMBEDDINGS
   ########################################################
-
-  # 1: Fast and efficient embedding model for code search and retrieval tasks.
-
   - name: Nomic Embeddings
     provider: ollama
     model: nomic-embed-text
     apiBase: http://127.0.0.1:11434
-
     roles:
       - embed
-
     embedOptions:
       maxChunkSize: 384
       maxBatchSize: 16
-
     defaultCompletionOptions:
       keepAlive: 1800
 
   ########################################################
-  # RERANKER - No hay modelos bnuenos disponibles.
+  # RERANKER (Comentado - sin modelos óptimos disponibles)
   ########################################################
-
   # - name: BGE Reranker
   #   provider: ollama
   #   model: bbjson/bge-reranker-base:latest
   #   apiBase: http://127.0.0.1:11434
-
   #   roles:
   #     - rerank
-
   #   defaultCompletionOptions:
   #     keepAlive: 1800
 
 ########################################################
 # CONTEXT PROVIDERS
 ########################################################
-
 context:
   - provider: codebase
   - provider: file
@@ -174,19 +123,29 @@ context:
       includeSignatures: true
 
 ########################################################
-# DOCS
+# RULES - Consolidadas (aplican a todos los modos)
 ########################################################
-
-# docs:
-#   - name: Continue
-#     startUrl: https://docs.continue.dev/intro
-#     favicon: https://docs.continue.dev/favicon.ico
-
-########################################################
-# RULES
-########################################################
-
 rules:
-  - "Reuse existing project patterns whenever possible."
-  - "Do not invent APIs, files, or architecture."
-  - "If insufficient codebase context exists, explicitly state it."
+  # 🔹 Principios de ingeniería
+  - "You are an expert senior software engineer and autonomous coding agent."
+  - "Always analyze repository context before answering or making changes."
+  - "Reuse existing project patterns, architecture, and conventions."
+  - "Prefer minimal, targeted modifications over full rewrites."
+
+  # 🔹 Prevención de alucinaciones
+  - "Never invent APIs, files, libraries, or functionality that doesn't exist."
+  - "If repository context is insufficient, explicitly state what's missing before proceeding."
+  - "When uncertain about implementation details, ask for clarification or note assumptions."
+
+  # 🔹 Estilo de respuesta
+  - "Keep answers concise, technical, and actionable."
+  - "Include code examples only when directly relevant to the question."
+  - "Use the same language as the user's query unless instructed otherwise."
+
+########################################################
+# DOCS (Opcional - descomentar si necesitas indexar docs)
+########################################################
+# docs:
+#   - name: Continue Reference
+#     startUrl: https://docs.continue.dev/reference
+#     favicon: https://docs.continue.dev/favicon.ico

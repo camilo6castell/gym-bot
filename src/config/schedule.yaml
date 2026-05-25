@@ -2,7 +2,7 @@ timezone: America/Bogota
 
 forcedClass:
   name: PD Yoga
-  hour: 08:00 - 09:00
+  hour: 06:00 - 07:00
   day: tuesday
 
 days:
@@ -56,6 +56,10 @@ days:
     - name: Pilates
       hour: 06:00 - 07:00
     - name: Bases Inestables
+      hour: 07:00 - 08:00
+    - name: test
+      hour: 10:30 - 08:00
+    - name: test2
       hour: 07:00 - 08:00
 
   #MARTES

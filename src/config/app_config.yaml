@@ -18,11 +18,11 @@ selectors:
   potential_intermediate_login_selector: "#presso-login"
 
 power_autonomous:
-  wake_minutes_before: 3
+  wake_minutes_before: 5
   sleep_minutes_after: 3
   wakealarm_path: /sys/class/rtc/rtc0/wakealarm
 
 execution:
   bot_force_run: false
-  execution_adjustment: -1
+  execution_adjustment: 0
   bot_headless: false
