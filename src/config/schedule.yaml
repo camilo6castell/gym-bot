@@ -57,10 +57,6 @@ days:
       hour: 06:00 - 07:00
     - name: Bases Inestables
       hour: 07:00 - 08:00
-    - name: test
-      hour: 10:30 - 08:00
-    - name: test2
-      hour: 07:00 - 08:00
 
   #MARTES
   # sunday:
