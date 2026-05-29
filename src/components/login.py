@@ -1,3 +1,4 @@
+import time
 from playwright.sync_api import Page
 from src.config.config import Config
 from src.utils.logger import logger
@@ -7,12 +8,15 @@ from src.utils.human_behavior import human_delay, human_type, human_click
 _config = Config()
 _env = _config.get("APP_CONFIG").get("environment", {})
 _selectors = _config.get("APP_CONFIG").get("selectors", {})
+_execution = _config.get("APP_CONFIG").get("execution")
 
 
 def perform_login(page: Page) -> None:
     logger.info("🌐 → Abriendo página de login")
     page.goto(_env.get("login_url"), wait_until="domcontentloaded")
     raise_if_captcha(page)
+
+    time.sleep(_execution.get("seconds_for_temporary_platform_notifications"))
 
     logger.info("🫆 → Seleccionando tipo de documento")
     page.wait_for_selector("#tipodoc", timeout=20000)
