@@ -11,7 +11,7 @@ def run_bot() -> None:
     from src.components.post_login import perform_post_login
     from src.components.reserve_process import perform_reserve_gym_class
     from src.utils.error_broadcast import send_error_broadcast
-    from src.utils.recovery import with_recovery, with_soft_recovery
+    from src.utils.recovery import with_recovery
     from src.utils.time_utils import spanish_day_mapper
     from src.utils.strings import str_normalizer
 
@@ -21,9 +21,10 @@ def run_bot() -> None:
 
     playwright, context, page = launch_chromium()
 
+    with_recovery(lambda: perform_login(page), page, "Proceso de login")
+    with_recovery(lambda: perform_post_login(page), page, "Flujo post-login")
+
     try:
-        with_recovery(lambda: perform_login(page), page, "Proceso de login")
-        with_soft_recovery(lambda: perform_post_login(page), page, "Flujo post-login")
 
         logger.info("🥁 → Iniciando iteraciones de clases.")
 

@@ -1,10 +1,7 @@
 environment:
   login_url: https://seguridad.compensar.com/sign-in?serviceProviderName=HER-SP&protocol=SAML
-
   inside_system_url: https://sistemaplanbienestar.deportescompensar.com/entrenamiento/reserva/practica/libre
-
   gym_class_verification_url: https://sistemared.deportescompensar.com/sistema.php/entrenamiento/mis/turnos#/
-
   inside_system_url_pattern: "**deportescompensar.com/**"
 
 os:
@@ -13,13 +10,13 @@ os:
   chromium_path: /usr/bin/chromium
 
 selectors:
+  potential_temporary_platform_notification: "button[type='submit']:has-text('Entendido')"
   potential_modal_entiendo_selector: "button[type='submit']:has-text('Entiendo')"
-
   potential_intermediate_login_selector: "#presso-login"
 
 power_autonomous:
   wake_minutes_before: 5
-  sleep_minutes_after: 3
+  sleep_minutes_after: 10
   wakealarm_path: /sys/class/rtc/rtc0/wakealarm
 
 execution:

@@ -1,4 +1,4 @@
 {
   "python.analysis.typeCheckingMode": "off",
-  "python.languageServer": "None"
+  "python.languageServer": "Default"
 }

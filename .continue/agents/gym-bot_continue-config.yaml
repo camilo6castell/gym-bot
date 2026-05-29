@@ -14,7 +14,9 @@ defaults: &defaults
   requestOptions:
     timeout: 720000
   defaultCompletionOptions:
-    contextLength: 32768
+    reasoning: false
+    #contextLength: 32768
+    contextLength: 8192
     maxTokens: 4096
     temperature: 0.1
     topP: 0.9
