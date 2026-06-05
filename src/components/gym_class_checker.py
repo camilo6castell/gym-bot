@@ -1,7 +1,7 @@
 from playwright.sync_api import Page
 from src.utils.human_behavior import human_delay
 from src.utils.logger import logger
-from src.utils.page_utils import search_and_click
+from src.utils.page_utils import search_and_click, wait_network_idle
 from src.utils.time_utils import military_time_range_to_ampm
 from src.utils.recovery import with_soft_recovery
 from src.utils.strings import str_normalizer
@@ -11,6 +11,8 @@ def perform_gym_class_checker(
     page: Page, gym_class_name: str, gym_class_hour: str
 ) -> None:
     logger.info(f"🔍 → Verificando reserva: '{gym_class_name}' | '{gym_class_hour}'")
+
+    wait_network_idle(page, timeout=20000)
 
     search_and_click(page, "a[href='#mm-m1-p2']")
     search_and_click(page, "a[href='/sistema.php/entrenamiento/mis/turnos']")
