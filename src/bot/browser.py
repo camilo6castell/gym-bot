@@ -46,16 +46,20 @@ _COMMON_CONTEXT_ARGS: _CommonContextArgs = {
 
 
 def _kill_existing_chromium() -> None:
-    """Mata instancias huérfanas de Chromium antes de lanzar el bot"""
-    result = subprocess.run(
-        ["pgrep", "-f", "chromium.*user-data-dir"],
-        capture_output=True,
-        text=True,
-    )
-    if result.stdout.strip():
-        subprocess.run(["pkill", "-f", "chromium.*user-data-dir"], check=False)
-        time.sleep(2)  # dar tiempo al SO para liberar el lock del perfil
-        logger.info("🧹 → Instancias anteriores de Chromium cerradas")
+    subprocess.run(["pkill", "-x", "chromium"], check=False)
+
+    # Eliminar lock files del perfil
+    import pathlib
+
+    profile_path = pathlib.Path(_config.get("CHROMIUM_PROFILE_PATH"))
+    for lock_file in ["SingletonLock", "SingletonCookie", "SingletonSocket"]:
+        lock = profile_path / lock_file
+        if lock.exists():
+            lock.unlink()
+            logger.info(f"🔓 → Lock eliminado: {lock_file}")
+
+    time.sleep(1)
+    logger.info("🧹 → Chromium limpiado")
 
 
 def _setup_page(context: BrowserContext, stealth_script: str) -> Page:
