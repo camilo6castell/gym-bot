@@ -1,3 +1,5 @@
+import time
+import subprocess
 from typing import TypedDict
 from playwright.sync_api import (
     sync_playwright,
@@ -43,6 +45,19 @@ _COMMON_CONTEXT_ARGS: _CommonContextArgs = {
 }
 
 
+def _kill_existing_chromium() -> None:
+    """Mata instancias huérfanas de Chromium antes de lanzar el bot"""
+    result = subprocess.run(
+        ["pgrep", "-f", "chromium.*user-data-dir"],
+        capture_output=True,
+        text=True,
+    )
+    if result.stdout.strip():
+        subprocess.run(["pkill", "-f", "chromium.*user-data-dir"], check=False)
+        time.sleep(2)  # dar tiempo al SO para liberar el lock del perfil
+        logger.info("🧹 → Instancias anteriores de Chromium cerradas")
+
+
 def _setup_page(context: BrowserContext, stealth_script: str) -> Page:
     context.add_init_script(stealth_script)
     page = context.pages[0] if context.pages else context.new_page()
@@ -69,6 +84,7 @@ def launch_firefox() -> tuple[Playwright, BrowserContext, Page]:
 
 
 def launch_chromium() -> tuple[Playwright, BrowserContext, Page]:
+    _kill_existing_chromium()
     logger.info("🌐 → Iniciando Chromium con perfil real")
     playwright = sync_playwright().start()
     context = playwright.chromium.launch_persistent_context(

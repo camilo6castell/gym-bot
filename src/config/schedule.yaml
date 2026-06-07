@@ -1,9 +1,9 @@
 timezone: America/Bogota
 
 forcedClass:
-  name: PD Yoga
+  name: Estiramiento
   hour: 06:00 - 07:00
-  day: tuesday
+  day: frifay
 
 days:
   #MIERCOLES
@@ -48,8 +48,8 @@ days:
       hour: 06:00 - 07:00
     - name: Pilates
       hour: 07:00 - 08:00
-    - name: test
-      hour: 10:38 - 08:00
+    # - name: test
+    #   hour: 10:38 - 08:00
 
   #LUNES
   saturday:
