@@ -36,7 +36,7 @@ def search_and_click(page: Page, selector: str, timeout: int = 5000) -> None:
 
 
 def dismiss_if_present(
-    page: Page, selector: str, is_mandatory: bool = False, timeout: int = 10000
+    page: Page, selector: str, is_mandatory: bool = False, timeout: int = 15000
 ) -> None:
     try:
         page.wait_for_selector(selector, state="visible", timeout=timeout)
@@ -154,6 +154,7 @@ def monitor_new_page(page: Page, selector: str | None = None) -> None:
             page,
             action_name=f"Descartando modal '{selector}'",
         )
+        wait_network_idle(page, timeout=20000)
 
 
 def force_url(

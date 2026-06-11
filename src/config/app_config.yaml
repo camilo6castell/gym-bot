@@ -22,5 +22,5 @@ power_autonomous:
 execution:
   bot_force_run: false
   seconds_for_temporary_platform_notifications: 11
-  execution_adjustment: 0
+  execution_adjustment: -1
   bot_headless: false

@@ -1,9 +1,9 @@
 timezone: America/Bogota
 
 forcedClass:
-  name: Estiramiento
-  hour: 06:00 - 07:00
-  day: frifay
+  name: Pilates
+  hour: 07:00 - 08:00
+  day: friday
 
 days:
   #MIERCOLES
