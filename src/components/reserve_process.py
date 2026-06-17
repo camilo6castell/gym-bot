@@ -19,7 +19,7 @@ def perform_reserve_gym_class(
     spanish_day_name: str,
     gym_class_name: str,
     gym_class_hour: str,
-) -> bool:
+) -> None:
     confirm_url(page, _env.get("inside_system_url"))
 
     perform_open_plan_and_use_membership(page)
@@ -32,7 +32,6 @@ def perform_reserve_gym_class(
 
     if not day_selected:
         logger.warning(f"⚠️ → Día '{spanish_day_name}' no encontrado, saltando.")
-        return False
+        return
 
     perform_gym_class_booker(page, gym_class_name, gym_class_hour)
-    return True

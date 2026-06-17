@@ -12,7 +12,7 @@ def run_bot() -> None:
     from src.components.reserve_process import perform_reserve_gym_class
     from src.utils.error_broadcast import send_error_broadcast
     from src.utils.recovery import with_recovery
-    from src.utils.time_utils import spanish_day_mapper
+    from src.utils.time_utils import spanish_day_mapper, wait_until_reservation_opens
     from src.utils.strings import str_normalizer
 
     tentative_classes = get_classes()
@@ -34,6 +34,8 @@ def run_bot() -> None:
                 f"🎯 → Clase {index+1}/{len(tentative_classes)}: "
                 f"{gym_class['name']} | {gym_class['hour']} | {spanish_day_name}"
             )
+
+            wait_until_reservation_opens(gym_class["hour"])
 
             try:
                 with_recovery(
