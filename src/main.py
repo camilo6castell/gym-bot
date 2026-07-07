@@ -11,7 +11,7 @@ def run_bot() -> None:
     from src.components.post_login import perform_post_login
     from src.components.reserve_process import perform_reserve_gym_class
     from src.utils.error_broadcast import send_error_broadcast
-    from src.utils.recovery import with_recovery
+    from src.utils.recovery import recovery
     from src.utils.time_utils import spanish_day_mapper, wait_until_reservation_opens
     from src.utils.strings import str_normalizer
 
@@ -20,9 +20,10 @@ def run_bot() -> None:
         return
 
     playwright, context, page = launch_chromium()
+    
 
-    with_recovery(lambda: perform_login(page), page, "Proceso de login")
-    with_recovery(lambda: perform_post_login(page), page, "Flujo post-login")
+    recovery.with_recovery(lambda: perform_login(page), page, "Proceso de login")
+    recovery.with_recovery(lambda: perform_post_login(page), page, "Flujo post-login")
 
     try:
 
@@ -38,7 +39,7 @@ def run_bot() -> None:
             wait_until_reservation_opens(gym_class["hour"])
 
             try:
-                with_recovery(
+                recovery.with_recovery(
                     lambda: perform_reserve_gym_class(
                         page,
                         spanish_day_name,

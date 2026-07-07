@@ -3,7 +3,7 @@ from src.components.gym_class_acceptance import perform_gym_class_acceptance
 from src.components.gym_class_checker import perform_gym_class_checker
 from src.utils.logger import logger
 from src.utils.human_behavior import human_delay
-from src.utils.recovery import with_soft_recovery
+from src.utils.recovery import recovery
 from src.utils.strings import str_normalizer
 from src.utils.page_utils import wait_network_idle
 
@@ -14,7 +14,7 @@ def perform_gym_class_booker(
     logger.info(f"🔎 → Buscando clase '{gym_class_name}' en horario '{gym_class_hour}'")
 
     wait_network_idle(page)
-    with_soft_recovery(
+    recovery.with_soft_recovery(
         lambda: page.wait_for_selector("#contenedor-horarios", timeout=10000),
         page,
         "Esperando contenedor de horarios",
@@ -28,12 +28,12 @@ def perform_gym_class_booker(
             human_delay()
             boton.click()
             logger.success("✔️ → Clase seleccionada correctamente")
-            with_soft_recovery(
+            recovery.with_soft_recovery(
                 lambda: perform_gym_class_acceptance(page),
                 page,
                 "Confirmando reserva en sistema",
             )
-            with_soft_recovery(
+            recovery.with_soft_recovery(
                 lambda: perform_gym_class_checker(page, gym_class_name, gym_class_hour),
                 page,
                 f"Verificando '{gym_class_name}' a las '{gym_class_hour}'",

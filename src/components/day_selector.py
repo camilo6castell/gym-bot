@@ -3,7 +3,7 @@ from src.utils.logger import logger
 from src.utils.strings import str_normalizer
 from src.utils.human_behavior import human_delay
 from src.utils.page_utils import wait_network_idle
-from src.utils.recovery import with_soft_recovery
+from src.utils.recovery import recovery
 
 
 def perform_select_latest_date(page: Page) -> bool:
@@ -32,7 +32,7 @@ def perform_select_by_day(page: Page, spanish_day_name: str) -> bool:
 
 def _get_available_date_buttons(page: Page) -> list[ElementHandle]:
     wait_network_idle(page)
-    with_soft_recovery(
+    recovery.with_soft_recovery(
         lambda: page.wait_for_selector("button.botonfecha", timeout=10000),
         page,
         "Esperando botones de fecha disponibles",

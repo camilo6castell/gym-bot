@@ -3,7 +3,7 @@ from src.utils.human_behavior import human_delay
 from src.utils.logger import logger
 from src.utils.page_utils import search_and_click, wait_network_idle
 from src.utils.time_utils import military_time_range_to_ampm
-from src.utils.recovery import with_soft_recovery
+from src.utils.recovery import recovery
 from src.utils.strings import str_normalizer
 
 
@@ -17,7 +17,7 @@ def perform_gym_class_checker(
     search_and_click(page, "a[href='#mm-m1-p2']")
     search_and_click(page, "a[href='/sistema.php/entrenamiento/mis/turnos']")
 
-    with_soft_recovery(
+    recovery.with_soft_recovery(
         lambda: page.wait_for_selector(
             ".panel-proximos-turno .ng-binding, .panel.panel-shadow .ng-binding",
             timeout=15000,

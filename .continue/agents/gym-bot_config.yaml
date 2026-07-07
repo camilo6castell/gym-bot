@@ -14,9 +14,7 @@ defaults: &defaults
   requestOptions:
     timeout: 720000
   defaultCompletionOptions:
-    reasoning: false
-    #contextLength: 32768
-    contextLength: 8192
+    contextLength: 32768
     maxTokens: 4096
     temperature: 0.1
     topP: 0.9
@@ -30,7 +28,6 @@ models:
   ########################################################
   # MAIN AGENT MODELS (NPU via FLM)
   ########################################################
-
   # 1: General purpose coding assistant
   - name: Qwen3 8B Agent
     <<: *defaults
@@ -53,11 +50,11 @@ models:
     defaultCompletionOptions:
       <<: *defaults
       temperature: 0.2
-      # ⚠️ Verifica si este modelo soporta 'reasoning: true'
+      # ⚠ Verifica si este modelo soporta 'reasoning: true'
       # reasoning: true  # Solo para Claude 3.7+ y algunos modelos Ollama
 
   ########################################################
-  # AUTOCOMPLETE MODEL (Comentado - usando Copilot)
+  # AUTOCOMPLETE MODEL
   ########################################################
   # - name: Qwen3.5 2B Autocomplete
   #   <<: *defaults
@@ -82,20 +79,20 @@ models:
   ########################################################
   # EMBEDDINGS
   ########################################################
-  - name: Nomic Embeddings
+  - name: BGE-M3
     provider: ollama
-    model: nomic-embed-text
+    model: bge-m3:latest
     apiBase: http://127.0.0.1:11434
     roles:
       - embed
     embedOptions:
-      maxChunkSize: 384
+      maxChunkSize: 512
       maxBatchSize: 16
     defaultCompletionOptions:
       keepAlive: 1800
 
   ########################################################
-  # RERANKER (Comentado - sin modelos óptimos disponibles)
+  # RERANKER
   ########################################################
   # - name: BGE Reranker
   #   provider: ollama
@@ -106,9 +103,9 @@ models:
   #   defaultCompletionOptions:
   #     keepAlive: 1800
 
-########################################################
-# CONTEXT PROVIDERS
-########################################################
+  ########################################################
+  # CONTEXT PROVIDERS
+  ########################################################
 context:
   - provider: codebase
   - provider: file
@@ -121,33 +118,19 @@ context:
   - provider: problems
   - provider: os
   - provider: repo-map
-    params:
-      includeSignatures: true
+
+params:
+  includeSignatures: true
 
 ########################################################
 # RULES - Consolidadas (aplican a todos los modos)
 ########################################################
 rules:
-  # 🔹 Principios de ingeniería
+  # Principios de ingeniería
   - "You are an expert senior software engineer and autonomous coding agent."
   - "Always analyze repository context before answering or making changes."
   - "Reuse existing project patterns, architecture, and conventions."
   - "Prefer minimal, targeted modifications over full rewrites."
 
-  # 🔹 Prevención de alucinaciones
+  # Prevención de alucinaciones
   - "Never invent APIs, files, libraries, or functionality that doesn't exist."
-  - "If repository context is insufficient, explicitly state what's missing before proceeding."
-  - "When uncertain about implementation details, ask for clarification or note assumptions."
-
-  # 🔹 Estilo de respuesta
-  - "Keep answers concise, technical, and actionable."
-  - "Include code examples only when directly relevant to the question."
-  - "Use the same language as the user's query unless instructed otherwise."
-
-########################################################
-# DOCS (Opcional - descomentar si necesitas indexar docs)
-########################################################
-# docs:
-#   - name: Continue Reference
-#     startUrl: https://docs.continue.dev/reference
-#     favicon: https://docs.continue.dev/favicon.ico

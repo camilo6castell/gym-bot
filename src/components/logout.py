@@ -2,7 +2,7 @@ from playwright.sync_api import Page
 from src.utils.logger import logger
 from src.utils.human_behavior import human_delay
 from src.utils.page_utils import search_and_click, wait_network_idle
-from src.utils.recovery import with_soft_recovery
+from src.utils.recovery import recovery
 
 
 def perform_logout(page: Page) -> None:
@@ -10,14 +10,14 @@ def perform_logout(page: Page) -> None:
         logger.info("🚪 → Intentando cerrar sesión")
         human_delay()
 
-        with_soft_recovery(
+        recovery.with_soft_recovery(
             lambda: search_and_click(page, "i.dropdown-icon", timeout=5000),
             page,
             "Esperando menú de usuario para logout",
         )
         human_delay()
 
-        with_soft_recovery(
+        recovery.with_soft_recovery(
             lambda: search_and_click(page, "a:has-text('Salir')", timeout=5000),
             page,
             "Intentando hacer click en 'Salir'",

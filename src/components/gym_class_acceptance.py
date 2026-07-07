@@ -1,7 +1,7 @@
 from playwright.sync_api import Page, TimeoutError
 from src.utils.human_behavior import human_delay
 from src.utils.logger import logger
-from src.utils.recovery import with_soft_recovery
+from src.utils.recovery import recovery
 
 
 def perform_gym_class_acceptance(page: Page) -> None:
@@ -21,7 +21,7 @@ def perform_gym_class_acceptance(page: Page) -> None:
 
     human_delay(0.5, 1.0)
 
-    with_soft_recovery(
+    recovery.with_soft_recovery(
         lambda: page.click(confirm_selector),
         page,
         "Clickeando botón Confirmar Reserva",
@@ -29,7 +29,7 @@ def perform_gym_class_acceptance(page: Page) -> None:
 
     human_delay()
 
-    with_soft_recovery(
+    recovery.with_soft_recovery(
         lambda: _close_notific8(page),
         page,
         "Cerrando notificación de éxito",

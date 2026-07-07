@@ -144,12 +144,12 @@ def raise_if_captcha(page: Page) -> None:
 
 def monitor_new_page(page: Page, selector: str | None = None) -> None:
     """Espera red idle, verifica captcha y descarta modal opcional."""
-    from src.utils.recovery import with_soft_recovery  # import local — evita circular
+    from src.utils.recovery import recovery  # import local — evita circular
 
     wait_network_idle(page)
     raise_if_captcha(page)
     if selector:
-        with_soft_recovery(
+        recovery.with_soft_recovery(
             lambda: dismiss_if_present(page, selector),
             page,
             action_name=f"Descartando modal '{selector}'",
@@ -164,13 +164,13 @@ def force_url(
     redirect_pattern: str | None = None,
 ) -> None:
     """Navega a forced_url, maneja modal opcional y verifica redirección."""
-    from src.utils.recovery import with_soft_recovery  # import local — evita circular
+    from src.utils.recovery import recovery  # import local — evita circular
 
     logger.info(f"🔀 → Forzando URL: {forced_url[:64]}")
     page.goto(forced_url, wait_until="networkidle")
     monitor_new_page(page, selector)
     if redirect_pattern:
-        with_soft_recovery(
+        recovery.with_soft_recovery(
             lambda: wait_for_redirect(page, redirect_pattern, timeout=5000),
             page,
             action_name=f"Verificando redirección a '{redirect_pattern}'",

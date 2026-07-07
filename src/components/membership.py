@@ -1,7 +1,7 @@
 from playwright.sync_api import Page, TimeoutError
 from src.utils.logger import logger
 from src.utils.page_utils import wait_network_idle
-from src.utils.recovery import with_soft_recovery
+from src.utils.recovery import recovery
 
 _MEMBERSHIP_SELECTOR = (
     'button:has-text("Usar Membresía"), button:has-text("Usar tiquetera")'
@@ -12,7 +12,7 @@ def perform_open_plan_and_use_membership(page: Page) -> None:
     logger.info("🔎 → Buscando botones 'Usar Membresía' o 'Usar tiquetera'...")
 
     try:
-        with_soft_recovery(
+        recovery.with_soft_recovery(
             lambda: page.wait_for_selector(_MEMBERSHIP_SELECTOR, timeout=5000),
             page,
             "Esperando botones de membresía/tiquetera",

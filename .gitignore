@@ -28,3 +28,6 @@ bot/state/
 
 # Logs
 logs/bot.log
+
+# vscode
+.vscode/
