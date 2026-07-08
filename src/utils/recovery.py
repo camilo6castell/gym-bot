@@ -1,10 +1,12 @@
 # src/utils/recovery.py
 import time
-from typing import Callable, Any, Optional
+from typing import Any, Callable, Optional
+
 from playwright.sync_api import Page
-from src.notifications.telegram import notify, getUpdates
-from src.utils.logger import logger
+
+from src.notifications.telegram import getUpdates, notify
 from src.utils.exceptions import CaptchaDetectedError
+from src.utils.logger import logger
 
 
 class Recovery:
@@ -107,7 +109,7 @@ class Recovery:
                     continue
 
                 action = self.wait_for_user_action(
-                    f"❌ → Error en: {action_name}\nfalló: {e}\n(después de {auto_refresh_limit} auto-refreshes)",
+                    f"Error en: {action_name}\nfalló: {e}\n(después de {auto_refresh_limit} auto-refreshes)",
                     timeout=600,
                     retry_count=retry_count,
                 )
@@ -125,15 +127,11 @@ class Recovery:
         Espera una acción del usuario a través de Telegram.
         """
         full_msg = (
-            f"❌ → {error_description}."
-            "\n"
-            "\n"
-            "\tResponde"
-            "\n"
+            f"Batch: {self.batch_classes}\n\n"
+            f"❌ → {error_description}.\n\n"
+            "Responde\n\n"
             "0️⃣\tResume\n"
-            "1️⃣\tRefresh & Retry"
-            "\n"
-            "\n"
+            "1️⃣\tRefresh & Retry\n\n"
             f"Intento #{retry_count}."
         )
         notify(full_msg)
@@ -190,5 +188,6 @@ class Recovery:
         updates = getUpdates()
         results = updates.get("result", [])
         return results[-1]["update_id"] if results else 0
+
 
 recovery: Recovery = Recovery()

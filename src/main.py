@@ -1,4 +1,5 @@
 import argparse
+
 from src.utils.logger import logger
 
 
@@ -12,15 +13,16 @@ def run_bot() -> None:
     from src.components.reserve_process import perform_reserve_gym_class
     from src.utils.error_broadcast import send_error_broadcast
     from src.utils.recovery import recovery
-    from src.utils.time_utils import spanish_day_mapper, wait_until_reservation_opens
     from src.utils.strings import str_normalizer
+    from src.utils.time_utils import spanish_day_mapper, wait_until_reservation_opens
 
     tentative_classes = get_classes()
     if not tentative_classes:
         return
 
     playwright, context, page = launch_chromium()
-    
+
+    recovery.set_batch_classes(tentative_classes)
 
     recovery.with_recovery(lambda: perform_login(page), page, "Proceso de login")
     recovery.with_recovery(lambda: perform_post_login(page), page, "Flujo post-login")
@@ -55,8 +57,8 @@ def run_bot() -> None:
                 )
 
             if index < len(tentative_classes) - 1:
-                logger.info("⏳ → Esperando 60 segundos para siguiente clase...")
-                page.wait_for_timeout(60000)
+                logger.info("⏳ → Esperando 10 segundos para siguiente clase...")
+                page.wait_for_timeout(10000)
 
         logger.success("🏁 → Flujo completado")
 
@@ -100,8 +102,9 @@ def main() -> None:
         run_suspend_now()
 
     elif args.command == "power-cycle":
-        from src.os_integration.power_cycle import run_power_cycle
         from filelock import FileLock
+
+        from src.os_integration.power_cycle import run_power_cycle
 
         lock: FileLock = FileLock("/tmp/gym-bot-power-cycle.lock")
 

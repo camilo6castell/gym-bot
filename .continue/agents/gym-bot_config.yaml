@@ -32,6 +32,9 @@ models:
   - name: Qwen3 8B Agent
     <<: *defaults
     model: qwen3:8b
+    # defaultCompletionOptions:
+    #   <<: *defaults
+    #   reasoning: false
     capabilities:
       - tool_use
     roles:
@@ -119,8 +122,8 @@ context:
   - provider: os
   - provider: repo-map
 
-params:
-  includeSignatures: true
+# params:
+#   includeSignatures: true
 
 ########################################################
 # RULES - Consolidadas (aplican a todos los modos)
