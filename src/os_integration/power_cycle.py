@@ -1,12 +1,13 @@
-import time
 import datetime
+import time
+
+from src.config.config import Config
 from src.os_integration.os_integration_utils import (
-    get_now,
     find_next_reservation,
+    get_now,
     set_wake_alarm,
     suspend,
 )
-from src.config.config import Config
 from src.utils.logger import logger
 
 _config = Config()
@@ -27,9 +28,9 @@ def run_suspend_now() -> None:
     wake_time = calculate_wake_time(next_reservation)
 
     logger.info(
-        f"📅 → Próxima reserva:\t\t\t\t{next_reservation.strftime(_time_format)}"
+        f"📅 → Próxima reserva:\t\t\t {next_reservation.strftime(_time_format)}"
     )
-    logger.info(f"⏰ → Programando wake para:\t{wake_time.strftime(_time_format)}")
+    logger.info(f"⏰ → Programando wake para:\t\t{wake_time.strftime(_time_format)}")
 
     set_wake_alarm(wake_time)
     logger.info("💤 → Suspendiendo...")
@@ -52,9 +53,9 @@ def run_power_cycle() -> None:
     )
     now = get_now()
 
-    logger.info(f"🕐 → Ahora:\t\t\t\t{now.strftime(_time_format)}")
-    logger.info(f"⏰ → Wake programado:\t\t{wake_time.strftime(_time_format)}")
-    logger.info(f"💤 → Sleep después de:\t{sleep_time.strftime(_time_format)}")
+    logger.info(f"🕐 → Ahora:\t\t\t\t {now.strftime(_time_format)}")
+    logger.info(f"⏰ → Wake programado:\t{wake_time.strftime(_time_format)}")
+    logger.info(f"💤 → Sleep después de:\t {sleep_time.strftime(_time_format)}")
 
     if wake_time <= now <= sleep_time:
         wait_for_window_activation(now, sleep_time)

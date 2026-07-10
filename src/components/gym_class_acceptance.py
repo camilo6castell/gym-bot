@@ -1,4 +1,5 @@
 from playwright.sync_api import Page, TimeoutError
+
 from src.utils.human_behavior import human_delay
 from src.utils.logger import logger
 from src.utils.recovery import recovery
@@ -48,9 +49,7 @@ def _close_notific8(page: Page, timeout: int = 5000) -> None:
             return
         notification.hover()
         human_delay(0.3, 0.6)
-        close_btn = page.wait_for_selector(
-            ".notific8-close-button", state="visible", timeout=3000
-        )
+        close_btn = page.wait_for_selector(".notific8-close-button", state="visible", timeout=3000)
         if close_btn:
             close_btn.click()
             logger.info("😉 → Notificación de reserva cerrada.")
