@@ -1,6 +1,9 @@
+"""Simulación de comportamiento humano para evitar detección de automatización."""
+
+from __future__ import annotations
+
 import random
 import time
-from typing import Optional
 
 from playwright.sync_api import ElementHandle, Page
 
@@ -20,7 +23,7 @@ def human_scroll(page: Page) -> None:
 
 def human_mouse_move(page: Page, selector: str) -> None:
     try:
-        element: Optional[ElementHandle] = page.query_selector(selector)
+        element: ElementHandle | None = page.query_selector(selector)
         if element is None:
             return
         box = element.bounding_box()
@@ -54,7 +57,7 @@ def human_click(page: Page, selector: str) -> None:
         human_mouse_move(page, selector)
         human_delay(0.15, 0.4)
 
-        element: Optional[ElementHandle] = page.query_selector(selector)
+        element: ElementHandle | None = page.query_selector(selector)
         if element is not None:
             box = element.bounding_box()
             if box:

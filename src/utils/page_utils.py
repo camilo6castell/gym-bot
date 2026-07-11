@@ -1,11 +1,16 @@
+"""Utilidades genéricas de interacción con páginas de Playwright."""
+
+from __future__ import annotations
+
 import random
 import time
-from typing import Optional
-from playwright.sync_api import Page, ElementHandle, TimeoutError
 
-from src.utils.logger import logger
+from playwright.sync_api import ElementHandle, Page, TimeoutError as PlaywrightTimeoutError
+
+from src.utils.exceptions import CaptchaDetectedError, ElementNotFoundError, RedirectTimeoutError
 from src.utils.human_behavior import human_click
-from src.utils.exceptions import CaptchaDetectedError
+from src.utils.logger import logger
+from src.utils.recovery import Recovery
 
 CAPTCHA_SELECTORS = [
     "iframe[title='recaptcha challenge expires in two minutes']",
@@ -42,15 +47,15 @@ def dismiss_if_present(
         page.wait_for_selector(selector, state="visible", timeout=timeout)
         page.click(selector)
         logger.info(f"😉 → Elemento '{selector}' encontrado y clickeado.")
-    except TimeoutError:
+    except PlaywrightTimeoutError as err:
         if is_mandatory:
-            raise RuntimeError(f"❌ → Elemento '{selector}' es obligatorio.")
+            raise ElementNotFoundError(f"❌ → Elemento '{selector}' es obligatorio.") from err
         logger.debug(f"🗑️ → Elemento '{selector}' no apareció, continuando.")
 
 
 def wait_for_element_with_retry(
     page: Page, selector: str, max_retries: int = 3, timeout: int = 10000
-) -> Optional[ElementHandle]:
+) -> ElementHandle | None:
     """Espera un elemento con reintentos y scroll si no aparece."""
     for attempt in range(max_retries):
         try:
@@ -58,9 +63,7 @@ def wait_for_element_with_retry(
         except Exception:
             if attempt == max_retries - 1:
                 raise
-            logger.debug(
-                f"Intento {attempt + 1} fallido para '{selector}', reintentando..."
-            )
+            logger.debug(f"Intento {attempt + 1} fallido para '{selector}', reintentando...")
             time.sleep(random.uniform(1, 3))
             page.evaluate("window.scrollBy(0, 200)")
             time.sleep(0.5)
@@ -73,22 +76,20 @@ def wait_for_element_with_retry(
 def wait_network_idle(page: Page, timeout: int = 5000) -> None:
     try:
         page.wait_for_load_state("networkidle", timeout=timeout)
-    except TimeoutError:
+    except PlaywrightTimeoutError:
         logger.debug("🕒 → wait_network_idle: timeout alcanzado, continuando.")
 
 
-def wait_for_redirect(
-    page: Page, url_pattern: str | None, timeout: int = 15000
-) -> None:
+def wait_for_redirect(page: Page, url_pattern: str | None, timeout: int = 15000) -> None:
     if not url_pattern:
         logger.warning("⚠️ → wait_for_redirect: sin patrón de URL, omitiendo.")
         return
     try:
         page.wait_for_url(url_pattern, timeout=timeout, wait_until="networkidle")
-    except TimeoutError:
-        raise RuntimeError(
+    except PlaywrightTimeoutError as err:
+        raise RedirectTimeoutError(
             f"❌ → Mala redirección a '{url_pattern}' | actual: '{page.url}'"
-        )
+        ) from err
 
 
 def confirm_url(page: Page, url: str) -> None:
@@ -113,9 +114,7 @@ def raise_if_captcha(page: Page) -> None:
                 return
         for indicator in CAPTCHA_HARD_INDICATORS:
             if indicator in content:
-                raise CaptchaDetectedError(
-                    f"⚠️ → CAPTCHA detectado en contenido: '{indicator}'"
-                )
+                raise CaptchaDetectedError(f"⚠️ → CAPTCHA detectado en contenido: '{indicator}'")
     except CaptchaDetectedError:
         raise
     except Exception as e:
@@ -142,10 +141,8 @@ def raise_if_captcha(page: Page) -> None:
 # ─── Flujo de página ─────────────────────────────────────────────────────────
 
 
-def monitor_new_page(page: Page, selector: str | None = None) -> None:
+def monitor_new_page(page: Page, recovery: Recovery, selector: str | None = None) -> None:
     """Espera red idle, verifica captcha y descarta modal opcional."""
-    from src.utils.recovery import recovery  # import local — evita circular
-
     wait_network_idle(page)
     raise_if_captcha(page)
     if selector:
@@ -159,16 +156,15 @@ def monitor_new_page(page: Page, selector: str | None = None) -> None:
 
 def force_url(
     page: Page,
+    recovery: Recovery,
     forced_url: str,
     selector: str | None = None,
     redirect_pattern: str | None = None,
 ) -> None:
     """Navega a forced_url, maneja modal opcional y verifica redirección."""
-    from src.utils.recovery import recovery  # import local — evita circular
-
     logger.info(f"🔀 → Forzando URL: {forced_url[:64]}")
     page.goto(forced_url, wait_until="networkidle")
-    monitor_new_page(page, selector)
+    monitor_new_page(page, recovery, selector)
     if redirect_pattern:
         recovery.with_soft_recovery(
             lambda: wait_for_redirect(page, redirect_pattern, timeout=5000),

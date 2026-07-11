@@ -1,48 +1,66 @@
-from playwright.sync_api import Page, TimeoutError
+"""Selección del método de acceso (membresía o tiquetera) antes de reservar."""
+
+from __future__ import annotations
+
+from playwright.sync_api import Page, TimeoutError as PlaywrightTimeoutError
+
+from src.utils.exceptions import MembershipNotFoundError
 from src.utils.logger import logger
 from src.utils.page_utils import wait_network_idle
-from src.utils.recovery import recovery
-
-_MEMBERSHIP_SELECTOR = (
-    'button:has-text("Usar Membresía"), button:has-text("Usar tiquetera")'
-)
+from src.utils.recovery import Recovery
 
 
-def perform_open_plan_and_use_membership(page: Page) -> None:
-    logger.info("🔎 → Buscando botones 'Usar Membresía' o 'Usar tiquetera'...")
+class MembershipSelector:
+    """Elige el primer botón habilitado de 'Usar Membresía' / 'Usar tiquetera'."""
 
-    try:
-        recovery.with_soft_recovery(
-            lambda: page.wait_for_selector(_MEMBERSHIP_SELECTOR, timeout=5000),
-            page,
-            "Esperando botones de membresía/tiquetera",
-        )
+    _SELECTOR = 'button:has-text("Usar Membresía"), button:has-text("Usar tiquetera")'
 
-        buttons = page.locator(_MEMBERSHIP_SELECTOR)
-        count = buttons.count()
+    def __init__(self, recovery: Recovery) -> None:
+        self._recovery = recovery
 
-        if count == 0:
-            raise RuntimeError(
-                "❌ → No se encontraron botones de membresía ni tiquetera."
+    def use_membership(self, page: Page) -> None:
+        """
+        Busca y hace clic en el primer botón de acceso disponible.
+
+        Raises
+        ------
+        MembershipNotFoundError
+            Si no hay botones de membresía/tiquetera, o ninguno está habilitado.
+        """
+        logger.info("🔎 → Buscando botones 'Usar Membresía' o 'Usar tiquetera'...")
+
+        try:
+            self._recovery.with_soft_recovery(
+                lambda: page.wait_for_selector(self._SELECTOR, timeout=5000),
+                page,
+                "Esperando botones de membresía/tiquetera",
             )
 
-        for i in range(count):
-            btn = buttons.nth(i)
-            if btn.is_visible() and btn.is_enabled():
-                logger.info(f"✔️ → Usando botón '{btn.inner_text()}'")
-                btn.click()
-                wait_network_idle(page)
-                return
+            buttons = page.locator(self._SELECTOR)
+            count = buttons.count()
 
-        raise RuntimeError(
-            "❌ → Se encontraron botones pero ninguno estaba habilitado."
-        )
+            if count == 0:
+                raise MembershipNotFoundError(
+                    "❌ → No se encontraron botones de membresía ni tiquetera."
+                )
 
-    except TimeoutError:
-        logger.error("⏰ → Timeout esperando botones de membresía/tiquetera")
-        raise
-    except RuntimeError:
-        raise
-    except Exception as e:
-        logger.error(f"❌ → Error seleccionando método de acceso: {e}")
-        raise
+            for i in range(count):
+                btn = buttons.nth(i)
+                if btn.is_visible() and btn.is_enabled():
+                    logger.info(f"✔️ → Usando botón '{btn.inner_text()}'")
+                    btn.click()
+                    wait_network_idle(page)
+                    return
+
+            raise MembershipNotFoundError(
+                "❌ → Se encontraron botones pero ninguno estaba habilitado."
+            )
+
+        except PlaywrightTimeoutError:
+            logger.error("⏰ → Timeout esperando botones de membresía/tiquetera")
+            raise
+        except MembershipNotFoundError:
+            raise
+        except Exception as e:
+            logger.error(f"❌ → Error seleccionando método de acceso: {e}")
+            raise

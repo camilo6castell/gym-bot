@@ -59,6 +59,12 @@ class ScheduleConfig(_StrictModel):
     forcedClass: ForcedClass | None = None
 
 
+# `ForcedClass` (name, hour, day) es exactamente la forma de una clase ya
+# resuelta a un día concreto — se reutiliza como tipo de retorno de
+# `Scheduler.get_classes()` en lugar de crear un modelo duplicado.
+ScheduledClass = ForcedClass
+
+
 # =========================================================
 # APP CONFIG (app_config.yaml)
 # =========================================================

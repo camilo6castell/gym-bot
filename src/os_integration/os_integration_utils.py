@@ -1,60 +1,87 @@
+"""
+Utilidades de integración con el sistema operativo.
+
+Separadas en dos responsabilidades:
+  - `ReservationScheduleCalculator`: sabe cuándo es la próxima reserva.
+  - `SystemPowerController`: sabe cómo dormir/despertar la máquina.
+
+Ninguna de las dos conoce a la otra — `PowerCycleManager` (en power_cycle.py)
+es quien las combina.
+"""
+
+from __future__ import annotations
+
 import datetime
 import subprocess
 from zoneinfo import ZoneInfo
 
-from src.settings.provider import Settings
+from src.types.config import PowerAutonomousConfig, ScheduleConfig
 from src.utils.logger import logger
 from src.utils.time_utils import days_mapper
 
-_config = Settings()
-_power = _config.get("APP_CONFIG").get("power_autonomous", {})
-_tz = ZoneInfo(_config.get("SCHEDULE").get("timezone", "UTC"))
+
+class ReservationScheduleCalculator:
+    """Calcula la fecha/hora de la próxima reserva programada según `schedule.yaml`."""
+
+    def __init__(self, schedule_config: ScheduleConfig) -> None:
+        self._schedule = schedule_config
+        self._tz = ZoneInfo(schedule_config.timezone or "UTC")
+
+    def get_now(self) -> datetime.datetime:
+        """Hora actual en la zona horaria configurada."""
+        return datetime.datetime.now(self._tz)
+
+    def find_next_reservation(self) -> datetime.datetime | None:
+        """Devuelve la fecha/hora de la próxima clase programada, o `None` si no hay ninguna."""
+        now = self.get_now()
+        upcoming: list[datetime.datetime] = []
+
+        for day_name, gym_classes in self._schedule.days.items():
+            reservation_weekday = (days_mapper(day_name) + 2) % 7
+
+            for gym_class in gym_classes:
+                try:
+                    start_hour = gym_class.hour.split(" - ")[0]
+                    hour, minute = map(int, start_hour.split(":"))
+                except (ValueError, IndexError):
+                    continue
+
+                days_ahead = (reservation_weekday - now.weekday()) % 7
+                reservation_date = (now + datetime.timedelta(days=days_ahead)).replace(
+                    hour=hour, minute=minute, second=0, microsecond=0
+                )
+
+                if reservation_date <= now:
+                    reservation_date += datetime.timedelta(days=7)
+
+                upcoming.append(reservation_date)
+
+        return min(upcoming) if upcoming else None
 
 
-def get_now() -> datetime.datetime:
-    return datetime.datetime.now(_tz)
+class SystemPowerController:
+    """Controla la suspensión y el wake alarm del sistema (Linux / RTC)."""
 
+    def __init__(self, power_config: PowerAutonomousConfig) -> None:
+        self._power_config = power_config
 
-def find_next_reservation() -> datetime.datetime | None:
-    now = get_now()
-    upcoming: list[datetime.datetime] = []
+    def set_wake_alarm(self, dt: datetime.datetime) -> None:
+        """Programa el wake alarm de RTC para la fecha/hora indicada."""
+        wakealarm_path = self._power_config.wakealarm_path
+        if not wakealarm_path:
+            logger.warning("⚠️ → wakealarm_path no configurado, no se puede programar wake alarm.")
+            return
 
-    for day_name, gym_classes in _config.get("SCHEDULE").get("days", {}).items():
-        reservation_weekday = (days_mapper(day_name) + 2) % 7
+        timestamp = int(dt.timestamp())
+        with open(wakealarm_path, "w") as f:
+            f.write("0")
+        with open(wakealarm_path, "w") as f:
+            f.write(str(timestamp))
 
-        for gym_class in gym_classes:
-            try:
-                start_hour = gym_class["hour"].split(" - ")[0]
-                hour, minute = map(int, start_hour.split(":"))
-            except Exception:
-                continue
-
-            days_ahead = (reservation_weekday - now.weekday()) % 7
-            reservation_date = (now + datetime.timedelta(days=days_ahead)).replace(
-                hour=hour, minute=minute, second=0, microsecond=0
-            )
-
-            if reservation_date <= now:
-                reservation_date += datetime.timedelta(days=7)
-
-            upcoming.append(reservation_date)
-
-    return min(upcoming) if upcoming else None
-
-
-def set_wake_alarm(dt: datetime.datetime) -> None:
-    wakealarm_path = _power.get("wakealarm_path")
-    timestamp = int(dt.timestamp())
-    with open(wakealarm_path, "w") as f:
-        f.write("0")
-    with open(wakealarm_path, "w") as f:
-        f.write(str(timestamp))
-
-
-def suspend() -> None:
-    """Suspender el sistema con manejo de errores"""
-    try:
-        subprocess.run(["/usr/bin/sudo", "-n", "/usr/bin/systemctl", "suspend"], check=True)
-    except Exception as e:
-        logger.error(f"❌ Error al suspender: {str(e)}", exc_info=True)
-        raise
+    def suspend(self) -> None:
+        """Suspende el sistema con manejo de errores."""
+        try:
+            subprocess.run(["/usr/bin/sudo", "-n", "/usr/bin/systemctl", "suspend"], check=True)
+        except Exception as e:
+            logger.error(f"❌ Error al suspender: {e}", exc_info=True)
+            raise

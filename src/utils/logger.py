@@ -5,6 +5,7 @@ from loguru import logger
 # Logger config
 logger.remove()
 
+# Previous logger config
 # logger.add(sys.stdout, format="{message}", level="INFO")
 
 logger.add(
@@ -14,8 +15,8 @@ logger.add(
     format=(
         # "{time:YYYY-MM-DD HH:mm:ss}"
         "<green>{time:MM/DD HH:mm:ss}</green> | "
-        "<level>{level: <8}</level> | "
-        "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
+        # "<level>{level: <8}</level> | "
+        # "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
         "{message}"
     ),
 )
