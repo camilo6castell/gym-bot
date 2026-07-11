@@ -1,6 +1,13 @@
 import argparse
 
+from src.notifications.telegram import TelegramClient
+from src.settings.provider import Settings
 from src.utils.logger import logger
+
+settings: Settings = Settings()
+notifier: TelegramClient = TelegramClient(
+    settings.get("TELEGRAM_TOKEN"), settings.get("TELEGRAM_CHAT_ID")
+)
 
 
 def run_bot() -> None:
@@ -28,13 +35,12 @@ def run_bot() -> None:
     recovery.with_recovery(lambda: perform_post_login(page), page, "Flujo post-login")
 
     try:
-
         logger.info("🥁 → Iniciando iteraciones de clases.")
 
         for index, gym_class in enumerate(tentative_classes):
             spanish_day_name = spanish_day_mapper(str_normalizer(gym_class["day"]))
             logger.info(
-                f"🎯 → Clase {index+1}/{len(tentative_classes)}: "
+                f"🎯 → Clase {index + 1}/{len(tentative_classes)}: "
                 f"{gym_class['name']} | {gym_class['hour']} | {spanish_day_name}"
             )
 
@@ -52,9 +58,7 @@ def run_bot() -> None:
                     f"Reservando '{gym_class['name']}' | {spanish_day_name}",
                 )
             except Exception as e:
-                send_error_broadcast(
-                    page, f"❌ → Error reservando {gym_class['name']}: {e}"
-                )
+                send_error_broadcast(page, f"❌ → Error reservando {gym_class['name']}: {e}")
 
             if index < len(tentative_classes) - 1:
                 logger.info("⏳ → Esperando 10 segundos para siguiente clase...")
@@ -86,9 +90,7 @@ def main() -> None:
     subparsers.add_parser("run", help="Ejecutar flujo de reserva (default)")
 
     # Subcomandos de power management
-    subparsers.add_parser(
-        "suspend-now", help="Programar wake alarm y suspender inmediatamente"
-    )
+    subparsers.add_parser("suspend-now", help="Programar wake alarm y suspender inmediatamente")
     subparsers.add_parser(
         "power-cycle",
         help="Gestionar ciclo completo de power (ventana activa → suspensión)",

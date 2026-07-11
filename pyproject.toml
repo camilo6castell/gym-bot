@@ -32,6 +32,7 @@ combine-as-imports = true
 quote-style = "double"
 indent-style = "space"
 line-ending = "lf"
+docstring-code-format = true
 
 [tool.coverage.run]
 source = ["src"]

@@ -1,10 +1,11 @@
 from playwright.sync_api import Page
-from src.config.config import Config
-from src.utils.logger import logger
-from src.utils.page_utils import monitor_new_page, raise_if_captcha, dismiss_if_present
-from src.utils.human_behavior import human_delay, human_type, human_click
 
-_config = Config()
+from src.settings.provider import Settings
+from src.utils.human_behavior import human_click, human_delay, human_type
+from src.utils.logger import logger
+from src.utils.page_utils import dismiss_if_present, monitor_new_page, raise_if_captcha
+
+_config = Settings()
 _env = _config.get("APP_CONFIG").get("environment", {})
 _selectors = _config.get("APP_CONFIG").get("selectors", {})
 
@@ -50,9 +51,7 @@ def perform_login(page: Page) -> None:
         page, "#clavepwd", _config.get("COMPENSAR_PASSWORD")
     )  # Ingresa la contraseña configurada
     human_delay()
-    raise_if_captcha(
-        page
-    )  # Verifica nuevamente por CAPTCHA después de ingresar la contraseña
+    raise_if_captcha(page)  # Verifica nuevamente por CAPTCHA después de ingresar la contraseña
 
     page.mouse.wheel(0, 200)  # Scroll para simular comportamiento humano
     human_delay()

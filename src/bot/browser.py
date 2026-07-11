@@ -1,17 +1,19 @@
-import time
 import subprocess
+import time
 from typing import TypedDict
+
 from playwright.sync_api import (
-    sync_playwright,
-    Playwright,
     BrowserContext,
-    Page,
     Geolocation,
+    Page,
+    Playwright,
+    sync_playwright,
 )
-from src.config.config import Config
+
+from src.settings.provider import Settings
 from src.utils.logger import logger
 
-_config = Config()
+_config = Settings()
 _os = _config.get("APP_CONFIG").get("os", {})
 _execution = _config.get("APP_CONFIG").get("execution", {})
 
@@ -19,15 +21,21 @@ _STEALTH_SCRIPT_BASE = """
     Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
 """
 
-_STEALTH_SCRIPT_CHROMIUM = _STEALTH_SCRIPT_BASE + """
+_STEALTH_SCRIPT_CHROMIUM = (
+    _STEALTH_SCRIPT_BASE
+    + """
     Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
     Object.defineProperty(navigator, 'languages', { get: () => ['es-CO', 'es', 'en'] });
     window.chrome = { runtime: {} };
 """
+)
 
-_STEALTH_SCRIPT_FIREFOX = _STEALTH_SCRIPT_BASE + """
+_STEALTH_SCRIPT_FIREFOX = (
+    _STEALTH_SCRIPT_BASE
+    + """
     window.chrome = undefined;
 """
+)
 
 _GEOLOCATION: Geolocation = {"latitude": 4.7110, "longitude": -74.0721}
 

@@ -17,8 +17,8 @@ def perform_gym_class_acceptance(page: Page) -> None:
 
     try:
         page.wait_for_selector(confirm_selector, state="visible", timeout=15000)
-    except TimeoutError:
-        raise RuntimeError("❌ → No apareció el botón Confirmar Reserva")
+    except TimeoutError as err:
+        raise RuntimeError("❌ → No apareció el botón Confirmar Reserva") from err
 
     human_delay(0.5, 1.0)
 

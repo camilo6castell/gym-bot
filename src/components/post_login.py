@@ -1,5 +1,6 @@
 from playwright.sync_api import Page
-from src.config.config import Config
+
+from src.settings.provider import Settings
 from src.utils.logger import logger
 from src.utils.page_utils import (
     monitor_new_page,
@@ -8,22 +9,14 @@ from src.utils.page_utils import (
     wait_network_idle,
 )
 
-_config = Config()
+_config = Settings()
 _env = _config.get("APP_CONFIG").get("environment", {})
 _selectors = _config.get("APP_CONFIG").get("selectors", {})
 
 
-from playwright.sync_api import Page
-from src.config.config import Config
-from src.utils.logger import logger
-from src.utils.page_utils import (
-    monitor_new_page,
-    search_and_click,
-    wait_for_redirect,
-    wait_network_idle,
-)
+from src.settings.provider import Settings
 
-_config = Config()
+_config = Settings()
 _env = _config.get("APP_CONFIG").get("environment", {})
 _selectors = _config.get("APP_CONFIG").get("selectors", {})
 
@@ -45,9 +38,7 @@ def perform_post_login(page: Page) -> None:
     search_and_click(page, "a[href='#mm-m1-p2']")
 
     # Accede a la página de práctica libre
-    search_and_click(
-        page, "a[href='/sistema.php/entrenamiento/reserva/practica/libre']"
-    )
+    search_and_click(page, "a[href='/sistema.php/entrenamiento/reserva/practica/libre']")
 
     # Monitorea nuevas páginas que puedan aparecer durante la navegación
     monitor_new_page(page, _selectors.get("potential_intermediate_login_selector"))

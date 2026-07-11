@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Any, Optional, TypeVar
+from typing import Any, TypeVar
 
 import yaml
 from pydantic import BaseModel, Field, ValidationError
@@ -51,10 +51,10 @@ class EnvSettings(BaseSettings):
     CHAT_ID: str = Field(..., description="Chat ID Telegram")
 
     # Opcionales
-    FIREFOX_PROFILE_NAME: Optional[str] = None
+    FIREFOX_PROFILE_NAME: str | None | None = None
 
 
-class Config:
+class Settings:
     """
     Punto de acceso único a la configuración de la aplicación.
 
@@ -72,7 +72,7 @@ class Config:
     _SCHEDULE_FILE: Path = _BASE_DIR / "schedule.yaml"
     _APP_CONFIG_FILE: Path = _BASE_DIR / "app_config.yaml"
 
-    def __init__(self, env_file: Optional[str] = None) -> None:
+    def __init__(self, env_file: str | None = None) -> None:
         # =========================
         # VARIABLES DE ENTORNO
         # =========================
@@ -83,19 +83,15 @@ class Config:
         # =========================
         # CONFIGURACIONES YAML
         # =========================
-        self.schedule: ScheduleConfig = self._load_yaml(
-            self._SCHEDULE_FILE, ScheduleConfig
-        )
+        self.schedule: ScheduleConfig = self._load_yaml(self._SCHEDULE_FILE, ScheduleConfig)
         self.app_config: AppConfig = self._load_yaml(self._APP_CONFIG_FILE, AppConfig)
 
         # =========================
         # VALORES DERIVADOS
         # =========================
         self.home_user: str = os.path.expanduser(self.app_config.os.home_user)
-        self.chromium_profile_path: str = os.path.join(
-            self.home_user, ".config", "chromium"
-        )
-        self.firefox_profile_path: Optional[str] = (
+        self.chromium_profile_path: str = os.path.join(self.home_user, ".config", "chromium")
+        self.firefox_profile_path: str | None = (
             os.path.join(
                 self.home_user,
                 ".config",
@@ -117,29 +113,21 @@ class Config:
     def _load_yaml(file_path: Path, model: type[_ModelT]) -> _ModelT:
         """Lee un YAML y lo valida contra un modelo Pydantic."""
         if not file_path.exists():
-            raise FileNotFoundError(
-                f"❌ Archivo de configuración no encontrado: {file_path}"
-            )
+            raise FileNotFoundError(f"❌ Archivo de configuración no encontrado: {file_path}")
 
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 raw = yaml.safe_load(f)
         except yaml.YAMLError as e:
-            raise ValueError(
-                f"❌ Error leyendo archivo YAML '{file_path.name}': {e}"
-            ) from e
+            raise ValueError(f"❌ Error leyendo archivo YAML '{file_path.name}': {e}") from e
 
         if not raw:
-            raise ValueError(
-                f"❌ El archivo YAML está vacío o mal formado: {file_path}"
-            )
+            raise ValueError(f"❌ El archivo YAML está vacío o mal formado: {file_path}")
 
         try:
             return model.model_validate(raw)
         except ValidationError as e:
-            raise ValueError(
-                f"❌ Configuración inválida en '{file_path.name}':\n{e}"
-            ) from e
+            raise ValueError(f"❌ Configuración inválida en '{file_path.name}':\n{e}") from e
 
     # -----------------------------------------------------
     # Compatibilidad hacia atrás
@@ -178,6 +166,3 @@ class Config:
     def _get_bool(self, key: str) -> bool:
         value = self._env_vars.get(key, "")
         return str(value).lower() in ("1", "true", "yes", "on")
-
-
-settings: Config = Config()

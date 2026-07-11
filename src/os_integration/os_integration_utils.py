@@ -1,13 +1,12 @@
-from typing import Optional
 import datetime
 import subprocess
 from zoneinfo import ZoneInfo
 
-from src.config.config import Config
-from src.utils.time_utils import days_mapper
+from src.settings.provider import Settings
 from src.utils.logger import logger
+from src.utils.time_utils import days_mapper
 
-_config = Config()
+_config = Settings()
 _power = _config.get("APP_CONFIG").get("power_autonomous", {})
 _tz = ZoneInfo(_config.get("SCHEDULE").get("timezone", "UTC"))
 
@@ -16,7 +15,7 @@ def get_now() -> datetime.datetime:
     return datetime.datetime.now(_tz)
 
 
-def find_next_reservation() -> Optional[datetime.datetime]:
+def find_next_reservation() -> datetime.datetime | None:
     now = get_now()
     upcoming: list[datetime.datetime] = []
 
@@ -55,9 +54,7 @@ def set_wake_alarm(dt: datetime.datetime) -> None:
 def suspend() -> None:
     """Suspender el sistema con manejo de errores"""
     try:
-        subprocess.run(
-            ["/usr/bin/sudo", "-n", "/usr/bin/systemctl", "suspend"], check=True
-        )
+        subprocess.run(["/usr/bin/sudo", "-n", "/usr/bin/systemctl", "suspend"], check=True)
     except Exception as e:
         logger.error(f"❌ Error al suspender: {str(e)}", exc_info=True)
         raise

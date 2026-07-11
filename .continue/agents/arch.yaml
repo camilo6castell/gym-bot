@@ -1,26 +1,8 @@
 %YAML 1.1
 ---
 name: Local AI Stack
-version: 1.0.0
+version: 1.0.1
 schema: v1
-
-########################################################
-# DEFAULTS
-########################################################
-
-defaults: &defaults
-  provider: openai
-  apiBase: http://127.0.0.1:52625/v1
-  apiKey: flm
-
-  requestOptions:
-    timeout: 720000
-
-  defaultCompletionOptions:
-    contextLength: 32768
-    maxTokens: 4096
-    temperature: 0.0
-    topP: 0.95
 
 ########################################################
 # MODELS
@@ -33,7 +15,12 @@ models:
 ########################################################
 
   - name: Qwen3.5 9B Agent
-    <<: *defaults
+    provider: openai
+    apiBase: http://127.0.0.1:52625/v1
+    apiKey: flm
+
+    requestOptions:
+      timeout: 600000  # 5 min. Antes eran ~153 min: un valor tan alto oculta cuelgues reales en vez de avisarte.
 
     model: qwen3.5:9b
 
@@ -42,40 +29,71 @@ models:
       - edit
       - apply
 
-    capabilities:
-      - tool_use
+    # Comentado temporalmente para evitar que Continue rompa el parser de FLM
+    # capabilities:
+    #   - tool_use
+
+    defaultCompletionOptions:
+      contextLength: 32768
+      # contextLength: 16384  # <--- Evita que @codebase o @repo-map estresen el KV-Cache de golpe
+      maxTokens: 4096
+      temperature: 0.0
+      topP: 0.95
 
 ########################################################
 # SECONDARY CODING MODEL
+#
+# Nota: al tener 3 modelos con rol "chat" corriendo sobre la misma NPU
+# (este, GPT-OSS 20B, y el primario), FastFlowLM solo mantiene UNO
+# cargado a la vez. Cambiar de modelo en el dropdown de Continue en
+# medio de una sesión implica un swap en NPU antes de la primera
+# respuesta. No es un problema, pero explica por qué esa primera
+# respuesta después de cambiar de modelo tarda más de lo esperado.
 ########################################################
 
   - name: Qwen3.5 2B Agent
-    <<: *defaults
+    provider: openai
+    apiBase: http://127.0.0.1:52625/v1
+    apiKey: flm
+
+    requestOptions:
+      timeout: 600000
 
     model: qwen3.5:2b
+
+    # capabilities:
+    #   - tool_use
 
     roles:
       - chat
       - edit
       - apply
 
-    capabilities:
-      - tool_use
+    defaultCompletionOptions:
+      contextLength: 32768
+      maxTokens: 4096
+      temperature: 0.0
+      topP: 0.95
 
 ########################################################
 # HEAVY REASONING MODEL
 ########################################################
 
   - name: GPT-OSS 20B
-    <<: *defaults
+    provider: openai
+    apiBase: http://127.0.0.1:52625/v1
+    apiKey: flm
+
+    requestOptions:
+      timeout: 600000
 
     model: gpt-oss:20b
 
     roles:
       - chat
 
-    capabilities:
-      - tool_use
+    # capabilities:
+    #   - tool_use
 
     defaultCompletionOptions:
       contextLength: 32768
@@ -85,33 +103,36 @@ models:
 
 ########################################################
 # AUTOCOMPLETE
+#
+# Estaba deshabilitado por completo -- sin esto Continue no autocompleta
+# nada en el editor. Corre en GPU vía Ollama/Vulkan para no competir
+# con los modelos de chat/RAG en la NPU.
 ########################################################
 
-#  - name: Qwen3.5 2B Autocomplete
-#
-#    <<: *defaults
-#
-#    model: qwen3.5:2b
-#
-#    roles:
-#      - autocomplete
-#
-#    autocompleteOptions:
-#      disable: false
-#      debounceDelay: 150
-#      maxPromptTokens: 768
-#      onlyMyCode: true
-#      useCache: true
-#      useImports: true
-#      useRecentlyEdited: true
-#      useRecentlyOpened: true
-#
-#    requestOptions:
-#      timeout: 10000
-#
-#    defaultCompletionOptions:
-#      maxTokens: 128
-#      temperature: 0.0
+  # - name: Qwen2.5 Coder Autocomplete
+  #   provider: ollama
+  #   apiBase: http://127.0.0.1:11434
+  #   model: qwen2.5-coder:1.5b
+
+  #   roles:
+  #     - autocomplete
+
+  #   autocompleteOptions:
+  #     disable: false
+  #     debounceDelay: 150
+  #     maxPromptTokens: 768
+  #     onlyMyCode: true
+  #     useCache: true
+  #     useImports: true
+  #     useRecentlyEdited: true
+  #     useRecentlyOpened: true
+
+  #   requestOptions:
+  #     timeout: 10000
+
+  #   defaultCompletionOptions:
+  #     maxTokens: 128
+  #     temperature: 0.0
 
 ########################################################
 # EMBEDDINGS
@@ -130,7 +151,8 @@ models:
 
   - name: Snowflake Arctic Embed
     provider: ollama
-    apiBase: http://192.168.2.24:11434
+    apiBase: http://127.0.0.1:11434
+    #apiBase: http://192.168.2.24:11434 # server
     model: snowflake-arctic-embed:latest
 
     roles:
@@ -142,15 +164,19 @@ models:
       maxBatchSize: 32
 
 ########################################################
-# OPTIONAL RERANKER
+# RERANKER
+#
+# Estaba comentado. Con el pipeline de embeddings ya andando, un
+# reranker liviano mejora bastante la relevancia de @codebase/@repo-map
+# por muy poco costo. Requiere: ollama pull bbjson/bge-reranker-base
 ########################################################
 
-#  - name: BGE Reranker
-#    provider: ollama
-#    apiBase: http://127.0.0.1:11434
-#    model: bbjson/bge-reranker-base:latest
-#    roles:
-#      - rerank
+  - name: BGE Reranker
+    provider: ollama
+    apiBase: http://127.0.0.1:11434
+    model: bbjson/bge-reranker-base:latest
+    roles:
+      - rerank
 
 ########################################################
 # CONTEXT PROVIDERS

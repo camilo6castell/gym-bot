@@ -1,6 +1,7 @@
 from datetime import datetime
+
 import pytz
-from src.config.config import Config
+
 from src.utils.logger import logger
 from src.utils.time_utils import days_mapper
 
@@ -18,9 +19,7 @@ def _is_force_run() -> list[dict[str, str]]:
     logger.warning("⚠️ → BOT_FORCE_RUN activo ⚠️")
     forced = _schedule.get("forcedClass")
 
-    if not forced or not all(
-        [forced.get("name"), forced.get("hour"), forced.get("day")]
-    ):
+    if not forced or not all([forced.get("name"), forced.get("hour"), forced.get("day")]):
         raise ValueError(
             "❌ → BOT_FORCE_RUN activo pero faltan datos en 'forcedClass' del schedule."
         )
@@ -50,9 +49,7 @@ def _is_regular_run() -> list[dict[str, str]]:
             except Exception:
                 continue
 
-            activation_hour, activation_minute = _apply_execution_adjustment(
-                hour, minute
-            )
+            activation_hour, activation_minute = _apply_execution_adjustment(hour, minute)
 
             if now.hour == activation_hour and now.minute == activation_minute:
                 gym_classes.append({**gym_class, "day": day_name})

@@ -1,16 +1,16 @@
 import datetime
 import time
 
-from src.config.config import Config
 from src.os_integration.os_integration_utils import (
     find_next_reservation,
     get_now,
     set_wake_alarm,
     suspend,
 )
+from src.settings.provider import Settings
 from src.utils.logger import logger
 
-_config = Config()
+_config = Settings()
 _power = _config.get("APP_CONFIG").get("power_autonomous", {})
 _time_format = "%H:%M %d/%m"
 
@@ -27,9 +27,7 @@ def run_suspend_now() -> None:
 
     wake_time = calculate_wake_time(next_reservation)
 
-    logger.info(
-        f"📅 → Próxima reserva:\t\t\t {next_reservation.strftime(_time_format)}"
-    )
+    logger.info(f"📅 → Próxima reserva:\t\t\t {next_reservation.strftime(_time_format)}")
     logger.info(f"⏰ → Programando wake para:\t\t{wake_time.strftime(_time_format)}")
 
     set_wake_alarm(wake_time)
@@ -80,9 +78,7 @@ def calculate_wake_time(next_reservation: datetime.datetime) -> datetime.datetim
     return next_reservation - datetime.timedelta(minutes=wake_minutes)
 
 
-def wait_for_window_activation(
-    now: datetime.datetime, sleep_time: datetime.datetime
-) -> None:
+def wait_for_window_activation(now: datetime.datetime, sleep_time: datetime.datetime) -> None:
     """Esperar hasta el final de la ventana activa"""
     remaining = max(0, (sleep_time - now).total_seconds())
     logger.info(f"⏳ Esperando {remaining:.0f} segundos hasta el final de la ventana")

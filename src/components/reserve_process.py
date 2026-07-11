@@ -1,15 +1,16 @@
 from playwright.sync_api import Page
-from src.config.config import Config
-from src.utils.logger import logger
-from src.utils.page_utils import confirm_url
-from src.components.membership import perform_open_plan_and_use_membership
+
 from src.components.day_selector import (
     perform_select_by_day,
     perform_select_latest_date,
 )
 from src.components.gym_class_booker import perform_gym_class_booker
+from src.components.membership import perform_open_plan_and_use_membership
+from src.settings.provider import Settings
+from src.utils.logger import logger
+from src.utils.page_utils import confirm_url
 
-_config = Config()
+_config = Settings()
 _env = _config.get("APP_CONFIG").get("environment", {})
 _execution = _config.get("APP_CONFIG").get("execution", {})
 
