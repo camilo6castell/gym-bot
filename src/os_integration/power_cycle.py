@@ -44,8 +44,8 @@ class PowerCycleManager:
 
         wake_time = self.calculate_wake_time(next_reservation)
 
-        logger.info(f"📅 → Próxima reserva:\t\t\t {next_reservation.strftime(_TIME_FORMAT)}")
-        logger.info(f"⏰ → Programando wake para:\t\t{wake_time.strftime(_TIME_FORMAT)}")
+        logger.info(f"📅 → Próxima reserva:\t\t{next_reservation.strftime(_TIME_FORMAT)}")
+        logger.info(f"⏰ → Programando wake para:\t{wake_time.strftime(_TIME_FORMAT)}")
 
         self._power_controller.set_wake_alarm(wake_time)
         logger.info("💤 → Suspendiendo...")
@@ -67,9 +67,9 @@ class PowerCycleManager:
         )
         now = self._schedule_calculator.get_now()
 
-        logger.info(f"🕐 → Ahora:\t\t\t\t {now.strftime(_TIME_FORMAT)}")
-        logger.info(f"⏰ → Wake programado:\t{wake_time.strftime(_TIME_FORMAT)}")
-        logger.info(f"💤 → Sleep después de:\t {sleep_time.strftime(_TIME_FORMAT)}")
+        logger.info(f"🕐 → Ahora:\t\t\t   {now.strftime(_TIME_FORMAT)}")
+        logger.info(f"⏰ → Wake programado:  {wake_time.strftime(_TIME_FORMAT)}")
+        logger.info(f"💤 → Sleep después de: {sleep_time.strftime(_TIME_FORMAT)}")
 
         if not (wake_time <= now <= sleep_time):
             logger.info("⏸️ → Fuera de ventana activa. Sin suspensión.")

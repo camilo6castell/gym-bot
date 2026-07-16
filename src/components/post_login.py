@@ -36,7 +36,7 @@ class PostLoginPage:
         logger.info("🚀 → Iniciando flujo post-login")
 
         # Navega a la sección de entrenamiento usando el selector de enlace
-        search_and_click(page, "a[href='#mm-m1-p2']")
+        search_and_click(page, "a[href='#mm-m1-p2']", timeout=10000)
 
         # Accede a la página de práctica libre
         search_and_click(page, "a[href='/sistema.php/entrenamiento/reserva/practica/libre']")
