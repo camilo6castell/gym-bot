@@ -27,7 +27,8 @@ Thumbs.db
 bot/state/
 
 # Logs
-logs/bot.log
+logs/*
+!logs/.gitkeep
 
 # vscode
 .vscode/

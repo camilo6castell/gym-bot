@@ -26,6 +26,8 @@ python -m src.main power-cycle
 Evaluates active window → waits → programs next wake → suspends
 ```
 
+> **Logging note:** every unit below runs as a plain systemd service, so its stdout is captured into the journal automatically (`StandardOutput=journal` is systemd's default — nothing below overrides it). On top of that, the bot writes its own bounded log to `logs/logger.txt` (see [Logging](#logging) in the main README). Both exist by design: the journal is the crash-proof, supervisor-level record (`journalctl`), and `logs/logger.txt` is the fast, `tail -f`-friendly day-to-day view. See [§4](#4-bot-service--gym-botservice) and [§9](#9-quick-verification) for how to read each.
+
 ---
 
 ## 1. Shell Aliases (`.zshrc`)
@@ -34,13 +36,13 @@ Add to `~/.zshrc` for convenient manual control:
 
 ```zsh
 # Run the bot manually
-alias gym-bot="cd /home/userx/Documents/gym-bot && python -m src.main"
+alias gym-bot="cd /home/user/gym-bot && python -m src.main"
 
 # Suspend immediately after programming the next RTC wake
-alias suspend-now="cd /home/userx/Documents/gym-bot && sudo -n /home/userx/Documents/gym-bot/.venv/bin/python -m src.main suspend-now"
+alias suspend-now="cd /home/user/gym-bot && sudo -n /home/user/gym-bot/.venv/bin/python -m src.main suspend-now"
 
 # Run full power cycle (active window management)
-alias power-cycle="cd /home/userx/Documents/gym-bot && sudo -n /home/userx/Documents/gym-bot/.venv/bin/python -m src.main power-cycle"
+alias power-cycle="cd /home/user/gym-bot && sudo -n /home/user/gym-bot/.venv/bin/python -m src.main power-cycle"
 ```
 
 Apply changes:
@@ -67,10 +69,10 @@ Content:
 
 ```
 Defaults!/usr/bin/systemctl !requiretty
-Defaults!/home/userx/Documents/gym-bot/.venv/bin/python !requiretty
+Defaults!/home/user/gym-bot/.venv/bin/python !requiretty
 
-userx ALL=(root) NOPASSWD: /usr/bin/systemctl suspend
-userx ALL=(root) NOPASSWD: /home/userx/Documents/gym-bot/.venv/bin/python -m src.main *
+user ALL=(root) NOPASSWD: /usr/bin/systemctl suspend
+user ALL=(root) NOPASSWD: /home/user/gym-bot/.venv/bin/python -m src.main *
 ```
 
 Verify the rules are active:
@@ -123,8 +125,8 @@ Description=Gym Bot
 
 [Service]
 Type=oneshot
-WorkingDirectory=/home/userx/Documents/gym-bot
-ExecStart=/home/userx/Documents/gym-bot/.venv/bin/python -m src.main run
+WorkingDirectory=/home/user/gym-bot
+ExecStart=/home/user/gym-bot/.venv/bin/python -m src.main run
 Environment="PYTHONUNBUFFERED=1"
 ```
 
@@ -139,13 +141,21 @@ systemctl --user status gym-bot.timer
 systemctl --user list-timers
 ```
 
-Logs:
+Logs — two independent views, kept intentionally:
 
 ```bash
+# Journal — systemd-level record: crash traces, exit codes, restarts,
+# service lifecycle. Survives even if the app can't write to disk.
 journalctl --user -u gym-bot.service
 journalctl --user -u gym-bot.service -f   # real-time
 journalctl --user -u gym-bot.service --since "1 hour ago"
+
+# App log — plain text, line-bounded (LOG_MAX_LINES), no unit/timestamp
+# noise. This is the one to reach for day to day.
+tail -f /home/user/gym-bot/logs/logger.txt
 ```
+
+Neither replaces the other: `journalctl` is systemd's own log of the *unit* (it works even if `logger.py` itself never runs, e.g. an import error before logging is configured), while `logs/logger.txt` is the app's own structured record, easy to `cat`/`tail`/`grep` without systemd tooling. Don't set `StandardOutput=null` in the unit file below — that would silence the journal safety net for no benefit.
 
 ---
 
@@ -165,8 +175,8 @@ After=multi-user.target
 
 [Service]
 Type=oneshot
-WorkingDirectory=/home/userx/Documents/gym-bot
-ExecStart=/home/userx/Documents/gym-bot/.venv/bin/python -m src.main power-cycle
+WorkingDirectory=/home/user/gym-bot
+ExecStart=/home/user/gym-bot/.venv/bin/python -m src.main power-cycle
 Environment="PYTHONUNBUFFERED=1"
 
 [Install]
@@ -197,8 +207,8 @@ Executes the power cycle manager every time the system returns from suspend, ens
 #!/bin/bash
 
 if [ "$1" = "post" ]; then
-    cd /home/userx/Documents/gym-bot && \
-    /home/userx/Documents/gym-bot/.venv/bin/python -m src.main power-cycle
+    cd /home/user/gym-bot && \
+    /home/user/gym-bot/.venv/bin/python -m src.main power-cycle
 fi
 ```
 
@@ -315,8 +325,11 @@ systemctl status power-autonomous.service
 # Sleep hook is executable
 ls -la /usr/lib/systemd/system-sleep/gym-bot-power
 
-# Recent bot logs
+# Recent bot logs — journal (systemd/service level)
 journalctl --user -u gym-bot.service --since "today"
+
+# Recent bot logs — app-level file (day-to-day view)
+tail -50 /home/user/gym-bot/logs/logger.txt
 
 # System suspend/resume history
 journalctl -b | grep -E "suspend entry|resume complete" | tail -10
@@ -355,3 +368,6 @@ Check `sleep_minutes_after` in `app_config.yaml` — if the bot takes longer tha
 systemctl --user status gym-bot.timer
 journalctl --user -u gym-bot.timer -f
 ```
+
+**`logs/logger.txt` is empty but `journalctl` shows activity**
+Means the process is being launched but `src/utils/logger.py` never finished importing (e.g. `LOG_DIR` points somewhere unwritable, or `.env` isn't found because `WorkingDirectory` is wrong — see the `.env not found` entry above). Check the journal first; it's the one log that's independent of the app's own file-writing code.
