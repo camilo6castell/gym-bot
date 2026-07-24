@@ -7,6 +7,7 @@ from playwright.sync_api import Page
 from src.types.config import EnvironmentConfig, SelectorsConfig
 from src.utils.logger import logger
 from src.utils.page_utils import (
+    force_url,
     monitor_new_page,
     search_and_click,
     wait_for_redirect,
@@ -35,11 +36,20 @@ class PostLoginPage:
 
         logger.info("🚀 → Iniciando flujo post-login")
 
+        # Confirma url antes de buscar elementos
+        force_url(
+            page=page,
+            recovery=self._recovery,
+            forced_url="https://sistemared.deportescompensar.com/sistema.php",
+        )
+
         # Navega a la sección de entrenamiento usando el selector de enlace
         search_and_click(page, "a[href='#mm-m1-p2']", timeout=10000)
 
         # Accede a la página de práctica libre
-        search_and_click(page, "a[href='/sistema.php/entrenamiento/reserva/practica/libre']")
+        search_and_click(
+            page, "a[href='/sistema.php/entrenamiento/reserva/practica/libre']"
+        )
 
         # Monitorea nuevas páginas que puedan aparecer durante la navegación
         monitor_new_page(

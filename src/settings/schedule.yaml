@@ -1,9 +1,9 @@
 timezone: America/Bogota
 
 forcedClass:
-  name: Pilates
-  hour: 09:05 - 08:00
-  day: monday
+  name: PD Yoga
+  hour: 06:00 - 07:00
+  day: tuesday
 
 days:
   #MIERCOLES
