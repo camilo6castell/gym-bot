@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import pytest
-
 from typing import cast
+
+import pytest
 
 from src.bot.scheduler import Scheduler
 from src.types.config import ExecutionConfig, GymClass, ScheduleConfig, ScheduledClass, Weekday
@@ -51,7 +51,7 @@ class TestSchedulerForceRun:
         execution = _make_execution(force_run=True)
         scheduler = Scheduler(schedule, execution)
 
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             scheduler.get_classes()
 
 
@@ -61,7 +61,7 @@ class TestSchedulerApplyExecutionAdjustment:
         execution = _make_execution(force_run=False, adjustment=0)
         scheduler = Scheduler(schedule, execution)
 
-        result = scheduler._apply_execution_adjustment(7, 0)
+        result = scheduler._apply_execution_adjustment(7, 0)  # pyright: ignore[reportPrivateUsage]
         assert result == (7, 0)
 
     def test_negative_adjustment(self) -> None:
@@ -69,7 +69,7 @@ class TestSchedulerApplyExecutionAdjustment:
         execution = _make_execution(force_run=False, adjustment=-1)
         scheduler = Scheduler(schedule, execution)
 
-        result = scheduler._apply_execution_adjustment(7, 0)
+        result = scheduler._apply_execution_adjustment(7, 0)  # pyright: ignore[reportPrivateUsage]
         assert result == (6, 59)
 
     def test_positive_adjustment(self) -> None:
@@ -77,7 +77,7 @@ class TestSchedulerApplyExecutionAdjustment:
         execution = _make_execution(force_run=False, adjustment=5)
         scheduler = Scheduler(schedule, execution)
 
-        result = scheduler._apply_execution_adjustment(7, 0)
+        result = scheduler._apply_execution_adjustment(7, 0)  # pyright: ignore[reportPrivateUsage]
         assert result == (7, 5)
 
     def test_negative_adjustment_wraps_hour(self) -> None:
@@ -85,7 +85,7 @@ class TestSchedulerApplyExecutionAdjustment:
         execution = _make_execution(force_run=False, adjustment=-5)
         scheduler = Scheduler(schedule, execution)
 
-        result = scheduler._apply_execution_adjustment(7, 2)
+        result = scheduler._apply_execution_adjustment(7, 2)  # pyright: ignore[reportPrivateUsage]
         assert result == (6, 57)
 
     def test_positive_adjustment_wraps_hour(self) -> None:
@@ -93,7 +93,7 @@ class TestSchedulerApplyExecutionAdjustment:
         execution = _make_execution(force_run=False, adjustment=5)
         scheduler = Scheduler(schedule, execution)
 
-        result = scheduler._apply_execution_adjustment(7, 58)
+        result = scheduler._apply_execution_adjustment(7, 58)  # pyright: ignore[reportPrivateUsage]
         assert result == (8, 3)
 
     def test_midnight_wraparound(self) -> None:
@@ -101,5 +101,5 @@ class TestSchedulerApplyExecutionAdjustment:
         execution = _make_execution(force_run=False, adjustment=-1)
         scheduler = Scheduler(schedule, execution)
 
-        result = scheduler._apply_execution_adjustment(0, 0)
+        result = scheduler._apply_execution_adjustment(0, 0)  # pyright: ignore[reportPrivateUsage]
         assert result == (23, 59)

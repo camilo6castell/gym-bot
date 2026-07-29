@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from typing import Any
 from unittest.mock import Mock
 
 import pytest
@@ -11,13 +12,13 @@ from src.utils.recovery import Recovery
 
 
 class TestRecoverySoft:
-    def test_successful_action_returns_immediately(self, fake_notifier) -> None:
+    def test_successful_action_returns_immediately(self, fake_notifier: Any) -> None:
         recovery = Recovery(fake_notifier)
         recovery.with_soft_recovery(lambda: None, Mock(), "test")
 
         assert len(fake_notifier.sent_messages) == 0
 
-    def test_retries_on_failure_then_succeeds(self, fake_notifier) -> None:
+    def test_retries_on_failure_then_succeeds(self, fake_notifier: Any) -> None:
         recovery = Recovery(fake_notifier)
         call_count = 0
 
@@ -32,7 +33,7 @@ class TestRecoverySoft:
 
         assert call_count == 2
 
-    def test_exhausts_retries_and_raises(self, fake_notifier) -> None:
+    def test_exhausts_retries_and_raises(self, fake_notifier: Any) -> None:
         recovery = Recovery(fake_notifier)
 
         def always_fails() -> None:
@@ -49,7 +50,7 @@ class TestRecoverySoft:
 
 
 class TestRecoveryWaitForUserAction:
-    def test_returns_resume_on_zero(self, fake_notifier, monkeypatch) -> None:
+    def test_returns_resume_on_zero(self, fake_notifier: Any, monkeypatch) -> None:
         recovery = Recovery(fake_notifier)
         # Bypass _get_last_update_id so the polling loop sees the update
         monkeypatch.setattr(recovery, "_get_last_update_id", lambda: 0)
@@ -60,7 +61,7 @@ class TestRecoveryWaitForUserAction:
         assert result == "resume"
         assert any("Resuming" in msg for msg in fake_notifier.sent_messages)
 
-    def test_returns_refresh_on_one(self, fake_notifier, monkeypatch) -> None:
+    def test_returns_refresh_on_one(self, fake_notifier: Any, monkeypatch) -> None:
         recovery = Recovery(fake_notifier)
         monkeypatch.setattr(recovery, "_get_last_update_id", lambda: 0)
         fake_notifier.add_update("1")
@@ -70,7 +71,7 @@ class TestRecoveryWaitForUserAction:
         assert result == "refresh"
         assert any("Refreshing" in msg for msg in fake_notifier.sent_messages)
 
-    def test_returns_abort_on_timeout(self, fake_notifier) -> None:
+    def test_returns_abort_on_timeout(self, fake_notifier: Any) -> None:
         recovery = Recovery(fake_notifier)
 
         result = recovery.wait_for_user_action("test error", timeout=1, retry_count=0)
@@ -79,7 +80,7 @@ class TestRecoveryWaitForUserAction:
 
 
 class TestRecoveryHandleUserAction:
-    def test_resume_increments_retry_count(self, fake_notifier) -> None:
+    def test_resume_increments_retry_count(self, fake_notifier: Any) -> None:
         recovery = Recovery(fake_notifier)
         page_mock = Mock()
 
@@ -90,7 +91,7 @@ class TestRecoveryHandleUserAction:
         assert retry_count == 1
         assert auto_refreshes == 0
 
-    def test_refresh_reloads_page(self, fake_notifier) -> None:
+    def test_refresh_reloads_page(self, fake_notifier: Any) -> None:
         recovery = Recovery(fake_notifier)
         page_mock = Mock()
 
@@ -102,7 +103,7 @@ class TestRecoveryHandleUserAction:
         assert auto_refreshes == 0
         page_mock.reload.assert_called_once()
 
-    def test_abort_raises_error(self, fake_notifier) -> None:
+    def test_abort_raises_error(self, fake_notifier: Any) -> None:
         recovery = Recovery(fake_notifier)
         page_mock = Mock()
 

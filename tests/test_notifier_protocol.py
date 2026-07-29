@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from src.notifications import Notifier, TelegramUpdatesResponse
+from src.notifications import TelegramUpdatesResponse
 from tests.conftest import FakeNotifier
 
 
