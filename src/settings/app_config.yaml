@@ -1,7 +1,6 @@
 environment:
   login_url: https://seguridad.compensar.com/sign-in?serviceProviderName=HER-SP&protocol=SAML
   inside_system_url: https://sistemaplanbienestar.deportescompensar.com/entrenamiento/reserva/practica/libre
-  gym_class_verification_url: https://sistemared.deportescompensar.com/sistema.php/entrenamiento/mis/turnos#/
   inside_system_url_pattern: "**compensar.com/**"
 
 os:

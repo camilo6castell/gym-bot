@@ -1,21 +1,20 @@
 """
-Modelos Pydantic que describen la configuración de la aplicación.
+Pydantic models describing the application configuration.
 
-Estos modelos reemplazan los antiguos TypedDict: además de documentar la
-forma de los datos, ahora los VALIDAN (tipos, campos requeridos, valores
-permitidos) en el momento en que se cargan los archivos YAML / variables
-de entorno.
+These models replace the old TypedDict approach: they VALIDATE the data
+(types, required fields, allowed values) at load time rather than deferring
+errors to runtime.
 """
 
-from typing import Any, Literal, TypedDict
+from __future__ import annotations
+
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
 # =========================================================
 # GENERIC
 # =========================================================
-
-YamlDict = dict[str, Any]
 
 Weekday = Literal[
     "monday",
@@ -29,7 +28,7 @@ Weekday = Literal[
 
 
 class _StrictModel(BaseModel):
-    """Base común: prohíbe campos desconocidos en los YAML (typos, etc.)."""
+    """Common base: forbid extra fields in YAML (catches typos early)."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -59,9 +58,6 @@ class ScheduleConfig(_StrictModel):
     forcedClass: ForcedClass | None = None
 
 
-# `ForcedClass` (name, hour, day) es exactamente la forma de una clase ya
-# resuelta a un día concreto — se reutiliza como tipo de retorno de
-# `Scheduler.get_classes()` en lugar de crear un modelo duplicado.
 ScheduledClass = ForcedClass
 
 
@@ -73,7 +69,6 @@ ScheduledClass = ForcedClass
 class EnvironmentConfig(_StrictModel):
     login_url: str
     inside_system_url: str
-    gym_class_verification_url: str
     inside_system_url_pattern: str
 
 
@@ -108,35 +103,3 @@ class AppConfig(_StrictModel):
     selectors: SelectorsConfig
     power_autonomous: PowerAutonomousConfig
     execution: ExecutionConfig
-
-
-# =========================================================
-# ROOT CONFIG (dict que expone Config.env_vars / Config.get)
-# =========================================================
-#
-# Se conserva como TypedDict (no como modelo Pydantic) porque su único
-# propósito es tipar el diccionario "plano" que se expone por compatibilidad
-# hacia el resto del sistema (Config.env_vars / Config.get(key)).
-
-
-class ConfigVars(TypedDict, total=False):
-    # ENV VARS — credenciales
-    COMPENSAR_DOC_TYPE: str
-    COMPENSAR_DOC_NUM: str
-    COMPENSAR_PASSWORD: str
-
-    # ENV VARS — Telegram
-    TOKEN: str
-    CHAT_ID: str
-
-    # ENV VARS — opcionales
-    FIREFOX_PROFILE_NAME: str
-
-    # YAML CONFIGS (dict "plano", ver Config._build_env_vars)
-    SCHEDULE: YamlDict
-    APP_CONFIG: YamlDict
-
-    # DERIVED VALUES
-    HOME_USER: str
-    CHROMIUM_PROFILE_PATH: str
-    FIREFOX_PROFILE_PATH: str

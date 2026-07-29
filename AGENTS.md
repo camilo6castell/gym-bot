@@ -36,7 +36,7 @@ src/settings/provider.py → loads .env + YAML, validates with Pydantic
 
 - **Domain exceptions:** `src/utils/exceptions.py` defines `GymBotError` hierarchy. Never raise `RuntimeError` in business logic.
 - **Recovery wraps all page interactions:** Use `recovery.with_recovery()` or `recovery.with_soft_recovery()` — no bare `try/except` in components.
-- **Code comments and logs are in Spanish** (matching the target platform's locale).
+- **Code, comments, docstrings, and logs are in English.** Only `src/settings/app_config.yaml` and `src/settings/schedule.yaml` (operational configuration for the target platform) remain in Spanish.
 - **Page Object pattern:** Each `src/components/*.py` class owns one step. `ReservationProcess` composes them.
 - **Config validation is strict:** `_StrictModel` base class in `src/types/config.py` has `extra="forbid"` — typos in YAML keys fail fast at startup.
 

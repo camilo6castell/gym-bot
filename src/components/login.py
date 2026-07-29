@@ -1,4 +1,4 @@
-"""Flujo de inicio de sesión en la plataforma."""
+"""Login flow for the platform."""
 
 from __future__ import annotations
 
@@ -13,8 +13,8 @@ from src.utils.recovery import Recovery
 
 class LoginPage:
     """
-    Encapsula el proceso de inicio de sesión: selección de tipo de
-    documento, ingreso de credenciales y envío del formulario.
+    Handle the login process: document type selection, credential entry,
+    and form submission.
     """
 
     def __init__(
@@ -26,18 +26,6 @@ class LoginPage:
         doc_num: str,
         password: str,
     ) -> None:
-        """
-        Parameters
-        ----------
-        env_config : EnvironmentConfig
-            URLs de la plataforma (login, sistema interno, etc.).
-        selectors_config : SelectorsConfig
-            Selectores CSS de elementos de UI potencialmente presentes.
-        recovery : Recovery
-            Usado para manejar modales inesperados tras el envío del formulario.
-        doc_type, doc_num, password : str
-            Credenciales de acceso a la plataforma.
-        """
         self._env = env_config
         self._selectors = selectors_config
         self._recovery = recovery
@@ -46,12 +34,11 @@ class LoginPage:
         self._password = password
 
     def perform_login(self, page: Page) -> None:
-        """Realiza el proceso de inicio de sesión en la aplicación."""
-        logger.info("🌐 → Abriendo página de login")
+        """Execute the full login process on the platform."""
+        logger.info("🌐 → Opening login page")
         page.goto(self._env.login_url, wait_until="domcontentloaded")
-        raise_if_captcha(page)  # Verifica y maneja cualquier CAPTCHA presente
+        raise_if_captcha(page)
 
-        # Descarta notificaciones temporales si están presentes
         if self._selectors.potential_temporary_platform_notification:
             dismiss_if_present(
                 page,
@@ -59,7 +46,7 @@ class LoginPage:
                 timeout=5000,
             )
 
-        logger.info("🫆 → Seleccionando tipo de documento")
+        logger.info("🫆 → Selecting document type")
         page.wait_for_selector("#tipodoc", timeout=20000)
         human_click(page, "#tipodoc")
         human_delay()
@@ -67,21 +54,20 @@ class LoginPage:
         human_delay()
 
         page.wait_for_selector("#numdoc:not([disabled])", timeout=10000)
-        logger.info("🫆 → Ingresando número de documento")
+        logger.info("🫆 → Entering document number")
         human_type(page, "#numdoc", self._doc_num)
         human_delay()
 
-        logger.info("🫆 → Ingresando contraseña")
+        logger.info("🫆 → Entering password")
         human_type(page, "#clavepwd", self._password)
         human_delay()
-        raise_if_captcha(page)  # Verifica nuevamente por CAPTCHA después de ingresar la contraseña
+        raise_if_captcha(page)
 
-        page.mouse.wheel(0, 200)  # Scroll para simular comportamiento humano
+        page.mouse.wheel(0, 200)
         human_delay()
 
-        logger.info("🕒 → Enviando formulario")
+        logger.info("🕒 → Submitting form")
         page.wait_for_selector("button[type='submit']:not([disabled])", timeout=5000)
         human_click(page, "button[type='submit']")
 
-        # Monitorea nuevas páginas después del envío
         monitor_new_page(page, self._recovery, self._selectors.potential_modal_entiendo_selector)

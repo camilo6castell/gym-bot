@@ -1,4 +1,4 @@
-"""Orquestación del flujo completo de reserva de una clase."""
+"""Orchestrate the complete class reservation flow."""
 
 from __future__ import annotations
 
@@ -14,11 +14,10 @@ from src.utils.page_utils import confirm_url
 
 class ReservationProcess:
     """
-    Orquesta el flujo de reserva de una clase: confirma la URL del sistema,
-    selecciona el método de acceso, elige la fecha y reserva la clase.
+    Orchestrate the reservation of a single class: confirm system URL,
+    select access method, pick the date, and book the class.
 
-    No implementa lógica propia de UI — delega en `MembershipSelector`,
-    `DateSelector` y `ClassBooker`, cada una responsable de un paso.
+    Delegates each step to its own component — no UI logic lives here.
     """
 
     def __init__(
@@ -42,7 +41,7 @@ class ReservationProcess:
         gym_class_name: str,
         gym_class_hour: str,
     ) -> None:
-        """Ejecuta el flujo completo: acceso → selección de fecha → reserva."""
+        """Execute the full flow: access → date → booking."""
         confirm_url(page, self._env.inside_system_url)
 
         self._membership_selector.use_membership(page)
@@ -54,7 +53,7 @@ class ReservationProcess:
         )
 
         if not day_selected:
-            logger.warning(f"⚠️ → Día '{spanish_day_name}' no encontrado, saltando.")
+            logger.warning(f"⚠️ → Day '{spanish_day_name}' not found, skipping.")
             return
 
         self._class_booker.book(page, gym_class_name, gym_class_hour)

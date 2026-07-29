@@ -1,4 +1,4 @@
-"""Utilidades genéricas de interacción con páginas de Playwright."""
+"""Generic Playwright page interaction utilities."""
 
 from __future__ import annotations
 
@@ -56,14 +56,14 @@ def dismiss_if_present(
 def wait_for_element_with_retry(
     page: Page, selector: str, max_retries: int = 3, timeout: int = 10000
 ) -> ElementHandle | None:
-    """Espera un elemento con reintentos y scroll si no aparece."""
+    """Wait for an element with retries and scroll fallback."""
     for attempt in range(max_retries):
         try:
             return page.wait_for_selector(selector, timeout=timeout)
         except Exception:
             if attempt == max_retries - 1:
                 raise
-            logger.debug(f"Intento {attempt + 1} fallido para '{selector}', reintentando...")
+            logger.debug(f"Attempt {attempt + 1} failed for '{selector}', retrying...")
             time.sleep(random.uniform(1, 3))
             page.evaluate("window.scrollBy(0, 200)")
             time.sleep(0.5)
@@ -77,23 +77,23 @@ def wait_network_idle(page: Page, timeout: int = 5000) -> None:
     try:
         page.wait_for_load_state("networkidle", timeout=timeout)
     except PlaywrightTimeoutError:
-        logger.debug("🕒 → wait_network_idle: timeout alcanzado, continuando.")
+        logger.warning(f"🕒 → wait_network_idle timeout for {page.url}, continuing.")
 
 
 def wait_for_redirect(page: Page, url_pattern: str | None, timeout: int = 15000) -> None:
     if not url_pattern:
-        logger.warning("⚠️ → wait_for_redirect: sin patrón de URL, omitiendo.")
+        logger.warning("⚠️ → wait_for_redirect: no URL pattern provided, skipping.")
         return
     try:
         page.wait_for_url(url_pattern, timeout=timeout, wait_until="networkidle")
     except PlaywrightTimeoutError as err:
         raise RedirectTimeoutError(
-            f"❌ → Mala redirección a '{url_pattern}' | actual: '{page.url}'"
+            f"❌ → Bad redirect to '{url_pattern}' | actual: '{page.url}'"
         ) from err
 
 
 def confirm_url(page: Page, url: str) -> None:
-    """Navega a url solo si no estamos ya ahí."""
+    """Navigate to url only if we are not already there."""
     if page.url != url:
         page.goto(url, wait_until="networkidle")
 
@@ -102,54 +102,54 @@ def confirm_url(page: Page, url: str) -> None:
 
 
 def raise_if_captcha(page: Page) -> None:
-    """Lanza CaptchaDetectedError si hay un captcha activo y visible."""
+    """Raise CaptchaDetectedError if an active CAPTCHA is found."""
 
-    # 1. Verificación por contenido HTML
+    # 1. Check HTML content for known indicators
     try:
         content = page.content().lower()
         for indicator in CAPTCHA_SOFT_INDICATORS:
             if indicator in content:
-                logger.info("ℹ️ → Verificación pasiva detectada, esperando...")
+                logger.info("ℹ️ → Passive verification detected, waiting...")
                 page.wait_for_timeout(4000)
                 return
         for indicator in CAPTCHA_HARD_INDICATORS:
             if indicator in content:
-                raise CaptchaDetectedError(f"⚠️ → CAPTCHA detectado en contenido: '{indicator}'")
+                raise CaptchaDetectedError(f"⚠️ → CAPTCHA detected in content: '{indicator}'")
     except CaptchaDetectedError:
         raise
     except Exception as e:
-        logger.debug(f"🔍 → Error leyendo contenido de página: {e}")
+        logger.debug(f"🔍 → Error reading page content: {e}")
 
-    # 2. Verificación por selectores del DOM
+    # 2. Check via DOM selectors
     for selector in CAPTCHA_SELECTORS:
         try:
             element = page.query_selector(selector)
         except Exception as e:
-            logger.debug(f"🔍 → Error consultando selector captcha '{selector}': {e}")
+            logger.debug(f"🔍 → Error querying captcha selector '{selector}': {e}")
             continue
 
         if element is None:
             continue
 
         if element.is_visible():
-            logger.warning(f"🔒 → CAPTCHA detectado: '{selector}'")
-            raise CaptchaDetectedError("⚠️ → CAPTCHA detectado. Completar y resumir.")
+            logger.warning(f"🔒 → CAPTCHA detected: '{selector}'")
+            raise CaptchaDetectedError("⚠️ → CAPTCHA detected. Solve and resume.")
         else:
-            logger.debug(f"🔍 → Selector captcha oculto (setup): '{selector}'")
+            logger.debug(f"🔍 → Captcha selector hidden (setup): '{selector}'")
 
 
 # ─── Flujo de página ─────────────────────────────────────────────────────────
 
 
 def monitor_new_page(page: Page, recovery: Recovery, selector: str | None = None) -> None:
-    """Espera red idle, verifica captcha y descarta modal opcional."""
+    """Wait for network idle, check CAPTCHA, dismiss optional modal."""
     wait_network_idle(page)
     raise_if_captcha(page)
     if selector:
         recovery.with_soft_recovery(
             lambda: dismiss_if_present(page, selector),
             page,
-            action_name=f"Descartando modal '{selector}'",
+            action_name=f"Dismissing modal '{selector}'",
         )
         wait_network_idle(page, timeout=20000)
 
@@ -161,13 +161,13 @@ def force_url(
     selector: str | None = None,
     redirect_pattern: str | None = None,
 ) -> None:
-    """Navega a forced_url, maneja modal opcional y verifica redirección."""
-    logger.info(f"🔀 → Forzando URL: {forced_url[:64]}")
+    """Navigate to forced_url, handle optional modal, verify redirect."""
+    logger.info(f"🔀 → Forcing URL: {forced_url[:64]}")
     page.goto(forced_url, wait_until="networkidle")
     monitor_new_page(page, recovery, selector)
     if redirect_pattern:
         recovery.with_soft_recovery(
             lambda: wait_for_redirect(page, redirect_pattern, timeout=5000),
             page,
-            action_name=f"Verificando redirección a '{redirect_pattern}'",
+            action_name=f"Verifying redirect to '{redirect_pattern}'",
         )

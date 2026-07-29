@@ -1,4 +1,4 @@
-"""Simulación de comportamiento humano para evitar detección de automatización."""
+"""Human behavior simulation to avoid automation detection."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ def human_mouse_move(page: Page, selector: str) -> None:
         if not box:
             return
 
-        viewport = page.viewport_size  # ✅ usa el viewport real
+        viewport = page.viewport_size
         if not viewport:
             return
         start_x = random.randint(0, viewport["width"])
@@ -49,7 +49,7 @@ def human_mouse_move(page: Page, selector: str) -> None:
             time.sleep(random.uniform(0.008, 0.02))
 
     except Exception as e:
-        logger.debug(f"human_mouse_move falló en '{selector}': {e}")
+        logger.debug(f"human_mouse_move failed on '{selector}': {e}")
 
 
 def human_click(page: Page, selector: str) -> None:
@@ -69,7 +69,7 @@ def human_click(page: Page, selector: str) -> None:
         page.click(selector)
 
     except Exception as e:
-        logger.debug(f"human_mouse_click falló en '{selector}': {e}")
+        logger.debug(f"human_mouse_click failed on '{selector}': {e}")
         page.click(selector)
 
 
@@ -87,7 +87,7 @@ def human_type(
         page.keyboard.type(char)
         time.sleep(random.uniform(min_delay, max_delay))
 
-        # pequeño error humano ocasional
+        # occasional typo
         if random.random() < 0.02:
             page.keyboard.press("Backspace")
             human_delay(0.1, 0.25)

@@ -1,4 +1,4 @@
-"""Gestión del ciclo de suspensión/despertar de la máquina entre reservas."""
+"""Machine suspend/wake cycle management between reservation windows."""
 
 from __future__ import annotations
 
@@ -17,9 +17,9 @@ _TIME_FORMAT = "%H:%M %d/%m"
 
 class PowerCycleManager:
     """
-    Orquesta el ciclo de energía autónomo: calcula la próxima reserva,
-    decide si corresponde suspender o esperar, y delega en
-    `SystemPowerController` para ejecutar la suspensión.
+    Orchestrate the autonomous power cycle: calculate the next reservation,
+    decide whether to suspend or wait, and delegate to `SystemPowerController`
+    to execute the suspend.
     """
 
     def __init__(
@@ -34,8 +34,8 @@ class PowerCycleManager:
 
     def run_suspend_now(self) -> None:
         """
-        Programa el wake alarm para la próxima reserva y suspende inmediatamente.
-        Uso: python -m src.main suspend-now
+        Program the wake alarm for the next reservation and suspend immediately.
+        Usage: python -m src.main suspend-now
         """
         next_reservation = self._schedule_calculator.find_next_reservation()
         if not next_reservation:
@@ -44,17 +44,17 @@ class PowerCycleManager:
 
         wake_time = self.calculate_wake_time(next_reservation)
 
-        logger.info(f"📅 → Próxima reserva:\t\t\t{next_reservation.strftime(_TIME_FORMAT)}")
-        logger.info(f"⏰ → Programando wake para:\t   {wake_time.strftime(_TIME_FORMAT)}")
+        logger.info(f"📅 → Next reservation:\t\t\t{next_reservation.strftime(_TIME_FORMAT)}")
+        logger.info(f"⏰ → Programming wake for:\t   {wake_time.strftime(_TIME_FORMAT)}")
 
         self._power_controller.set_wake_alarm(wake_time)
-        logger.info("💤 → Suspendiendo...")
+        logger.info("💤 → Suspending...")
         self._power_controller.suspend()
 
     def run_power_cycle(self) -> None:
         """
-        Gestiona el ciclo completo de power: ventana activa → suspensión → siguiente ciclo.
-        Uso: python -m src.main power-cycle
+        Manage the full power cycle: active window → suspend → next cycle.
+        Usage: python -m src.main power-cycle
         """
         next_reservation = self._schedule_calculator.find_next_reservation()
         if not next_reservation:
@@ -67,36 +67,36 @@ class PowerCycleManager:
         )
         now = self._schedule_calculator.get_now()
 
-        logger.info(f"🕐 → Ahora:\t\t\t\t\t\t{now.strftime(_TIME_FORMAT)}")
-        logger.info(f"⏰ → Wake programado:\t\t   {wake_time.strftime(_TIME_FORMAT)}")
-        logger.info(f"💤 → Sleep después de:\t\t\t{sleep_time.strftime(_TIME_FORMAT)}")
+        logger.info(f"🕐 → Now:\t\t\t\t\t\t{now.strftime(_TIME_FORMAT)}")
+        logger.info(f"⏰ → Wake scheduled:\t\t   {wake_time.strftime(_TIME_FORMAT)}")
+        logger.info(f"💤 → Sleep after:\t\t\t{sleep_time.strftime(_TIME_FORMAT)}")
 
         if not (wake_time <= now <= sleep_time):
-            logger.info("⏸️ → Fuera de ventana activa. Sin suspensión.")
+            logger.info("⏸️ → Outside active window. No suspension.")
             return
 
         self.wait_for_window_activation(now, sleep_time)
 
-        logger.info("🔄 → Ventana terminada. Programando siguiente ciclo.")
+        logger.info("🔄 → Window ended. Scheduling next cycle.")
         next_reservation = self._schedule_calculator.find_next_reservation()
         if not next_reservation:
-            logger.info("📭 → No hay más reservas.")
+            logger.info("📭 → No more reservations.")
             return
 
         next_wake = self.calculate_wake_time(next_reservation)
         self._power_controller.set_wake_alarm(next_wake)
-        logger.info(f"💤 → Suspendiendo hasta: {next_wake.strftime(_TIME_FORMAT)}")
+        logger.info(f"💤 → Suspending until: {next_wake.strftime(_TIME_FORMAT)}")
         self._power_controller.suspend()
 
     def calculate_wake_time(self, next_reservation: datetime.datetime) -> datetime.datetime:
-        """Calcula el tiempo de wake alarm con margen de seguridad."""
+        """Calculate the wake alarm time with a safety margin."""
         wake_minutes = self._power_config.wake_minutes_before
         return next_reservation - datetime.timedelta(minutes=wake_minutes)
 
     def wait_for_window_activation(
         self, now: datetime.datetime, sleep_time: datetime.datetime
     ) -> None:
-        """Espera hasta el final de la ventana activa."""
+        """Wait until the end of the active window."""
         remaining = max(0, (sleep_time - now).total_seconds())
-        logger.info(f"⏳ Esperando {remaining:.0f} segundos hasta el final de la ventana")
+        logger.info(f"⏳ Waiting {remaining:.0f} seconds until end of window")
         time.sleep(remaining)

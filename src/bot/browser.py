@@ -1,10 +1,9 @@
 """
-Gestión del ciclo de vida del navegador (Playwright).
+Playwright browser lifecycle management.
 
-Encapsula el arranque de un contexto persistente (Chromium o Firefox) con
-medidas anti-detección (scripts de stealth, geolocalización simulada) y
-expone el `Playwright`, `BrowserContext` y `Page` resultantes para que el
-resto del flujo de automatización los utilice.
+Launches a persistent browser context (Chromium or Firefox) with anti-detection
+measures (stealth scripts, spoofed geolocation) and exposes the resulting
+`Playwright`, `BrowserContext` and `Page` for the automation flow.
 """
 
 from __future__ import annotations
@@ -36,11 +35,11 @@ class _CommonContextArgs(TypedDict):
 
 class Browser:
     """
-    Administra el ciclo de vida de un navegador Playwright con perfil real.
+    Manages the lifecycle of a Playwright browser with a real user profile.
 
-    La clase se limita a lanzar y cerrar el navegador; no conoce nada sobre
-    login, reservas ni el resto del flujo de negocio. Un `Browser` puede
-    usarse como context manager para garantizar el cierre de recursos:
+    This class only launches and closes the browser; it knows nothing about
+    login, reservations, or the rest of the business flow.  A `Browser` can
+    be used as a context manager to guarantee resource cleanup:
 
         with Browser(os_config, execution_config, chromium_profile_path) as browser:
             playwright, context, page = browser.launch_chromium()
@@ -78,20 +77,6 @@ class Browser:
         chromium_profile_path: str,
         firefox_profile_path: str | None = None,
     ) -> None:
-        """
-        Crea un nuevo administrador de navegador.
-
-        Parameters
-        ----------
-        os_config : OSConfig
-            Rutas de los ejecutables de navegador y del usuario del sistema.
-        execution_config : ExecutionConfig
-            Parámetros de ejecución (p.ej. si corre en modo headless).
-        chromium_profile_path : str
-            Ruta al directorio de perfil persistente de Chromium.
-        firefox_profile_path : str | None
-            Ruta al directorio de perfil persistente de Firefox, si aplica.
-        """
         self._os_config = os_config
         self._execution_config = execution_config
         self._chromium_profile_path = chromium_profile_path
@@ -101,13 +86,10 @@ class Browser:
         self.context: BrowserContext | None = None
         self.page: Page | None = None
 
-    # -----------------------------------------------------
-    # API pública
-    # -----------------------------------------------------
     def launch_chromium(self) -> tuple[Playwright, BrowserContext, Page]:
-        """Lanza Chromium con el perfil real configurado y aplica stealth."""
+        """Launch Chromium with the configured real profile and apply stealth."""
         self._kill_existing_chromium()
-        logger.info("🌐 → Iniciando Chromium con perfil real")
+        logger.info("🌐 → Starting Chromium with real profile")
 
         playwright = sync_playwright().start()
         context = playwright.chromium.launch_persistent_context(
@@ -136,11 +118,11 @@ class Browser:
         return playwright, context, page
 
     def launch_firefox(self) -> tuple[Playwright, BrowserContext, Page]:
-        """Lanza Firefox con el perfil real configurado y aplica stealth."""
+        """Launch Firefox with the configured real profile and apply stealth."""
         if not self._firefox_profile_path:
-            raise BrowserLaunchError("❌ → FIREFOX_PROFILE_NAME no configurado en .env")
+            raise BrowserLaunchError("❌ → FIREFOX_PROFILE_NAME not configured in .env")
 
-        logger.info("🦊 → Iniciando Firefox con perfil real")
+        logger.info("🦊 → Starting Firefox with real profile")
 
         playwright = sync_playwright().start()
         context = playwright.firefox.launch_persistent_context(
@@ -157,24 +139,21 @@ class Browser:
         return playwright, context, page
 
     def close(self) -> None:
-        """Cierra el contexto del navegador y detiene Playwright de forma segura."""
+        """Close the browser context and stop Playwright safely."""
         if self.context is not None:
             try:
                 self.context.close()
             except Exception as e:
-                logger.warning(f"⚠️ → Error cerrando el contexto del navegador: {e}")
+                logger.warning(f"⚠️ → Error closing browser context: {e}")
 
         if self.playwright is not None:
             try:
                 self.playwright.stop()
             except Exception as e:
-                logger.warning(f"⚠️ → Error deteniendo Playwright: {e}")
+                logger.warning(f"⚠️ → Error stopping Playwright: {e}")
 
         self.playwright, self.context, self.page = None, None, None
 
-    # -----------------------------------------------------
-    # Context manager
-    # -----------------------------------------------------
     def __enter__(self) -> Browser:
         return self
 
@@ -186,9 +165,6 @@ class Browser:
     ) -> None:
         self.close()
 
-    # -----------------------------------------------------
-    # Helpers internos
-    # -----------------------------------------------------
     def _common_context_args(self) -> _CommonContextArgs:
         return {
             "no_viewport": True,
@@ -197,7 +173,7 @@ class Browser:
         }
 
     def _kill_existing_chromium(self) -> None:
-        """Mata procesos de Chromium huérfanos y limpia locks del perfil."""
+        """Kill orphaned Chromium processes and clean up profile locks."""
         subprocess.run(["pkill", "-x", "chromium"], check=False)
 
         profile_path = Path(self._chromium_profile_path)
@@ -205,10 +181,10 @@ class Browser:
             lock = profile_path / lock_file
             if lock.exists():
                 lock.unlink()
-                logger.info(f"🔓 → Lock eliminado: {lock_file}")
+                logger.info(f"🔓 → Lock removed: {lock_file}")
 
         time.sleep(1)
-        logger.info("🧹 → Chromium limpiado")
+        logger.info("🧹 → Chromium cleaned up")
 
     @classmethod
     def _setup_page(cls, context: BrowserContext, stealth_script: str) -> Page:

@@ -1,4 +1,4 @@
-"""Selección del método de acceso (membresía o tiquetera) antes de reservar."""
+"""Membership / access method selection before booking."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from src.utils.recovery import Recovery
 
 
 class MembershipSelector:
-    """Elige el primer botón habilitado de 'Usar Membresía' / 'Usar tiquetera'."""
+    """Select the first enabled 'Usar Membresía' / 'Usar tiquetera' button."""
 
     _SELECTOR = 'button:has-text("Usar Membresía"), button:has-text("Usar tiquetera")'
 
@@ -20,20 +20,20 @@ class MembershipSelector:
 
     def use_membership(self, page: Page) -> None:
         """
-        Busca y hace clic en el primer botón de acceso disponible.
+        Find and click the first available access method button.
 
         Raises
         ------
         MembershipNotFoundError
-            Si no hay botones de membresía/tiquetera, o ninguno está habilitado.
+            If no membership/ticket buttons are found or none are enabled.
         """
-        logger.info("🔎 → Buscando botones 'Usar Membresía' o 'Usar tiquetera'...")
+        logger.info("🔎 → Looking for 'Usar Membresía' or 'Usar tiquetera' buttons...")
 
         try:
             self._recovery.with_soft_recovery(
                 lambda: page.wait_for_selector(self._SELECTOR, timeout=5000),
                 page,
-                "Esperando botones de membresía/tiquetera",
+                "Waiting for membership/ticket buttons",
             )
 
             buttons = page.locator(self._SELECTOR)
@@ -41,26 +41,26 @@ class MembershipSelector:
 
             if count == 0:
                 raise MembershipNotFoundError(
-                    "❌ → No se encontraron botones de membresía ni tiquetera."
+                    "❌ → No membership or ticket buttons found."
                 )
 
             for i in range(count):
                 btn = buttons.nth(i)
                 if btn.is_visible() and btn.is_enabled():
-                    logger.info(f"✔️ → Usando botón '{btn.inner_text()}'")
+                    logger.info(f"✔️ → Using button '{btn.inner_text()}'")
                     btn.click()
                     wait_network_idle(page)
                     return
 
             raise MembershipNotFoundError(
-                "❌ → Se encontraron botones pero ninguno estaba habilitado."
+                "❌ → Found membership buttons but none were enabled."
             )
 
         except PlaywrightTimeoutError:
-            logger.error("⏰ → Timeout esperando botones de membresía/tiquetera")
+            logger.error("⏰ → Timeout waiting for membership/ticket buttons")
             raise
         except MembershipNotFoundError:
             raise
         except Exception as e:
-            logger.error(f"❌ → Error seleccionando método de acceso: {e}")
+            logger.error(f"❌ → Error selecting access method: {e}")
             raise

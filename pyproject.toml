@@ -11,6 +11,11 @@ strict_optional = true
 exclude = [".venv"]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
 [tool.ruff]
 line-length = 100
 target-version = "py311"

@@ -1,49 +1,49 @@
 """
-Jerarquía de excepciones de dominio de gym-bot.
+Domain-specific exception hierarchy for gym-bot.
 
-Usar excepciones específicas (en lugar de `RuntimeError`/`ValueError` genéricos)
-permite que las capas superiores (`Recovery`, `main.py`) distingan qué falló
-y decidan cómo reaccionar, además de dejar rastros de error más legibles.
+Using specific exceptions (instead of generic `RuntimeError`/`ValueError`)
+lets upper layers (`Recovery`, `main.py`) distinguish what failed and
+decide how to react, while leaving more readable error traces.
 """
 
 from __future__ import annotations
 
 
 class GymBotError(Exception):
-    """Excepción base para todos los errores de dominio de la aplicación."""
+    """Base exception for all application domain errors."""
 
 
 class CaptchaDetectedError(GymBotError):
-    """Se lanza cuando se detecta un CAPTCHA activo que requiere intervención humana."""
+    """Raised when an active CAPTCHA requiring human intervention is detected."""
 
 
 class BrowserLaunchError(GymBotError):
-    """Se lanza cuando el navegador no puede iniciarse por falta de configuración o entorno."""
+    """Raised when the browser cannot start due to missing configuration or environment."""
 
 
 class ElementNotFoundError(GymBotError):
-    """Se lanza cuando un elemento obligatorio de la página no aparece a tiempo."""
+    """Raised when a required page element does not appear within the timeout."""
 
 
 class RedirectTimeoutError(GymBotError):
-    """Se lanza cuando la página no redirige a la URL esperada dentro del timeout."""
+    """Raised when the page does not redirect to the expected URL within the timeout."""
 
 
 class MembershipNotFoundError(GymBotError):
-    """Se lanza cuando no hay botones de membresía/tiquetera disponibles o habilitados."""
+    """Raised when no membership/ticket buttons are available or enabled."""
 
 
 class ReservationVerificationError(GymBotError):
-    """Se lanza cuando no se puede confirmar que una clase quedó reservada."""
+    """Raised when a class reservation cannot be confirmed."""
 
 
 class ScheduleConfigError(GymBotError):
-    """Se lanza cuando la configuración de horario (schedule.yaml) es inválida o incompleta."""
+    """Raised when the schedule configuration is invalid or incomplete."""
 
 
 class RecoveryExhaustedError(GymBotError):
-    """Se lanza cuando una acción agota sus reintentos automáticos sin recuperarse."""
+    """Raised when an action exhausts its automatic retries without recovering."""
 
 
 class RecoveryAbortedError(GymBotError):
-    """Se lanza cuando el usuario aborta el flujo durante una recuperación asistida."""
+    """Raised when the user aborts the flow during assisted recovery."""

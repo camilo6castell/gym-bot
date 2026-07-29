@@ -1,4 +1,4 @@
-"""Confirmación de la reserva en el modal de la plataforma."""
+"""Reservation confirmation in the platform modal."""
 
 from __future__ import annotations
 
@@ -11,14 +11,14 @@ from src.utils.recovery import Recovery
 
 
 class ClassAcceptance:
-    """Confirma la reserva de una clase en el modal de confirmación."""
+    """Confirm a class reservation inside the confirmation modal."""
 
     def __init__(self, recovery: Recovery) -> None:
         self._recovery = recovery
 
     def confirm(self, page: Page) -> None:
-        """Espera el modal de confirmación, hace clic en 'Confirmar' y cierra el aviso."""
-        logger.info("🕤 → Esperando modal de confirmación...")
+        """Wait for the confirmation modal, click 'Confirmar', and close the notification."""
+        logger.info("🕤 → Waiting for confirmation modal...")
         human_delay()
 
         confirm_selector = (
@@ -30,14 +30,14 @@ class ClassAcceptance:
         try:
             page.wait_for_selector(confirm_selector, state="visible", timeout=15000)
         except PlaywrightTimeoutError as err:
-            raise ElementNotFoundError("❌ → No apareció el botón Confirmar Reserva") from err
+            raise ElementNotFoundError("❌ → Confirm button did not appear") from err
 
         human_delay(0.5, 1.0)
 
         self._recovery.with_soft_recovery(
             lambda: page.click(confirm_selector),
             page,
-            "Clickeando botón Confirmar Reserva",
+            "Clicking Confirm Reserva button",
         )
 
         human_delay()
@@ -45,13 +45,13 @@ class ClassAcceptance:
         self._recovery.with_soft_recovery(
             lambda: self._close_notific8(page),
             page,
-            "Cerrando notificación de éxito",
+            "Closing success notification",
         )
 
-        logger.success("✔️ → Ciclo de reserva hecho.")
+        logger.success("✔️ → Reservation cycle complete.")
 
     def _close_notific8(self, page: Page, timeout: int = 5000) -> None:
-        """Cierra notificación notific8 haciendo hover para revelar el botón de cierre."""
+        """Close a notific8 notification by hovering to reveal the close button."""
         try:
             notification = page.wait_for_selector(
                 "notific8-notification[open]", state="attached", timeout=timeout
@@ -65,6 +65,6 @@ class ClassAcceptance:
             )
             if close_btn:
                 close_btn.click()
-                logger.info("😉 → Notificación de reserva cerrada.")
+                logger.info("😉 → Reservation notification closed.")
         except PlaywrightTimeoutError:
-            logger.debug("🗑️ → Notificación no apareció o ya se cerró sola.")
+            logger.debug("🗑️ → Notification did not appear or already closed.")

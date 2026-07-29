@@ -1,4 +1,4 @@
-"""Cálculo de qué clases de gimnasio deben reservarse en el ciclo actual."""
+"""Determine which gym classes to book in the current cycle."""
 
 from __future__ import annotations
 
@@ -9,14 +9,16 @@ import pytz
 from src.types.config import ExecutionConfig, ScheduleConfig, ScheduledClass
 from src.utils.exceptions import ScheduleConfigError
 from src.utils.logger import logger
-from src.utils.time_utils import days_mapper
+from src.utils.time_utils import days_mapper, parse_start_hour
 
 
 class Scheduler:
     """
-    Determina, para el momento actual, qué clases de gimnasio corresponde
-    intentar reservar — ya sea en modo normal (según `schedule.yaml`) o en
-    modo forzado (`bot_force_run`, útil para pruebas y ejecución manual).
+    Decide which classes to attempt booking for the current time window.
+
+    Supports two modes:
+    - regular: matches today's schedule against `schedule.yaml`.
+    - forced: uses the `bot_force_run` / `forcedClass` config for testing.
     """
 
     def __init__(self, schedule_config: ScheduleConfig, execution_config: ExecutionConfig) -> None:
@@ -25,24 +27,24 @@ class Scheduler:
         self._tz = pytz.timezone(schedule_config.timezone or "UTC")
 
     def get_classes(self) -> list[ScheduledClass]:
-        """Punto de entrada: decide entre modo forzado y modo regular."""
+        """Entry point: decide between force-run and regular modes."""
         if self._execution.bot_force_run:
             return self._force_run_classes()
         return self._regular_run_classes()
 
     def _force_run_classes(self) -> list[ScheduledClass]:
-        logger.warning("⚠️ → BOT_FORCE_RUN activo ⚠️")
+        logger.warning("⚠️ → BOT_FORCE_RUN active ⚠️")
         forced = self._schedule.forcedClass
 
         if not forced or not all([forced.name, forced.hour, forced.day]):
             raise ScheduleConfigError(
-                "❌ → BOT_FORCE_RUN activo pero faltan datos en 'forcedClass' del schedule."
+                "❌ → BOT_FORCE_RUN active but 'forcedClass' in schedule is incomplete."
             )
 
         return [forced]
 
     def _regular_run_classes(self) -> list[ScheduledClass]:
-        # Las reservas abren 2 días antes de la clase — de ahí el offset.
+        # Reservations open 2 days before the class — hence the offset.
         now = datetime.now(self._tz)
         target_weekday = (now.weekday() - 2) % 7
         scheduled_classes: list[ScheduledClass] = []
@@ -55,8 +57,7 @@ class Scheduler:
 
             for gym_class in day_classes:
                 try:
-                    start_hour = gym_class.hour.split(" - ")[0]
-                    hour, minute = map(int, start_hour.split(":"))
+                    hour, minute = parse_start_hour(gym_class.hour)
                 except (ValueError, IndexError):
                     continue
 

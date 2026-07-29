@@ -1,36 +1,21 @@
-from typing import Any, TypedDict, cast
+from typing import cast
 
 import requests
 
+from src.notifications import Notifier, TelegramUpdatesResponse
 from src.utils.logger import logger
 
 
-class TelegramUpdatesResponse(TypedDict):
-    result: list[dict[str, Any]]
-
-
-class TelegramClient:
+class TelegramClient(Notifier):
     """
     Encapsulates interactions with the Telegram Bot API.
 
-    The client uses a `Config` instance to retrieve the bot token and chat ID,
-    and exposes methods for sending messages (`notify`) and retrieving updates
-    (`get_updates`).  All network calls are wrapped in try/except blocks that
+    The client uses a bot token and chat ID to send messages and retrieve
+    updates.  All network calls are wrapped in try/except blocks that
     log failures via `logger`.
     """
 
     def __init__(self, token: str, chat_id: str) -> None:
-        """
-        Create a new client.
-
-        Parameters
-        ----------
-        token : str
-            The bot token for API authentication.
-        chat_id : str
-            The ID of the chat to send messages to.
-        """
-        # Base URL for all API calls (e.g. https://api.telegram.org/bot<token>)
         self.base_url = f"https://api.telegram.org/bot{token}"
         self._chat_id = chat_id
 
@@ -44,16 +29,14 @@ class TelegramClient:
             The text to send.
         """
         try:
-            requests.post(
+            response = requests.post(
                 f"{self.base_url}/sendMessage",
-                json={
-                    "chat_id": self._chat_id,
-                    "text": msg,
-                },
+                json={"chat_id": self._chat_id, "text": msg},
                 timeout=10,
             )
+            response.raise_for_status()
         except requests.RequestException as e:
-            logger.warning(f"notify falló: {e}")
+            logger.error(f"Telegram notify failed: {e}", exc_info=True)
 
     def get_updates(self) -> TelegramUpdatesResponse:
         """
@@ -66,57 +49,10 @@ class TelegramClient:
             On failure, returns an empty result list.
         """
         try:
-            response = requests.get(
-                f"{self.base_url}/getUpdates",
-                timeout=10,
-            )
+            response = requests.get(f"{self.base_url}/getUpdates", timeout=10)
             response.raise_for_status()
             return cast(TelegramUpdatesResponse, response.json())
         except requests.RequestException as e:
-            logger.warning(f"get_updates falló: {e}")
+            logger.error(f"Telegram get_updates failed: {e}", exc_info=True)
             return {"result": []}
 
-
-# from typing import Any, TypedDict, cast
-# import requests
-
-# from src.utils.logger import logger
-# from src.config.config import Config
-
-
-# class TelegramUpdatesResponse(TypedDict):
-#     result: list[dict[str, Any]]
-
-
-# _config = Config()
-# _BASE_URL = f"https://api.telegram.org/bot{_config.get('TOKEN')}"
-
-
-# def notify(msg: str) -> None:
-#     try:
-#         requests.post(
-#             f"{_BASE_URL}/sendMessage",
-#             json={
-#                 "chat_id": _config.get("CHAT_ID"),
-#                 "text": msg,
-#             },
-#             timeout=10,
-#         )
-#     except requests.RequestException as e:
-#         logger.warning(f"notify falló: {e}")
-
-
-# def getUpdates() -> TelegramUpdatesResponse:
-#     try:
-#         response = requests.get(
-#             f"{_BASE_URL}/getUpdates",
-#             timeout=10,
-#         )
-
-#         response.raise_for_status()
-
-#         return cast(TelegramUpdatesResponse, response.json())
-
-#     except requests.RequestException as e:
-#         logger.warning(f"getUpdates falló: {e}")
-#         return {"result": []}

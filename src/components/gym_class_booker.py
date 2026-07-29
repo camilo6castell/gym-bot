@@ -1,4 +1,4 @@
-"""Búsqueda y reserva de una clase específica dentro del horario del día."""
+"""Find and book a specific class within the day's schedule."""
 
 from __future__ import annotations
 
@@ -15,8 +15,8 @@ from src.utils.strings import str_normalizer
 
 class ClassBooker:
     """
-    Localiza el botón de una clase específica dentro del horario del día
-    seleccionado, la reserva y verifica que quedó registrada.
+    Locate the button for a specific class within the selected day's schedule,
+    book it, and verify the reservation went through.
     """
 
     def __init__(
@@ -30,34 +30,34 @@ class ClassBooker:
         self._recovery = recovery
 
     def book(self, page: Page, gym_class_name: str, gym_class_hour: str) -> None:
-        """Busca la clase por nombre y hora, la reserva y verifica la reserva."""
-        logger.info(f"🔎 → Buscando clase '{gym_class_name}' en horario '{gym_class_hour}'")
+        """Find the class by name and time, book it, and verify the reservation."""
+        logger.info(f"🔎 → Looking for class '{gym_class_name}' at '{gym_class_hour}'")
 
         wait_network_idle(page)
         self._recovery.with_soft_recovery(
             lambda: page.wait_for_selector("#contenedor-horarios", timeout=10000),
             page,
-            "Esperando contenedor de horarios",
+            "Waiting for schedule container",
         )
 
-        botones = page.query_selector_all("button.btn-theme-inverse:not([disabled])")
+        buttons = page.query_selector_all("button.btn-theme-inverse:not([disabled])")
 
-        for boton in botones:
-            texto = str_normalizer(boton.inner_text())
-            if str_normalizer(gym_class_name) in texto and gym_class_hour in texto:
+        for button in buttons:
+            text = str_normalizer(button.inner_text())
+            if str_normalizer(gym_class_name) in text and gym_class_hour in text:
                 human_delay()
-                boton.click()
-                logger.success("✔️ → Clase seleccionada correctamente")
+                button.click()
+                logger.success("✔️ → Class selected successfully")
                 self._recovery.with_soft_recovery(
                     lambda: self._acceptance.confirm(page),
                     page,
-                    "Confirmando reserva en sistema",
+                    "Confirming reservation in system",
                 )
                 self._recovery.with_soft_recovery(
                     lambda: self._checker.verify(page, gym_class_name, gym_class_hour),
                     page,
-                    f"Verificando '{gym_class_name}' a las '{gym_class_hour}'",
+                    f"Verifying '{gym_class_name}' at '{gym_class_hour}'",
                 )
                 return
 
-        logger.warning("⛔ → Clase objetivo no encontrada o no disponible")
+        logger.warning("⛔ → Target class not found or not available")
