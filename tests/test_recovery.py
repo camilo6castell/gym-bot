@@ -6,6 +6,7 @@ from typing import Any
 from unittest.mock import Mock
 
 import pytest
+from pytest import MonkeyPatch
 
 from src.utils.exceptions import RecoveryExhaustedError
 from src.utils.recovery import Recovery
@@ -50,7 +51,7 @@ class TestRecoverySoft:
 
 
 class TestRecoveryWaitForUserAction:
-    def test_returns_resume_on_zero(self, fake_notifier: Any, monkeypatch) -> None:
+    def test_returns_resume_on_zero(self, fake_notifier: Any, monkeypatch: MonkeyPatch) -> None:
         recovery = Recovery(fake_notifier)
         # Bypass _get_last_update_id so the polling loop sees the update
         monkeypatch.setattr(recovery, "_get_last_update_id", lambda: 0)
@@ -61,7 +62,7 @@ class TestRecoveryWaitForUserAction:
         assert result == "resume"
         assert any("Resuming" in msg for msg in fake_notifier.sent_messages)
 
-    def test_returns_refresh_on_one(self, fake_notifier: Any, monkeypatch) -> None:
+    def test_returns_refresh_on_one(self, fake_notifier: Any, monkeypatch: MonkeyPatch) -> None:
         recovery = Recovery(fake_notifier)
         monkeypatch.setattr(recovery, "_get_last_update_id", lambda: 0)
         fake_notifier.add_update("1")
@@ -84,7 +85,7 @@ class TestRecoveryHandleUserAction:
         recovery = Recovery(fake_notifier)
         page_mock = Mock()
 
-        retry_count, auto_refreshes = recovery._handle_user_action(
+        retry_count, auto_refreshes = recovery._handle_user_action(  # pyright: ignore[reportPrivateUsage]
             "resume", page_mock, "test", 0, 0
         )
 
@@ -95,7 +96,7 @@ class TestRecoveryHandleUserAction:
         recovery = Recovery(fake_notifier)
         page_mock = Mock()
 
-        retry_count, auto_refreshes = recovery._handle_user_action(
+        retry_count, auto_refreshes = recovery._handle_user_action(  # pyright: ignore[reportPrivateUsage]
             "refresh", page_mock, "test", 0, 0
         )
 
@@ -108,6 +109,8 @@ class TestRecoveryHandleUserAction:
         page_mock = Mock()
 
         with pytest.raises(Exception) as exc_info:
-            recovery._handle_user_action("abort", page_mock, "test", 0, 0)
+            recovery._handle_user_action(  # pyright: ignore[reportPrivateUsage]
+                "abort", page_mock, "test", 0, 0
+            )
 
         assert "aborted" in str(exc_info.value)

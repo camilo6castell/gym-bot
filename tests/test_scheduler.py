@@ -8,6 +8,7 @@ import pytest
 
 from src.bot.scheduler import Scheduler
 from src.types.config import ExecutionConfig, GymClass, ScheduleConfig, ScheduledClass, Weekday
+from src.utils.exceptions import ScheduleConfigError
 
 
 def _make_schedule_config(
@@ -51,7 +52,7 @@ class TestSchedulerForceRun:
         execution = _make_execution(force_run=True)
         scheduler = Scheduler(schedule, execution)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ScheduleConfigError):
             scheduler.get_classes()
 
 
