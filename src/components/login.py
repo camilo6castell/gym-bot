@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from playwright.sync_api import Page
-
+from src.types.browser import IPage
 from src.types.config import EnvironmentConfig, SelectorsConfig
 from src.utils.human_behavior import human_click, human_delay, human_type
 from src.utils.logger import logger
@@ -33,7 +32,7 @@ class LoginPage:
         self._doc_num = doc_num
         self._password = password
 
-    def perform_login(self, page: Page) -> None:
+    def perform_login(self, page: IPage) -> None:
         """Execute the full login process on the platform."""
         logger.info("🌐 → Opening login page")
         page.goto(self._env.login_url, wait_until="domcontentloaded")

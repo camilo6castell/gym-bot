@@ -5,8 +5,7 @@ from __future__ import annotations
 import random
 import time
 
-from playwright.sync_api import ElementHandle, Page
-
+from src.types.browser import IElementHandle, IPage
 from src.utils.logger import logger
 
 
@@ -14,16 +13,16 @@ def human_delay(min_sec: float = 0.4, max_sec: float = 1.2) -> None:
     time.sleep(random.uniform(min_sec, max_sec))
 
 
-def human_scroll(page: Page) -> None:
+def human_scroll(page: IPage) -> None:
     scroll_amount = random.randint(150, 450)
     direction = random.choice([-1, 1])
     page.evaluate("window.scrollBy(0, arguments[0])", scroll_amount * direction)
     human_delay(0.3, 0.8)
 
 
-def human_mouse_move(page: Page, selector: str) -> None:
+def human_mouse_move(page: IPage, selector: str) -> None:
     try:
-        element: ElementHandle | None = page.query_selector(selector)
+        element: IElementHandle | None = page.query_selector(selector)
         if element is None:
             return
         box = element.bounding_box()
@@ -52,12 +51,12 @@ def human_mouse_move(page: Page, selector: str) -> None:
         logger.debug(f"human_mouse_move failed on '{selector}': {e}")
 
 
-def human_click(page: Page, selector: str) -> None:
+def human_click(page: IPage, selector: str) -> None:
     try:
         human_mouse_move(page, selector)
         human_delay(0.15, 0.4)
 
-        element: ElementHandle | None = page.query_selector(selector)
+        element: IElementHandle | None = page.query_selector(selector)
         if element is not None:
             box = element.bounding_box()
             if box:
@@ -74,7 +73,7 @@ def human_click(page: Page, selector: str) -> None:
 
 
 def human_type(
-    page: Page,
+    page: IPage,
     selector: str,
     text: str,
     min_delay: float = 0.06,

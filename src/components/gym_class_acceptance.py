@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from playwright.sync_api import Page, TimeoutError as PlaywrightTimeoutError
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
+from src.types.browser import IPage
 from src.utils.exceptions import ElementNotFoundError
 from src.utils.human_behavior import human_delay
 from src.utils.logger import logger
@@ -16,7 +17,7 @@ class ClassAcceptance:
     def __init__(self, recovery: Recovery) -> None:
         self._recovery = recovery
 
-    def confirm(self, page: Page) -> None:
+    def confirm(self, page: IPage) -> None:
         """Wait for the confirmation modal, click 'Confirmar', and close the notification."""
         logger.info("🕤 → Waiting for confirmation modal...")
         human_delay()
@@ -50,7 +51,7 @@ class ClassAcceptance:
 
         logger.success("✔️ → Reservation cycle complete.")
 
-    def _close_notific8(self, page: Page, timeout: int = 5000) -> None:
+    def _close_notific8(self, page: IPage, timeout: int = 5000) -> None:
         """Close a notific8 notification by hovering to reveal the close button."""
         try:
             notification = page.wait_for_selector(

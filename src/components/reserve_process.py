@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from playwright.sync_api import Page
-
 from src.components.day_selector import DateSelector
 from src.components.gym_class_booker import ClassBooker
 from src.components.membership import MembershipSelector
+from src.types.browser import IPage
 from src.types.config import EnvironmentConfig, ExecutionConfig
 from src.utils.logger import logger
 from src.utils.page_utils import confirm_url
@@ -36,7 +35,7 @@ class ReservationProcess:
 
     def reserve(
         self,
-        page: Page,
+        page: IPage,
         spanish_day_name: str,
         gym_class_name: str,
         gym_class_hour: str,

@@ -6,8 +6,7 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from playwright.sync_api import Page
-
+from src.types.browser import IPage
 from src.utils.logger import logger
 
 if TYPE_CHECKING:
@@ -29,7 +28,7 @@ class ErrorBroadcaster:
         self._debug_dir = debug_dir
         self._debug_dir.mkdir(exist_ok=True)
 
-    def send(self, page: Page, error_message: str) -> None:
+    def send(self, page: IPage, error_message: str) -> None:
         """Notify the error and save a best-effort page screenshot."""
         self._notifier.notify(f"❌ → {error_message}")
         logger.error(f"❌ → {error_message}")

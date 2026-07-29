@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from playwright.sync_api import Page
-
 from src.components.gym_class_acceptance import ClassAcceptance
 from src.components.gym_class_checker import ClassChecker
+from src.types.browser import IPage
 from src.utils.human_behavior import human_delay
 from src.utils.logger import logger
 from src.utils.page_utils import wait_network_idle
@@ -29,7 +28,7 @@ class ClassBooker:
         self._checker = checker
         self._recovery = recovery
 
-    def book(self, page: Page, gym_class_name: str, gym_class_hour: str) -> None:
+    def book(self, page: IPage, gym_class_name: str, gym_class_hour: str) -> None:
         """Find the class by name and time, book it, and verify the reservation."""
         logger.info(f"🔎 → Looking for class '{gym_class_name}' at '{gym_class_hour}'")
 

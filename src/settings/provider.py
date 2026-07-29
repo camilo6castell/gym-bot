@@ -67,11 +67,7 @@ class Settings:
     _APP_CONFIG_FILE: Path = _BASE_DIR / "app_config.yaml"
 
     def __init__(self, env_file: str | None = None) -> None:
-        self.env: EnvSettings = (
-            EnvSettings(_env_file=env_file)  # type: ignore[call-arg]
-            if env_file
-            else EnvSettings()  # type: ignore[call-arg]
-        )
+        self.env: EnvSettings = EnvSettings(_env_file=env_file)  # type: ignore[call-arg]
 
         self.schedule: ScheduleConfig = self._load_yaml(self._SCHEDULE_FILE, ScheduleConfig)
         self.app_config: AppConfig = self._load_yaml(self._APP_CONFIG_FILE, AppConfig)

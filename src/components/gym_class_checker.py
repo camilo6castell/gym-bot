@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from playwright.sync_api import Page
-
+from src.types.browser import IPage
 from src.utils.exceptions import ReservationVerificationError
 from src.utils.human_behavior import human_delay
 from src.utils.logger import logger
@@ -19,7 +18,7 @@ class ClassChecker:
     def __init__(self, recovery: Recovery) -> None:
         self._recovery = recovery
 
-    def verify(self, page: Page, gym_class_name: str, gym_class_hour: str) -> None:
+    def verify(self, page: IPage, gym_class_name: str, gym_class_hour: str) -> None:
         """
         Confirm the reserved class appears in 'Mis turnos'.
 

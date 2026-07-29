@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from playwright.sync_api import Page
-
+from src.types.browser import IPage
 from src.types.config import EnvironmentConfig, SelectorsConfig
 from src.utils.logger import logger
 from src.utils.page_utils import (
@@ -28,7 +27,7 @@ class PostLoginPage:
         self._selectors = selectors_config
         self._recovery = recovery
 
-    def perform_post_login(self, page: Page) -> None:
+    def perform_post_login(self, page: IPage) -> None:
         """Execute post-login navigation: training section → free practice → reservation."""
         wait_network_idle(page)
 

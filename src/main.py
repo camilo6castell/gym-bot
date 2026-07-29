@@ -32,9 +32,9 @@ from src.os_integration.power_cycle import PowerCycleManager
 from src.settings.provider import Settings
 from src.types.config import ScheduledClass
 from src.utils.error_broadcast import ErrorBroadcaster
+from src.utils.logger import logger
 from src.utils.recovery import Recovery
 from src.utils.time_utils import spanish_day_mapper, wait_until_reservation_opens
-from src.utils.logger import logger
 
 
 def run_bot(settings: Settings) -> None:

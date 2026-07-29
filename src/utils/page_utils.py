@@ -5,8 +5,9 @@ from __future__ import annotations
 import random
 import time
 
-from playwright.sync_api import ElementHandle, Page, TimeoutError as PlaywrightTimeoutError
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
+from src.types.browser import IElementHandle, IPage
 from src.utils.exceptions import CaptchaDetectedError, ElementNotFoundError, RedirectTimeoutError
 from src.utils.human_behavior import human_click
 from src.utils.logger import logger
@@ -35,13 +36,13 @@ CAPTCHA_SOFT_INDICATORS = [
 # ─── Clicks y esperas ────────────────────────────────────────────────────────
 
 
-def search_and_click(page: Page, selector: str, timeout: int = 5000) -> None:
+def search_and_click(page: IPage, selector: str, timeout: int = 5000) -> None:
     page.wait_for_selector(selector, timeout=timeout)
     human_click(page, selector)
 
 
 def dismiss_if_present(
-    page: Page, selector: str, is_mandatory: bool = False, timeout: int = 15000
+    page: IPage, selector: str, is_mandatory: bool = False, timeout: int = 15000
 ) -> None:
     try:
         page.wait_for_selector(selector, state="visible", timeout=timeout)
@@ -54,8 +55,8 @@ def dismiss_if_present(
 
 
 def wait_for_element_with_retry(
-    page: Page, selector: str, max_retries: int = 3, timeout: int = 10000
-) -> ElementHandle | None:
+    page: IPage, selector: str, max_retries: int = 3, timeout: int = 10000
+) -> IElementHandle | None:
     """Wait for an element with retries and scroll fallback."""
     for attempt in range(max_retries):
         try:
@@ -73,14 +74,14 @@ def wait_for_element_with_retry(
 # ─── Red y navegación ────────────────────────────────────────────────────────
 
 
-def wait_network_idle(page: Page, timeout: int = 5000) -> None:
+def wait_network_idle(page: IPage, timeout: int = 5000) -> None:
     try:
         page.wait_for_load_state("networkidle", timeout=timeout)
     except PlaywrightTimeoutError:
         logger.warning(f"🕒 → wait_network_idle timeout for {page.url}, continuing.")
 
 
-def wait_for_redirect(page: Page, url_pattern: str | None, timeout: int = 15000) -> None:
+def wait_for_redirect(page: IPage, url_pattern: str | None, timeout: int = 15000) -> None:
     if not url_pattern:
         logger.warning("⚠️ → wait_for_redirect: no URL pattern provided, skipping.")
         return
@@ -92,7 +93,7 @@ def wait_for_redirect(page: Page, url_pattern: str | None, timeout: int = 15000)
         ) from err
 
 
-def confirm_url(page: Page, url: str) -> None:
+def confirm_url(page: IPage, url: str) -> None:
     """Navigate to url only if we are not already there."""
     if page.url != url:
         page.goto(url, wait_until="networkidle")
@@ -101,7 +102,7 @@ def confirm_url(page: Page, url: str) -> None:
 # ─── CAPTCHA ─────────────────────────────────────────────────────────────────
 
 
-def raise_if_captcha(page: Page) -> None:
+def raise_if_captcha(page: IPage) -> None:
     """Raise CaptchaDetectedError if an active CAPTCHA is found."""
 
     # 1. Check HTML content for known indicators
@@ -141,7 +142,7 @@ def raise_if_captcha(page: Page) -> None:
 # ─── Flujo de página ─────────────────────────────────────────────────────────
 
 
-def monitor_new_page(page: Page, recovery: Recovery, selector: str | None = None) -> None:
+def monitor_new_page(page: IPage, recovery: Recovery, selector: str | None = None) -> None:
     """Wait for network idle, check CAPTCHA, dismiss optional modal."""
     wait_network_idle(page)
     raise_if_captcha(page)
@@ -155,7 +156,7 @@ def monitor_new_page(page: Page, recovery: Recovery, selector: str | None = None
 
 
 def force_url(
-    page: Page,
+    page: IPage,
     recovery: Recovery,
     forced_url: str,
     selector: str | None = None,

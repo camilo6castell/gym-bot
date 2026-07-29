@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from playwright.sync_api import Page, TimeoutError as PlaywrightTimeoutError
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
+from src.types.browser import IPage
 from src.utils.exceptions import MembershipNotFoundError
 from src.utils.logger import logger
 from src.utils.page_utils import wait_network_idle
@@ -18,7 +19,7 @@ class MembershipSelector:
     def __init__(self, recovery: Recovery) -> None:
         self._recovery = recovery
 
-    def use_membership(self, page: Page) -> None:
+    def use_membership(self, page: IPage) -> None:
         """
         Find and click the first available access method button.
 
@@ -40,9 +41,7 @@ class MembershipSelector:
             count = buttons.count()
 
             if count == 0:
-                raise MembershipNotFoundError(
-                    "❌ → No membership or ticket buttons found."
-                )
+                raise MembershipNotFoundError("❌ → No membership or ticket buttons found.")
 
             for i in range(count):
                 btn = buttons.nth(i)
@@ -52,9 +51,7 @@ class MembershipSelector:
                     wait_network_idle(page)
                     return
 
-            raise MembershipNotFoundError(
-                "❌ → Found membership buttons but none were enabled."
-            )
+            raise MembershipNotFoundError("❌ → Found membership buttons but none were enabled.")
 
         except PlaywrightTimeoutError:
             logger.error("⏰ → Timeout waiting for membership/ticket buttons")

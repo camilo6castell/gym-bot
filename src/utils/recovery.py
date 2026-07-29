@@ -11,9 +11,8 @@ import time
 from collections.abc import Callable
 from typing import Any
 
-from playwright.sync_api import Page
-
 from src.notifications import Notifier
+from src.types.browser import IPage
 from src.utils.exceptions import CaptchaDetectedError, RecoveryAbortedError, RecoveryExhaustedError
 from src.utils.logger import logger
 
@@ -38,7 +37,7 @@ class Recovery:
     def with_soft_recovery(
         self,
         action_fn: Callable[[], Any],
-        page: Page,
+        page: IPage,
         action_name: str = "please specify an action name",
         ms_to_retry: int = 5000,
         max_retries: int = 3,
@@ -66,19 +65,19 @@ class Recovery:
                 page.wait_for_timeout(ms_to_retry)
 
         raise RecoveryExhaustedError(
-            f"❌ → '{action_name}' failed after {max_retries} retries. "
-            f"Last error: {last_exception}"
+            f"❌ → '{action_name}' failed after {max_retries} retries. Last error: {last_exception}"
         )
 
     def with_recovery(
         self,
         action_fn: Callable[[], Any],
-        page: Page,
+        page: IPage,
         action_name: str = "action",
         max_retries: int | None = 3,
         auto_refresh_limit: int = 2,
     ) -> None:
-        """Execute an action with advanced recovery: retry loop, CAPTCHA handling, remote commands."""
+        """Execute an action with advanced recovery:
+        retry loop, CAPTCHA handling, remote commands."""
         retry_count = 0
         auto_refreshes = 0
 
@@ -173,7 +172,7 @@ class Recovery:
     def _handle_user_action(
         self,
         action: str,
-        page: Page,
+        page: IPage,
         action_name: str,
         retry_count: int,
         auto_refreshes: int,

@@ -69,9 +69,7 @@ def wait_until_reservation_opens(gym_class_hour: str) -> None:
         logger.info(f"⏳ → Waiting {wait_seconds:.1f}s until {target.strftime('%H:%M:%S')}")
         time.sleep(wait_seconds)
     else:
-        logger.info(
-            f"✅ → Opening time ({target.strftime('%H:%M:%S')}) already passed, continuing"
-        )
+        logger.info(f"✅ → Opening time ({target.strftime('%H:%M:%S')}) already passed, continuing")
 
 
 def military_time_range_to_ampm(military_range: str) -> str:

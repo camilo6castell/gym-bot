@@ -12,16 +12,16 @@ import subprocess
 import time
 from pathlib import Path
 from types import TracebackType
-from typing import TypedDict
+from typing import TypedDict, cast
 
 from playwright.sync_api import (
     BrowserContext,
     Geolocation,
-    Page,
     Playwright,
     sync_playwright,
 )
 
+from src.types.browser import IPage
 from src.types.config import ExecutionConfig, OSConfig
 from src.utils.exceptions import BrowserLaunchError
 from src.utils.logger import logger
@@ -84,9 +84,9 @@ class Browser:
 
         self.playwright: Playwright | None = None
         self.context: BrowserContext | None = None
-        self.page: Page | None = None
+        self.page: IPage | None = None
 
-    def launch_chromium(self) -> tuple[Playwright, BrowserContext, Page]:
+    def launch_chromium(self) -> tuple[Playwright, BrowserContext, IPage]:
         """Launch Chromium with the configured real profile and apply stealth."""
         self._kill_existing_chromium()
         logger.info("🌐 → Starting Chromium with real profile")
@@ -117,7 +117,7 @@ class Browser:
         self.playwright, self.context, self.page = playwright, context, page
         return playwright, context, page
 
-    def launch_firefox(self) -> tuple[Playwright, BrowserContext, Page]:
+    def launch_firefox(self) -> tuple[Playwright, BrowserContext, IPage]:
         """Launch Firefox with the configured real profile and apply stealth."""
         if not self._firefox_profile_path:
             raise BrowserLaunchError("❌ → FIREFOX_PROFILE_NAME not configured in .env")
@@ -186,9 +186,9 @@ class Browser:
         time.sleep(1)
         logger.info("🧹 → Chromium cleaned up")
 
-    @classmethod
-    def _setup_page(cls, context: BrowserContext, stealth_script: str) -> Page:
+    @staticmethod
+    def _setup_page(context: BrowserContext, stealth_script: str) -> IPage:
         context.add_init_script(stealth_script)
         page = context.pages[0] if context.pages else context.new_page()
-        page.set_default_timeout(cls._DEFAULT_TIMEOUT_MS)
-        return page
+        page.set_default_timeout(Browser._DEFAULT_TIMEOUT_MS)
+        return cast(IPage, page)

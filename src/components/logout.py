@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from playwright.sync_api import Page
-
+from src.types.browser import IPage
 from src.utils.human_behavior import human_delay
 from src.utils.logger import logger
 from src.utils.page_utils import search_and_click, wait_network_idle
@@ -16,7 +15,7 @@ class LogoutPage:
     def __init__(self, recovery: Recovery) -> None:
         self._recovery = recovery
 
-    def perform_logout(self, page: Page) -> None:
+    def perform_logout(self, page: IPage) -> None:
         """Attempt to log out best-effort; never interrupts the main flow."""
         try:
             logger.info("🚪 → Attempting logout")

@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from playwright.sync_api import ElementHandle, Page
-
+from src.types.browser import IElementHandle, IPage
 from src.utils.human_behavior import human_delay
 from src.utils.logger import logger
 from src.utils.page_utils import wait_network_idle
@@ -17,7 +16,7 @@ class DateSelector:
     def __init__(self, recovery: Recovery) -> None:
         self._recovery = recovery
 
-    def select_latest_date(self, page: Page) -> bool:
+    def select_latest_date(self, page: IPage) -> bool:
         """Select the last available date in the date picker."""
         logger.info("🏃 → Selecting latest available date...")
         last_button = self._get_available_date_buttons(page)[-1]
@@ -26,7 +25,7 @@ class DateSelector:
         logger.success("✔️ → Latest date selected")
         return True
 
-    def select_by_day(self, page: Page, spanish_day_name: str) -> bool:
+    def select_by_day(self, page: IPage, spanish_day_name: str) -> bool:
         """Find and select the date matching the given day name (in Spanish)."""
         logger.info(f"🔎 → Looking for date matching '{spanish_day_name}'")
 
@@ -41,7 +40,7 @@ class DateSelector:
         logger.warning(f"⛔ → Day '{spanish_day_name}' not found")
         return False
 
-    def _get_available_date_buttons(self, page: Page) -> list[ElementHandle]:
+    def _get_available_date_buttons(self, page: IPage) -> list[IElementHandle]:
         wait_network_idle(page)
         self._recovery.with_soft_recovery(
             lambda: page.wait_for_selector("button.botonfecha", timeout=10000),
