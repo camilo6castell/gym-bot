@@ -53,10 +53,14 @@ days:
 
   #LUNES
   saturday:
-    - name: Pilates
+    - name: Cool Abs - Súper Gluteo
       hour: 06:00 - 07:00
     - name: Bases Inestables
       hour: 07:00 - 08:00
+    - name: Pilates
+      hour: 15:00 - 16:00
+    - name: Relax
+      hour: 16:00 - 17:00
     # - name: test
     #   hour: 10:56 - 08:00
 
