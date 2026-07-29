@@ -1,6 +1,6 @@
 timezone: America/Bogota
 
-forcedClass:
+forced_class:
   name: Pilates
   hour: 09:05 - 08:00
   day: monday

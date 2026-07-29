@@ -18,7 +18,7 @@ class Scheduler:
 
     Supports two modes:
     - regular: matches today's schedule against `schedule.yaml`.
-    - forced: uses the `bot_force_run` / `forcedClass` config for testing.
+    - forced: uses the `bot_force_run` / `forced_class` config for testing.
     """
 
     def __init__(self, schedule_config: ScheduleConfig, execution_config: ExecutionConfig) -> None:
@@ -34,11 +34,11 @@ class Scheduler:
 
     def _force_run_classes(self) -> list[ScheduledClass]:
         logger.warning("⚠️ → BOT_FORCE_RUN active ⚠️")
-        forced = self._schedule.forcedClass
+        forced = self._schedule.forced_class
 
         if not forced or not all([forced.name, forced.hour, forced.day]):
             raise ScheduleConfigError(
-                "❌ → BOT_FORCE_RUN active but 'forcedClass' in schedule is incomplete."
+                "❌ → BOT_FORCE_RUN active but 'forced_class' in schedule is incomplete."
             )
 
         return [forced]

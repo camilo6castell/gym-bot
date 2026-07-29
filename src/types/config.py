@@ -55,7 +55,7 @@ DaysConfig = dict[Weekday, list[GymClass]]
 class ScheduleConfig(_StrictModel):
     timezone: str
     days: DaysConfig
-    forcedClass: ForcedClass | None = None
+    forced_class: ForcedClass | None = None
 
 
 ScheduledClass = ForcedClass

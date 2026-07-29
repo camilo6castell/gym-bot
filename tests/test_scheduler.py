@@ -23,7 +23,7 @@ def _make_schedule_config(
         if forced_day
         else None
     )
-    return ScheduleConfig(timezone=timezone, days=days, forcedClass=forced)
+    return ScheduleConfig(timezone=timezone, days=days, forced_class=forced)
 
 
 def _make_execution(force_run: bool = False, adjustment: int = 0) -> ExecutionConfig:
