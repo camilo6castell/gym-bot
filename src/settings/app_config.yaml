@@ -19,7 +19,7 @@ power_autonomous:
   wakealarm_path: /sys/class/rtc/rtc0/wakealarm
 
 execution:
-  bot_force_run: true
+  bot_force_run: false
   seconds_for_temporary_platform_notifications: 11
-  execution_adjustment: -1
+  execution_adjustment: -3
   bot_headless: false
