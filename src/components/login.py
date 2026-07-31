@@ -68,5 +68,6 @@ class LoginPage:
         logger.info("🕒 → Submitting form")
         page.wait_for_selector("button[type='submit']:not([disabled])", timeout=5000)
         human_click(page, "button[type='submit']")
+        raise_if_captcha(page)
 
         monitor_new_page(page, self._recovery, self._selectors.potential_modal_entiendo_selector)
