@@ -8,6 +8,7 @@ errors to runtime.
 
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
@@ -25,6 +26,20 @@ Weekday = Literal[
     "saturday",
     "sunday",
 ]
+
+
+class RunDevice(StrEnum):
+    """
+    Device profile used to launch Chromium via Playwright.
+
+    `DESKTOP` uses the real window size; the mobile members emulate a phone
+    through Playwright's built-in device descriptors (viewport, user agent,
+    touch events). Values must match Playwright's device names.
+    """
+
+    DESKTOP = "desktop"
+    GALAXY_S24 = "Galaxy S24"
+    IPHONE_15_PRO_MAX = "iPhone 15 Pro Max"
 
 
 class _StrictModel(BaseModel):
@@ -95,6 +110,7 @@ class ExecutionConfig(_StrictModel):
     seconds_for_temporary_platform_notifications: int | None = None
     execution_adjustment: int = 0
     bot_headless: bool = False
+    run_device: RunDevice = RunDevice.DESKTOP
 
 
 class AppConfig(_StrictModel):

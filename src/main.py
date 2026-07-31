@@ -54,7 +54,7 @@ def run_bot(settings: Settings) -> None:
         chromium_profile_path=settings.chromium_profile_path,
         firefox_profile_path=settings.firefox_profile_path,
     ) as browser:
-        _, _, page = browser.launch_chromium()
+        _, _, page = browser.launch_chromium(device=settings.app_config.execution.run_device)
 
         login_page = LoginPage(
             env_config=settings.app_config.environment,
