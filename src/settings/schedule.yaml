@@ -3,7 +3,7 @@ timezone: America/Bogota
 forced_class:
   name: Aeróbicos
   hour: 06:00 - 07:00
-  day: saturday
+  day: thursday
 
 days:
   #MIERCOLES
