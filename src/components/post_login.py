@@ -34,9 +34,7 @@ class PostLoginPage:
         logger.info("🚀 → Starting post-login flow")
 
         search_and_click(page, "#mainMenu", timeout=10000)
-
         search_and_click(page, "a[href='#mm-m1-p2']", timeout=10000)
-
         search_and_click(page, "a[href='/sistema.php/entrenamiento/reserva/practica/libre']")
 
         wait_network_idle(page)
