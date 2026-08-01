@@ -40,16 +40,7 @@ class ClassChecker:
             ],
         )
 
-        self._recovery.with_soft_recovery(
-            lambda: page.wait_for_selector(
-                ".panel-proximos-turno .ng-binding, .panel.panel-shadow .ng-binding",
-                timeout=15000,
-            ),
-            page,
-            "Waiting for upcoming sessions content",
-        )
-
-        human_delay(1.5, 2.5)
+        human_delay(5, 7)
 
         ampm_hour = military_time_range_to_ampm(gym_class_hour)
         normalized_name = str_normalizer(gym_class_name)
@@ -61,6 +52,7 @@ class ClassChecker:
 
         for card in cards:
             text = str_normalizer(card.inner_text())
+            print(f"🔍 → Card text: {text}")
             if normalized_name in text and normalized_hour in text:
                 logger.success(f"✅ → Reservation confirmed: '{gym_class_name}' | '{ampm_hour}'")
                 return
