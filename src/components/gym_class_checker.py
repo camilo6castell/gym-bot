@@ -6,7 +6,7 @@ from src.types.browser import IPage
 from src.utils.exceptions import ReservationVerificationError
 from src.utils.human_behavior import human_delay
 from src.utils.logger import logger
-from src.utils.page_utils import search_and_click, wait_network_idle
+from src.utils.page_utils import navigate_by_clicks, wait_network_idle
 from src.utils.recovery import Recovery
 from src.utils.strings import str_normalizer
 from src.utils.time_utils import military_time_range_to_ampm
@@ -31,9 +31,14 @@ class ClassChecker:
 
         wait_network_idle(page, timeout=20000)
 
-        search_and_click(page, "#mainMenu", timeout=10000)
-        search_and_click(page, "a[href='#mm-m1-p2']")
-        search_and_click(page, "a[href='/sistema.php/entrenamiento/mis/turnos']")
+        navigate_by_clicks(
+            page,
+            [
+                "#mainMenu",
+                "a[href='#mm-m1-p2']",
+                "a[href='/sistema.php/entrenamiento/mis/turnos']",
+            ],
+        )
 
         self._recovery.with_soft_recovery(
             lambda: page.wait_for_selector(

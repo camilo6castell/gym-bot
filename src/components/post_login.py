@@ -7,7 +7,7 @@ from src.types.config import EnvironmentConfig, SelectorsConfig
 from src.utils.logger import logger
 from src.utils.page_utils import (
     dismiss_if_present,
-    search_and_click,
+    navigate_by_clicks,
     wait_for_redirect,
     wait_network_idle,
 )
@@ -33,9 +33,14 @@ class PostLoginPage:
 
         logger.info("🚀 → Starting post-login flow")
 
-        search_and_click(page, "#mainMenu", timeout=10000)
-        search_and_click(page, "a[href='#mm-m1-p2']", timeout=10000)
-        search_and_click(page, "a[href='/sistema.php/entrenamiento/reserva/practica/libre']")
+        navigate_by_clicks(
+            page,
+            [
+                "#mainMenu",
+                "a[href='#mm-m1-p2']",
+                "a[href='/sistema.php/entrenamiento/reserva/practica/libre']",
+            ],
+        )
 
         wait_network_idle(page)
 

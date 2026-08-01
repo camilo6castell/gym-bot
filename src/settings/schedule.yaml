@@ -1,9 +1,9 @@
 timezone: America/Bogota
 
 forced_class:
-  name: Pilates
-  hour: 09:05 - 08:00
-  day: monday
+  name: Aeróbicos
+  hour: 06:00 - 07:00
+  day: saturday
 
 days:
   #MIERCOLES

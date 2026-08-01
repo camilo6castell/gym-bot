@@ -41,6 +41,11 @@ def search_and_click(page: IPage, selector: str, timeout: int = 5000) -> None:
     human_click(page, selector)
 
 
+def navigate_by_clicks(page: IPage, selectors: list[str], timeout: int = 5000) -> None:
+    for selector in selectors:
+        search_and_click(page, selector, timeout)
+
+
 def dismiss_if_present(
     page: IPage, selector: str, is_mandatory: bool = False, timeout: int = 15000
 ) -> None:
