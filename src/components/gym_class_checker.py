@@ -40,7 +40,9 @@ class ClassChecker:
             ],
         )
 
-        human_delay(5, 7)
+        wait_network_idle(page, timeout=20000)
+
+        human_delay(3, 5)
 
         ampm_hour = military_time_range_to_ampm(gym_class_hour)
         normalized_name = str_normalizer(gym_class_name)
