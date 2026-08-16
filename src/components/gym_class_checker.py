@@ -54,7 +54,6 @@ class ClassChecker:
 
         for card in cards:
             text = str_normalizer(card.inner_text())
-            print(f"🔍 → Card text: {text}")
             if normalized_name in text and normalized_hour in text:
                 logger.success(f"✅ → Reservation confirmed: '{gym_class_name}' | '{ampm_hour}'")
                 return
