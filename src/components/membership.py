@@ -7,7 +7,7 @@ from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from src.types.browser import IPage
 from src.utils.exceptions import MembershipNotFoundError
 from src.utils.logger import logger
-from src.utils.page_utils import wait_network_idle
+from src.utils.page_utils import wait_for_element_with_progessive_waiting, wait_network_idle
 from src.utils.recovery import Recovery
 
 
@@ -31,11 +31,7 @@ class MembershipSelector:
         logger.info("🔎 → Looking for 'Usar Membresía' or 'Usar tiquetera' buttons...")
 
         try:
-            self._recovery.with_soft_recovery(
-                lambda: page.wait_for_selector(self._SELECTOR, timeout=5000),
-                page,
-                "Waiting for membership/ticket buttons",
-            )
+            wait_for_element_with_progessive_waiting(page, self._SELECTOR)
 
             buttons = page.locator(self._SELECTOR)
             count = buttons.count()

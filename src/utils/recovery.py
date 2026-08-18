@@ -39,10 +39,15 @@ class Recovery:
         action_fn: Callable[[], Any],
         page: IPage,
         action_name: str = "please specify an action name",
-        ms_to_retry: int = 5000,
+        ms_to_retry: int = 3000,
         max_retries: int = 3,
     ) -> None:
-        """Execute an action with automatic retry on failure."""
+        """Execute an action with automatic retry on failure.
+
+        The first attempt runs immediately without waiting. Each subsequent
+        retry waits an additional `ms_to_retry`: the second attempt waits
+        `ms_to_retry`, the third waits `2 * ms_to_retry`, and so on.
+        """
         attempts = 0
         last_exception: Exception | None = None
 
@@ -61,8 +66,9 @@ class Recovery:
                 )
                 if attempts > max_retries:
                     break
-                logger.info(f"⏳ → Retrying in {ms_to_retry}ms...")
-                page.wait_for_timeout(ms_to_retry)
+                wait_ms = ms_to_retry * attempts
+                logger.info(f"⏳ → Retrying in {wait_ms}ms...")
+                page.wait_for_timeout(wait_ms)
 
         raise RecoveryExhaustedError(
             f"❌ → '{action_name}' failed after {max_retries} retries. Last error: {last_exception}"

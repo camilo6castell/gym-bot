@@ -76,6 +76,24 @@ def wait_for_element_with_retry(
     return None
 
 
+def wait_for_element_with_progessive_waiting(
+    page: IPage, selector: str, max_retries: int = 3, initial_timeout: int = 3000
+) -> IElementHandle | None:
+    """Wait for an element with progressive waiting and retries."""
+    timeout = initial_timeout
+    for attempt in range(max_retries):
+        wait_network_idle(page, timeout=5000)
+        try:
+            return page.wait_for_selector(selector, timeout=timeout)
+        except Exception:
+            if attempt == max_retries - 1:
+                raise
+            logger.debug(f"Attempt {attempt + 1} failed for '{selector}', retrying...")
+            time.sleep(random.uniform(1, 3))
+            timeout += initial_timeout
+    return None
+
+
 # ─── Red y navegación ────────────────────────────────────────────────────────
 
 
