@@ -56,12 +56,14 @@ class _StrictModel(BaseModel):
 class GymClass(_StrictModel):
     name: str
     hour: str
+    place: str
 
 
 class ForcedClass(_StrictModel):
     name: str
     hour: str
     day: Weekday
+    place: str
 
 
 DaysConfig = dict[Weekday, list[GymClass]]

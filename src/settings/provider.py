@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import TypeVar
 
 import yaml
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from src.types.config import AppConfig, ScheduleConfig
@@ -42,11 +42,11 @@ class EnvSettings(BaseSettings):
     )
 
     # Required
-    COMPENSAR_DOC_TYPE: str = Field(..., description="Document type")
-    COMPENSAR_DOC_NUM: str = Field(..., description="Document number")
-    COMPENSAR_PASSWORD: str = Field(..., description="Account password")
-    TOKEN: str = Field(..., description="Telegram bot token")
-    CHAT_ID: str = Field(..., description="Telegram chat ID")
+    COMPENSAR_DOC_TYPE: str
+    COMPENSAR_DOC_NUM: str
+    COMPENSAR_PASSWORD: str
+    TOKEN: str
+    CHAT_ID: str
 
     # Optional
     FIREFOX_PROFILE_NAME: str | None = None

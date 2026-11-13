@@ -111,6 +111,7 @@ def run_bot(settings: Settings) -> None:
                         spanish_day_name,
                         gym_class.name,
                         gym_class.hour,
+                        gym_class.place,
                     )
 
                 try:

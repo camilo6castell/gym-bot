@@ -16,11 +16,18 @@ def _make_schedule_config(
     forced_day: str | None = None,
 ) -> ScheduleConfig:
     days: dict[Weekday, list[GymClass]] = {
-        "monday": [GymClass(name="Pilates", hour="06:00 - 07:00")],
-        "tuesday": [GymClass(name="Yoga", hour="07:00 - 08:00")],
+        "monday": [
+            GymClass(name="Pilates", hour="06:00 - 07:00", place="Clase grupal Centro Mayor")
+        ],
+        "tuesday": [GymClass(name="Yoga", hour="07:00 - 08:00", place="Clase grupal Centro Mayor")],
     }
     forced = (
-        ScheduledClass(name="ForcedClass", hour="09:00 - 10:00", day=cast(Weekday, forced_day))
+        ScheduledClass(
+            name="ForcedClass",
+            hour="09:00 - 10:00",
+            day=cast(Weekday, forced_day),
+            place="Clase grupal Centro Mayor",
+        )
         if forced_day
         else None
     )
@@ -46,6 +53,7 @@ class TestSchedulerForceRun:
         assert len(classes) == 1
         assert classes[0].name == "ForcedClass"
         assert classes[0].day == "monday"
+        assert classes[0].place == "Clase grupal Centro Mayor"
 
     def test_force_run_missing_forced_class_raises_error(self) -> None:
         schedule = _make_schedule_config(forced_day=None)

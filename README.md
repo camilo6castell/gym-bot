@@ -303,20 +303,24 @@ Classes are booked **2 days in advance**. A `monday` entry triggers on Saturday.
 timezone: America/Bogota
 
 # Used when bot_force_run: true
-forcedClass:
+forced_class:
   name: PD Yoga
   hour: 08:00 - 09:00
   day: tuesday
+  place: Clase grupal Centro Mayor
 
 days:
   monday:
     - name: Pilates
       hour: 06:00 - 07:00
+      place: Clase grupal Centro Mayor
     - name: Estiramiento
       hour: 07:00 - 08:00
+      place: Clase grupal Centro Mayor
   tuesday:
     - name: PD Yoga
       hour: 06:00 - 07:00
+      place: Clase grupal Centro Mayor
 ```
 
 ---
@@ -391,7 +395,7 @@ python -m src.main run
 
 ### Force-run a specific class
 
-Set `bot_force_run: true` in `app_config.yaml` and configure `forcedClass` in `schedule.yaml`, then:
+Set `bot_force_run: true` in `app_config.yaml` and configure `forced_class` in `schedule.yaml`, then:
 
 ```bash
 python -m src.main run

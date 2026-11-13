@@ -39,11 +39,12 @@ class ReservationProcess:
         spanish_day_name: str,
         gym_class_name: str,
         gym_class_hour: str,
+        gym_class_place: str,
     ) -> None:
         """Execute the full flow: access → date → booking."""
         confirm_url(page, self._env.inside_system_url)
 
-        self._membership_selector.use_membership(page)
+        self._membership_selector.use_membership(page, gym_class_place)
 
         day_selected = (
             self._date_selector.select_by_day(page, spanish_day_name)

@@ -36,7 +36,7 @@ class Scheduler:
         logger.warning("⚠️ → BOT_FORCE_RUN active ⚠️")
         forced = self._schedule.forced_class
 
-        if not forced or not all([forced.name, forced.hour, forced.day]):
+        if not forced or not all([forced.name, forced.hour, forced.day, forced.place]):
             raise ScheduleConfigError(
                 "❌ → BOT_FORCE_RUN active but 'forced_class' in schedule is incomplete."
             )
@@ -65,7 +65,12 @@ class Scheduler:
 
                 if now.hour == activation_hour and now.minute == activation_minute:
                     scheduled_classes.append(
-                        ScheduledClass(name=gym_class.name, hour=gym_class.hour, day=day_name)
+                        ScheduledClass(
+                            name=gym_class.name,
+                            hour=gym_class.hour,
+                            day=day_name,
+                            place=gym_class.place,
+                        )
                     )
 
         return scheduled_classes

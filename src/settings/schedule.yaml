@@ -4,69 +4,74 @@ forced_class:
   name: Aeróbicos
   hour: 06:00 - 07:00
   day: thursday
+  place: Clase grupal Centro Mayor
 
 days:
   #MIERCOLES
   monday:
-    #  - name: Tono Mixto
-    #    hour: 05:00 - 06:00
     - name: Pilates
       hour: 06:00 - 07:00
+      place: Clase grupal Centro Mayor
     - name: Estiramiento
       hour: 07:00 - 08:00
+      place: Clase grupal Centro Mayor
     - name: Cool Abs - Súper Gluteo
       hour: 08:00 - 09:00
-    # - name: test
-    #   hour: 20:24 - 08:00
+      place: Clase grupal Centro Mayor
 
   #JUEVES
   tuesday:
     - name: PD Yoga
       hour: 06:00 - 07:00
+      place: Clase grupal Centro Mayor
     - name: Balance
       hour: 07:00 - 08:00
+      place: Clase grupal Centro Mayor
 
   #VIERNES
   wednesday:
-    #  - name: Pilates
-    #    hour: 05:00 - 06:00
     - name: Estiramiento
       hour: 06:00 - 07:00
+      place: Clase grupal Centro Mayor
     - name: Pilates
       hour: 07:00 - 08:00
+      place: Clase grupal Centro Mayor
 
   #SABADO
   thursday:
     - name: Bases Inestables
       hour: 06:00 - 07:00
+      place: Clase grupal Centro Mayor
     - name: Estiramiento
       hour: 07:00 - 08:00
-      # name: test
-      # hour: 19:28 - 08:00
+      place: Clase grupal Centro Mayor
 
   #DOMINGO
   friday:
     - name: Estiramiento
       hour: 06:00 - 07:00
+      place: Clase grupal Centro Mayor
     - name: Pilates
       hour: 07:00 - 08:00
+      place: Clase grupal Centro Mayor
     - name: PD Yoga
       hour: 15:00 - 16:00
-    # - name: test
-    #   hour: 10:38 - 08:00
+      place: Clase grupal Centro Mayor
 
   #LUNES
   saturday:
     - name: Cool Abs - Súper Gluteo
       hour: 06:00 - 07:00
+      place: Clase grupal Centro Mayor
     - name: Bases Inestables
       hour: 07:00 - 08:00
+      place: Clase grupal Centro Mayor
     - name: Pilates
       hour: 15:00 - 16:00
+      place: Clase grupal Centro Mayor
     - name: Relax
       hour: 16:00 - 17:00
-    # - name: test
-    #   hour: 10:56 - 08:00
+      place: Clase grupal Centro Mayor
 
   #MARTES
   # sunday:
